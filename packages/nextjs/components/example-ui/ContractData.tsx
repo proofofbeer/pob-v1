@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { ethers } from "ethers";
 import Marquee from "react-fast-marquee";
+import { displayTxResult } from "~~/components/scaffold-eth";
 import { useAnimationConfig, useScaffoldContractRead, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
 
 const MARQUEE_PERIOD_IN_SEC = 5;
@@ -41,9 +41,6 @@ export const ContractData = () => {
         Math.max(greetingRef.current.clientWidth, containerRef.current.clientWidth) / MARQUEE_PERIOD_IN_SEC,
       );
     }
-    if (currentTotalSupply) {
-      console.log(parseInt(ethers.utils.formatEther(currentTotalSupply)));
-    }
   }, [transitionEnabled, containerRef, currentTotalSupply, greetingRef]);
 
   return (
@@ -67,7 +64,9 @@ export const ContractData = () => {
             />
           </button>
           <div className="bg-secondary border border-primary rounded-xl flex">
-            <div className="p-2 py-1 border-r border-primary flex items-end">Total count</div>
+            <div className="p-2 py-1 border-r border-primary flex items-center text-2xl font-bold">
+              {displayTxResult(currentTotalSupply)}
+            </div>
             <div className="text-4xl text-right min-w-[3rem] px-2 py-1 flex justify-end font-bai-jamjuree">
               {symbol || "LOADING..."}
             </div>
@@ -91,9 +90,7 @@ export const ContractData = () => {
                   speed={marqueeSpeed}
                   className={i % 2 ? "-my-10" : ""}
                 >
-                  <div className="px-4">
-                    {currentTotalSupply ? parseInt(ethers.utils.formatEther(currentTotalSupply)) : "LOL"}
-                  </div>
+                  <div className="px-4">{displayTxResult(currentTotalSupply)}</div>
                 </Marquee>
               );
             })}

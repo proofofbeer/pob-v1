@@ -6,23 +6,28 @@ import "hardhat/console.sol";
 // Use openzeppelin to inherit battle-tested implementations (ERC20, ERC721, etc)
 // import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract ProjectFactory is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
+contract ProjectFactory is ERC721, ERC721URIStorage, Ownable {
   using Counters for Counters.Counter;
 
   Counters.Counter private _tokenIdCounter;
+  uint256[] public allTokens;
 
   constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
 
   function safeMint(address to, string memory uri) public {
     uint256 tokenId = _tokenIdCounter.current();
+    allTokens.push(tokenId);
     _tokenIdCounter.increment();
     _safeMint(to, tokenId);
     _setTokenURI(tokenId, uri);
+  }
+
+  function totalSupply() public view returns (uint256) {
+    return allTokens.length;
   }
 
   // The following functions are overrides required by Solidity.
@@ -32,7 +37,7 @@ contract ProjectFactory is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     address to,
     uint256 tokenId,
     uint256 batchSize
-  ) internal override(ERC721, ERC721Enumerable) {
+  ) internal override(ERC721) {
     super._beforeTokenTransfer(from, to, tokenId, batchSize);
   }
 
@@ -44,7 +49,7 @@ contract ProjectFactory is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     return super.tokenURI(tokenId);
   }
 
-  function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721Enumerable) returns (bool) {
+  function supportsInterface(bytes4 interfaceId) public view override(ERC721) returns (bool) {
     return super.supportsInterface(interfaceId);
   }
 }
