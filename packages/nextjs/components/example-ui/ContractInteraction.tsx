@@ -7,13 +7,12 @@ import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
 export const ContractInteraction = () => {
   const [visible, setVisible] = useState(true);
-  const [newGreeting, setNewGreeting] = useState("");
+  const [toAddress, setToAddress] = useState("");
 
   const { writeAsync, isLoading } = useScaffoldContractWrite({
-    contractName: "YourContract",
-    functionName: "setGreeting",
-    args: [newGreeting],
-    value: "0.01",
+    contractName: "ProjectFactory",
+    functionName: "safeMint",
+    args: [toAddress, ""],
   });
 
   return (
@@ -55,7 +54,7 @@ export const ContractInteraction = () => {
               type="text"
               placeholder="Write your greeting here"
               className="input font-bai-jamjuree w-full px-5 bg-[url('/assets/gradient-bg.png')] bg-[length:100%_100%] border border-primary text-lg sm:text-2xl placeholder-white uppercase"
-              onChange={e => setNewGreeting(e.target.value)}
+              onChange={e => setToAddress(e.target.value)}
             />
             <div className="flex rounded-full border border-primary p-1 flex-shrink-0">
               <div className="flex rounded-full border-2 border-primary p-1">

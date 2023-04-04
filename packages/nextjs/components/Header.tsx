@@ -2,8 +2,8 @@ import React, { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useDarkMode } from "usehooks-ts";
-import { Bars3Icon, BugAntIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import logo_black_bg from "../public/logo/logo_black_bg_512.svg";
+import { Bars3Icon, BugAntIcon, HomeIcon, NewspaperIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 
@@ -28,7 +28,6 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
  * Site header
  */
 export const Header = () => {
-  const { isDarkMode } = useDarkMode(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const burgerMenuRef = useRef<HTMLDivElement>(null);
   useOutsideClick(
@@ -39,18 +38,27 @@ export const Header = () => {
   const navLinks = (
     <>
       <li>
-        <NavLink href="/">Home</NavLink>
+        <NavLink href="/example-ui">
+          <HomeIcon className="h-4 w-4" />
+          Example
+        </NavLink>
       </li>
       <li>
         <NavLink href="/debug">
           <BugAntIcon className="h-4 w-4" />
-          Debug Contracts
+          Debug
         </NavLink>
       </li>
       <li>
-        <NavLink href="/example-ui">
+        <NavLink href="/product-nft">
+          <NewspaperIcon className="h-4 w-4" />
+          Products
+        </NavLink>
+      </li>
+      <li>
+        <NavLink href="/memory-nft">
           <SparklesIcon className="h-4 w-4" />
-          Example UI
+          Memories
         </NavLink>
       </li>
     </>
@@ -82,13 +90,7 @@ export const Header = () => {
         </div>
         <div className="hidden lg:flex items-center gap-2 ml-4 mr-6">
           <Link href="/" passHref className="flex relative w-10 h-10">
-            <Image
-              alt="POEP logo"
-              height={36}
-              width={36}
-              className="cursor-pointer"
-              src={isDarkMode ? "/logo/logo_white_bg_512.svg" : "/logo/logo_black_bg_512.svg"}
-            />
+            <Image alt="POEP logo" height={36} width={36} className="cursor-pointer" src={logo_black_bg} />
           </Link>
           <div className="flex flex-col">
             <span className="font-bold leading-tight">POEP</span>

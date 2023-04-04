@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ethers } from "ethers";
 import Marquee from "react-fast-marquee";
 import { useAnimationConfig, useScaffoldContractRead, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
 
@@ -12,27 +13,27 @@ export const ContractData = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const greetingRef = useRef<HTMLDivElement>(null);
 
-  const { data: totalCounter } = useScaffoldContractRead({
-    contractName: "YourContract",
-    functionName: "totalCounter",
+  const { data: symbol } = useScaffoldContractRead({
+    contractName: "ProjectFactory",
+    functionName: "symbol",
   });
 
-  const { data: currentGreeting, isLoading: isGreetingLoading } = useScaffoldContractRead({
-    contractName: "YourContract",
-    functionName: "greeting",
+  const { data: currentTotalSupply, isLoading: isTotalSupplyLoading } = useScaffoldContractRead({
+    contractName: "ProjectFactory",
+    functionName: "totalSupply",
   });
 
   useScaffoldEventSubscriber({
-    contractName: "YourContract",
-    eventName: "GreetingChange",
-    listener: (greetingSetter, newGreeting, premium, value) => {
-      console.log(greetingSetter, newGreeting, premium, value);
+    contractName: "ProjectFactory",
+    eventName: "Transfer",
+    listener: (from, to, tokenId) => {
+      console.log(from, to, tokenId);
     },
   });
 
-  const { showAnimation } = useAnimationConfig(totalCounter);
+  const { showAnimation } = useAnimationConfig(currentTotalSupply);
 
-  const showTransition = transitionEnabled && !!currentGreeting && !isGreetingLoading;
+  const showTransition = transitionEnabled && !!currentTotalSupply && !isTotalSupplyLoading;
 
   useEffect(() => {
     if (transitionEnabled && containerRef.current && greetingRef.current) {
@@ -40,7 +41,10 @@ export const ContractData = () => {
         Math.max(greetingRef.current.clientWidth, containerRef.current.clientWidth) / MARQUEE_PERIOD_IN_SEC,
       );
     }
-  }, [transitionEnabled, containerRef, greetingRef]);
+    if (currentTotalSupply) {
+      console.log(parseInt(ethers.utils.formatEther(currentTotalSupply)));
+    }
+  }, [transitionEnabled, containerRef, currentTotalSupply, greetingRef]);
 
   return (
     <div className="flex flex-col justify-center items-center bg-[url('/assets/gradient-bg.png')] bg-[length:100%_100%] py-10 px-5 sm:px-0 lg:py-auto max-w-[100vw] ">
@@ -65,7 +69,7 @@ export const ContractData = () => {
           <div className="bg-secondary border border-primary rounded-xl flex">
             <div className="p-2 py-1 border-r border-primary flex items-end">Total count</div>
             <div className="text-4xl text-right min-w-[3rem] px-2 py-1 flex justify-end font-bai-jamjuree">
-              {totalCounter?.toString() || "0"}
+              {symbol || "LOADING..."}
             </div>
           </div>
         </div>
@@ -74,7 +78,7 @@ export const ContractData = () => {
           <div className="relative overflow-x-hidden" ref={containerRef}>
             {/* for speed calculating purposes */}
             <div className="absolute -left-[9999rem]" ref={greetingRef}>
-              <div className="px-4">{currentGreeting}</div>
+              <div className="px-4">{symbol}</div>
             </div>
             {new Array(3).fill("").map((_, i) => {
               const isLineRightDirection = i % 2 ? isRightDirection : !isRightDirection;
@@ -87,7 +91,9 @@ export const ContractData = () => {
                   speed={marqueeSpeed}
                   className={i % 2 ? "-my-10" : ""}
                 >
-                  <div className="px-4">{currentGreeting || " "}</div>
+                  <div className="px-4">
+                    {currentTotalSupply ? parseInt(ethers.utils.formatEther(currentTotalSupply)) : "LOL"}
+                  </div>
                 </Marquee>
               );
             })}

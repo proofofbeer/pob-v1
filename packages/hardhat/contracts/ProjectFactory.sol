@@ -11,12 +11,12 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract ProductFactory is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
+contract ProjectFactory is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
   using Counters for Counters.Counter;
 
   Counters.Counter private _tokenIdCounter;
 
-  constructor() ERC721("Product NFT", "PRODUCT") {}
+  constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
 
   function safeMint(address to, string memory uri) public {
     uint256 tokenId = _tokenIdCounter.current();

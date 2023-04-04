@@ -39,10 +39,10 @@ const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
             <link rel="manifest" href="site.webmanifest" />
           </Head>
           <Header />
-          <main className="relative flex flex-col flex-1">
+          <main>
             <Component {...pageProps} />
+            <Footer />
           </main>
-          <Footer />
         </div>
         <Toaster />
       </RainbowKitProvider>
