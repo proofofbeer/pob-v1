@@ -12,12 +12,13 @@ const getInputKey = (input: TInputsArrayElement, inputIndex: number): string => 
   return name + "_" + input.type + `_${inputIndex}`;
 };
 
-const getInitialFormState = (inputs: TInputsArrayElement[]) => {
+const getInitialFormState = (inputs: TInputsArrayElement[], fileInputKey: string) => {
   const initialForm: Record<string, any> = {};
   inputs.forEach((input: TInputsArrayElement, inputIndex: number) => {
     const key = getInputKey(input, inputIndex);
-    initialForm[key] = "";
+    initialForm[key] = undefined;
   });
+  initialForm[fileInputKey] = undefined;
   return initialForm;
 };
 
@@ -46,7 +47,8 @@ const inputsArray: TInputsArrayElement[] = [
 const ProductDashboard = () => {
   const { chain } = useNetwork();
   const { data: signer } = useSigner();
-  const [form, setForm] = useState<Record<string, any>>(() => getInitialFormState(inputsArray));
+  const fileInputKey = "product_nft_file";
+  const [form, setForm] = useState<Record<string, any>>(() => getInitialFormState(inputsArray, fileInputKey));
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const writeDisabled = !chain || chain?.id !== getTargetNetwork().id;
 
@@ -55,7 +57,7 @@ const ProductDashboard = () => {
     const key = getInputKey(input, inputIndex);
     return (
       <div className="w-full mb-2 lg:mb-4" key={key}>
-        <p className="font-medium break-words m-1">{input.label}</p>
+        <p className="font-medium break-words mb-1 ml-2">{input.label}</p>
         <ContractInput
           setForm={updatedFormValue => {
             setForm(updatedFormValue);
@@ -69,6 +71,7 @@ const ProductDashboard = () => {
   });
 
   const onSubmitHandler = async (event: any) => {
+    console.log(form);
     setIsLoading(true);
     try {
       event?.preventDefault();
@@ -101,7 +104,7 @@ const ProductDashboard = () => {
           <div className="w-full flex items-center justify-center px-2 md:px-0 py-4 lg:py-8">
             <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-4/5 px-6 lg:px-16 py-4 lg:py-8">
               <h3 className="mb-4 text-2xl font-medium text-left px-4">NFT Contract Details</h3>
-              <FileInput />
+              <FileInput setForm={setForm} form={form} stateObjectKey={fileInputKey} />
               {inputElements}
               <div
                 className={`flex justify-center w-full my-4 lg:mt-8 ${

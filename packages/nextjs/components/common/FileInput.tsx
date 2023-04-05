@@ -1,23 +1,73 @@
-import { useCallback } from "react";
+import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
+import { CloudArrowUpIcon, PencilIcon } from "@heroicons/react/24/outline";
 
-const FileInput = () => {
-  const onDrop = useCallback((acceptedFiles: any) => console.log(acceptedFiles), []);
+type TFileType = {
+  path: string;
+  lastModified: number;
+  lastModifiedDate: Date;
+  name: string;
+  size: number;
+  type: string;
+  webkitRelativePath: string;
+};
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+type FileInputProps = {
+  setForm: Dispatch<SetStateAction<Record<string, any>>>;
+  form: Record<string, any>;
+  stateObjectKey: string;
+};
+
+const FileInput = ({ setForm, stateObjectKey }: FileInputProps) => {
+  const [file, setFile] = useState<TFileType[]>([]);
+  const [modifier, setModifier] = useState<string>("md:py-4");
+
+  const handleFile = (selectedFile: any) => {
+    console.log(selectedFile);
+    setFile(selectedFile);
+    setForm(form => ({ ...form, [stateObjectKey]: selectedFile }));
+    setModifier("md:py-1");
+  };
+
+  const onDrop = useCallback(handleFile, [setForm, stateObjectKey]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, maxFiles: 1 });
 
   return (
     <div className="flex flex-col items-start justify-center w-full mb-2 lg:mb-4" {...getRootProps()}>
-      <label className="flex flex-col items-center justify-center w-full border-2 border-base-300 border-dashed bg-base-200 rounded-lg text-accent cursor-pointer hover:bg-gray-100 dark:hover:border-accent dark:hover:bg-base-300 dark:hover:bg-opacity-30 py-5">
-        <div className="flex items-center justify-center">
-          <CloudArrowUpIcon className="h-8 w-8 mr-2" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {isDragActive ? "Drop the files here ..." : "Drag and drop some files here, or click to select files"}
-          </p>
-          <input id="dropzone-file" type="file" {...getInputProps()} />
+      <p className="font-medium break-words mb-1 ml-2">Image</p>
+      {file.length === 0 ? (
+        <label
+          className={`flex flex-col items-center justify-center w-full border-2 border-base-300 border-dashed bg-base-200 rounded-lg text-accent cursor-pointer hover:bg-gray-100 dark:hover:border-accent dark:hover:bg-base-300 dark:hover:bg-opacity-30 py-2 ${modifier}`}
+        >
+          <div className="flex flex-col md:flex-row items-center justify-center">
+            <>
+              <CloudArrowUpIcon className="h-8 w-8 mr-2" />
+              {isDragActive ? (
+                <p className="text-accent/50 font-medium text-center">Drop the files here ...</p>
+              ) : (
+                <p className="text-accent/50 font-medium text-center">
+                  Drag and drop or <br className="md:hidden" />
+                  click to select files
+                </p>
+              )}
+
+              <input
+                className={file.length > 0 ? "hidden" : ""}
+                name={stateObjectKey}
+                id={stateObjectKey}
+                type="file"
+                {...getInputProps()}
+              />
+            </>
+          </div>
+        </label>
+      ) : (
+        <div className="flex items-center justify-center w-full border-2 border-base-300 border-dashed bg-base-200 rounded-lg text-accent cursor-pointer hover:bg-gray-100 dark:hover:border-accent dark:hover:bg-base-300 dark:hover:bg-opacity-30 py-2 md:py-5 relative">
+          <p className="text-accent/50 font-medium">{file[0].name}</p>
+          <PencilIcon className="h-4 w-4 right-0 absolute mr-6" />
         </div>
-      </label>
+      )}
     </div>
   );
 };
