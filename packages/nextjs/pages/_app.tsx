@@ -29,7 +29,7 @@ const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
     <WagmiConfig client={wagmiClient}>
       <NextNProgress />
       <RainbowKitProvider chains={appChains.chains} avatar={BlockieAvatar}>
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen overflow-hidden">
           <Head>
             <title>POEP | Proof of Experience Protocol</title>
             <meta name="description" content="Unlock your Memories with a digital Proof of Experience" />

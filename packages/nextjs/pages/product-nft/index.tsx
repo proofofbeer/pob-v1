@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import { ProductFactoryContract } from "./Contract";
 import { ContractFactory } from "ethers";
 import toast from "react-hot-toast";
@@ -51,7 +50,7 @@ const ProductDashboard = () => {
   const fileInputKey = "product_nft_file";
   const [form, setForm] = useState<Record<string, any>>(() => getInitialFormState(inputsArray, fileInputKey));
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showPreview, setShowPreview] = useState<boolean>(false);
+  const [step, setStep] = useState<number>(1);
   const writeDisabled = !chain || chain?.id !== getTargetNetwork().id;
 
   // TODO: implement useMemo for optimization ?
@@ -81,6 +80,7 @@ const ProductDashboard = () => {
 
   const onSubmitHandler = async (event: any) => {
     console.log(form);
+    console.log(previewImage);
     setIsLoading(true);
     try {
       event?.preventDefault();
@@ -105,49 +105,131 @@ const ProductDashboard = () => {
     setIsLoading(false);
   };
 
+  const stepCard = () => {
+    switch (step) {
+      case 1:
+        return <StepCard_1 />;
+      case 2:
+        return <StepCard_2 />;
+      case 3:
+        return <StepCard_3 />;
+      case 4:
+        return <StepCard_4 />;
+
+      default:
+        return <h1>No project match</h1>;
+    }
+  };
+
+  type TNavButtonsProps = {
+    showSubmit: boolean;
+  };
+
+  const NavButtons = ({ showSubmit }: TNavButtonsProps) => (
+    <div className="w-full flex flex-col mt-8 ">
+      {showSubmit && (
+        <div className="w-full flex items-center justify-center mb-4">
+          <button
+            className={`btn btn-secondary btn-md w-2/5 ${isLoading ? "loading" : ""}`}
+            disabled={writeDisabled || step === 1}
+            onClick={onSubmitHandler}
+          >
+            Deploy 🚀
+          </button>
+        </div>
+      )}
+      <div
+        className={`flex justify-between w-full my-4 ${
+          writeDisabled &&
+          "tooltip before:content-[attr(data-tip)] before:right-[-10px] before:left-auto before:transform-none"
+        }`}
+        data-tip={`${writeDisabled && "Wallet not connected or in the wrong network"}`}
+      >
+        <button
+          className={`btn btn-secondary btn-md w-2/5 ${isLoading ? "loading" : ""}`}
+          disabled={writeDisabled || step === 1}
+          onClick={() => {
+            if (step > 1) {
+              setStep(step - 1);
+            } else {
+              return null;
+            }
+          }}
+        >
+          Previous
+        </button>
+        <button
+          className={`btn btn-secondary btn-md w-2/5 ${isLoading ? "loading" : ""}`}
+          disabled={writeDisabled || step === 4}
+          onClick={() => {
+            if (step < 4) {
+              setStep(step + 1);
+            } else {
+              return null;
+            }
+          }}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+
+  const StepCard_1 = () => (
+    <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-3/5 lg:w-1/2 px-6 lg:px-16 py-4 lg:py-8">
+      <h3 className="mb-4 text-2xl font-medium text-left px-4">NFT Contract Details</h3>
+      <FileInput setForm={setForm} form={form} stateObjectKey={fileInputKey} />
+      {inputElements}
+      <NavButtons showSubmit={false} />
+    </div>
+  );
+
+  const StepCard_2 = () => (
+    <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-3/5 lg:w-1/2 px-6 lg:px-16 py-4 lg:py-8">
+      <h3 className="mb-4 text-2xl font-medium text-left px-4">NFT Metadata</h3>
+      <FileInput setForm={setForm} form={form} stateObjectKey={fileInputKey} />
+      {inputElements}
+      <NavButtons showSubmit={false} />
+    </div>
+  );
+
+  const StepCard_3 = () => (
+    <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-3/5 lg:w-1/2 px-6 lg:px-16 py-4 lg:py-8">
+      <h3 className="mb-4 text-2xl font-medium text-left px-4">Mint Conditions</h3>
+      <FileInput setForm={setForm} form={form} stateObjectKey={fileInputKey} />
+      {inputElements}
+      <NavButtons showSubmit={false} />
+    </div>
+  );
+
+  const StepCard_4 = () => (
+    <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-3/5 lg:w-1/2 px-6 lg:px-16 py-4 lg:py-8">
+      <h3 className="mb-4 text-2xl font-medium text-left px-4">NFT Preview</h3>
+      <FileInput setForm={setForm} form={form} stateObjectKey={fileInputKey} />
+      {inputElements}
+      <NavButtons showSubmit={true} />
+    </div>
+  );
+
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
       <h1 className="text-4xl font-semibold text-center">Create NFT Factory</h1>
       <div className="w-full h-full">
-        <div className="w-full grid md:grid-cols-2">
-          <div className="w-full flex items-center justify-center px-2 md:px-0 py-4 lg:py-8">
-            <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-4/5 px-6 lg:px-16 py-4 lg:py-8">
-              <h3 className="mb-4 text-2xl font-medium text-left px-4">NFT Contract Details</h3>
-              <FileInput setForm={setForm} form={form} stateObjectKey={fileInputKey} />
-              {inputElements}
-              <div
-                className={`flex justify-center w-full my-4 lg:mt-8 ${
-                  writeDisabled &&
-                  "tooltip before:content-[attr(data-tip)] before:right-[-10px] before:left-auto before:transform-none"
-                }`}
-                data-tip={`${writeDisabled && "Wallet not connected or in the wrong network"}`}
-              >
-                <button
-                  className={`btn btn-secondary btn-md w-2/5 ${isLoading ? "loading" : ""}`}
-                  disabled={writeDisabled}
-                  onClick={onSubmitHandler}
-                >
-                  Deploy 🚀
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="w-full order-first md:order-last flex items-center justify-center px-2 md:px-0 py-4 lg:py-8">
-            {/* <h4 className="text-xl text-left ml-2">Vista Previa</h4> */}
-            <div
-              tabIndex={0}
-              className="collapse collapse-arrow bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-4/5 px-6 lg:px-16 py-4 lg:py-8"
-            >
-              <input className="min-h-0" type="checkbox" onChange={() => setShowPreview(!showPreview)} />
-              <h3 className="collapse-title text-2xl text-left pl-4 py-0 min-h-0 font-medium">Vista Previa</h3>
-              <div
-                className={`w-full collapse-content flex flex-col items-center justify-center ${
-                  showPreview ? "visible" : "hidden"
-                }`}
-              >
-                {previewImage && (
-                  <Image className="m-6" src={previewImage} alt="Your NFT image preview" width={256} height={256} />
-                )}
+        <div className="w-full flex justify-center mt-8 mb-2 mx-0">
+          <ul className="steps w-full md:w-3/5 lg:w-1/2">
+            <li className={`step ${step > 0 ? "step-accent" : ""}`}>Contract</li>
+            <li className={`step ${step > 1 ? "step-accent" : ""}`}>Metadata</li>
+            <li className={`step ${step > 2 ? "step-accent" : ""}`}>Conditions</li>
+            <li className={`step ${step > 3 ? "step-accent" : ""}`}>Preview</li>
+          </ul>
+        </div>
+        <div className="w-full flex flex-col items-center justify-center px-2 lg:px-0 py-4 lg:py-8">
+          {stepCard()}
+          {/* <div className="w-full hidden order-last md:flex md_flex-col md:items-start md:justify-center px-2 lg:px-0 py-4 lg:py-8">
+            <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full lg:w-4/5 px-6 lg:px-16 py-4 lg:py-8">
+              <h3 className="mb-4 text-2xl font-medium text-left px-4">Vista Previa</h3>
+              <div className="w-fullflex flex-col items-center justify-center">
+                <ImgPlaceholder previewImage={previewImage} />
                 {inputsArray.map((input: any, inputIndex: number) => {
                   const key = getInputKey(input, inputIndex);
                   console.log(input.name);
@@ -175,7 +257,7 @@ const ProductDashboard = () => {
                 })}
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

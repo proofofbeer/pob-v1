@@ -15,8 +15,7 @@ h4 {
 }
 
 main {
-  height: auto;
-  overflow-y: scroll;
+  min-height: calc(100svh - 64px);
 }
 
 .btn {

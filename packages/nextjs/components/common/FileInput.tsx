@@ -26,12 +26,9 @@ const FileInput = ({ setForm, stateObjectKey }: FileInputProps) => {
     if (selectedFile.length > 0) {
       const fr = new FileReader();
       fr.onload = () => {
-        console.log(fr.result);
         setForm(form => ({ ...form, [stateObjectKey]: fr.result }));
         // document.getElementById(outImage).src = fr.result;
       };
-      const imgAsArrayBuffer = fr.readAsArrayBuffer(selectedFile[0]);
-      console.log(imgAsArrayBuffer);
       setFile(selectedFile);
     }
   };
@@ -52,7 +49,7 @@ const FileInput = ({ setForm, stateObjectKey }: FileInputProps) => {
                 <p className="text-accent/50 font-medium text-center">Drop the files here ...</p>
               ) : (
                 <p className="text-accent/50 font-medium text-center">
-                  Drag and drop or <br className="md:hidden" />
+                  Drag and drop or <br className="lg:hidden" />
                   click to select files
                 </p>
               )}
