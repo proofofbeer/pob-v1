@@ -16,17 +16,12 @@ h1,
 h2,
 h3,
 h4 {
-  margin-bottom: 0.5rem;
-  line-height: 1;
+  line-height: 1.25;
 }
 
 main {
   height: calc(100vh - 56px);
   overflow-y: scroll;
-}
-
-p {
-  margin: 1rem 0;
 }
 
 .btn {
