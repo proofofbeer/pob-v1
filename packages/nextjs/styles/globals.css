@@ -7,11 +7,6 @@
   background: hsl(var(--b2));
 }
 
-body {
-  height: 100vh;
-  overflow-y: none;
-}
-
 h1,
 h2,
 h3,
@@ -20,7 +15,7 @@ h4 {
 }
 
 main {
-  height: calc(100vh - 56px);
+  height: auto;
   overflow-y: scroll;
 }
 

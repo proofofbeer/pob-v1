@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import Image from "next/image";
 import { ProductFactoryContract } from "./Contract";
 import { ContractFactory } from "ethers";
 import toast from "react-hot-toast";
@@ -16,7 +17,7 @@ const getInitialFormState = (inputs: TInputsArrayElement[], fileInputKey: string
   const initialForm: Record<string, any> = {};
   inputs.forEach((input: TInputsArrayElement, inputIndex: number) => {
     const key = getInputKey(input, inputIndex);
-    initialForm[key] = undefined;
+    initialForm[key] = "";
   });
   initialForm[fileInputKey] = undefined;
   return initialForm;
@@ -50,6 +51,7 @@ const ProductDashboard = () => {
   const fileInputKey = "product_nft_file";
   const [form, setForm] = useState<Record<string, any>>(() => getInitialFormState(inputsArray, fileInputKey));
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showPreview, setShowPreview] = useState<boolean>(false);
   const writeDisabled = !chain || chain?.id !== getTargetNetwork().id;
 
   // TODO: implement useMemo for optimization ?
@@ -69,6 +71,13 @@ const ProductDashboard = () => {
       </div>
     );
   });
+
+  const previewImage = useMemo(() => {
+    if (form[fileInputKey]) {
+      return URL.createObjectURL(new Blob([form[fileInputKey]]));
+    }
+    return null;
+  }, [form]);
 
   const onSubmitHandler = async (event: any) => {
     console.log(form);
@@ -97,7 +106,7 @@ const ProductDashboard = () => {
   };
 
   return (
-    <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center h-full">
+    <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
       <h1 className="text-4xl font-semibold text-center">Create NFT Factory</h1>
       <div className="w-full h-full">
         <div className="w-full grid md:grid-cols-2">
@@ -129,10 +138,41 @@ const ProductDashboard = () => {
               tabIndex={0}
               className="collapse collapse-arrow bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-4/5 px-6 lg:px-16 py-4 lg:py-8"
             >
-              <input className="min-h-0" type="checkbox" />
+              <input className="min-h-0" type="checkbox" onChange={() => setShowPreview(!showPreview)} />
               <h3 className="collapse-title text-2xl text-left pl-4 py-0 min-h-0 font-medium">Vista Previa</h3>
-              <div className="collapse-content">
-                <p>tabIndex={0} attribute is necessary to make the div focusable</p>
+              <div
+                className={`w-full collapse-content flex flex-col items-center justify-center ${
+                  showPreview ? "visible" : "hidden"
+                }`}
+              >
+                {previewImage && (
+                  <Image className="m-6" src={previewImage} alt="Your NFT image preview" width={256} height={256} />
+                )}
+                {inputsArray.map((input: any, inputIndex: number) => {
+                  const key = getInputKey(input, inputIndex);
+                  console.log(input.name);
+                  if (!form[key]) {
+                    console.log(form);
+                    console.log("woops");
+                    return null;
+                  }
+                  return (
+                    <>
+                      <p className="font-medium break-words mb-1 ml-2">{input.label}</p>
+                      <div
+                        className="w-full flex border-2 border-base-100 bg-base-100 rounded-md text-accent"
+                        key={`preview_${input.name}_${inputIndex}`}
+                      >
+                        <input
+                          className="input input-ghost bg-transparent border-2 rounded-md focus:text-gray-400 h-[2.2rem] min-h-[2.2rem] px-4 w-full font-medium placeholder:text-accent/50 text-gray-400 disabled:text-white text-center"
+                          name={`preview_${input.name}`}
+                          value={form[key]}
+                          disabled
+                        />
+                      </div>
+                    </>
+                  );
+                })}
               </div>
             </div>
           </div>

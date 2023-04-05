@@ -41,8 +41,8 @@ const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
           <Header />
           <main>
             <Component {...pageProps} />
-            <Footer />
           </main>
+          <Footer />
         </div>
         <Toaster />
       </RainbowKitProvider>
