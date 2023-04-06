@@ -4,6 +4,7 @@ import { ContractFactory } from "ethers";
 import toast from "react-hot-toast";
 import { useNetwork, useSigner } from "wagmi";
 import FileInput from "~~/components/common/FileInput";
+import MetadataFormCard from "~~/components/product-nft/step-cards/MetadataFormCard";
 import { ContractInput } from "~~/components/scaffold-eth";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
@@ -16,6 +17,8 @@ const getInitialFormState = (inputs: TInputsArrayElement[], fileInputKey: string
   const initialForm: Record<string, any> = {};
   inputs.forEach((input: TInputsArrayElement, inputIndex: number) => {
     const key = getInputKey(input, inputIndex);
+    // Should this be undefined? I changed it from se-2 but I don't remember exactly why. Might be because of the value/defaultValue requirements by React
+    // Repeated implementation in components/product-nft/setp-cards/MetadataFormCard.tsx
     initialForm[key] = "";
   });
   initialForm[fileInputKey] = undefined;
@@ -105,19 +108,28 @@ const ProductDashboard = () => {
     setIsLoading(false);
   };
 
-  const stepCard = () => {
+  const stepCards = () => {
     switch (step) {
       case 1:
         return <StepCard_1 />;
       case 2:
-        return <StepCard_2 />;
+        return (
+          <MetadataFormCard
+            form={form}
+            isLoading={isLoading}
+            onSubmitHandler={() => null}
+            setForm={setForm}
+            setStep={setStep}
+            showSubmit={false}
+            step={step}
+            writeDisabled={writeDisabled}
+          />
+        );
       case 3:
         return <StepCard_3 />;
-      case 4:
-        return <StepCard_4 />;
 
       default:
-        return <h1>No project match</h1>;
+        return <StepCard_1 />;
     }
   };
 
@@ -131,7 +143,7 @@ const ProductDashboard = () => {
         <div className="w-full flex items-center justify-center mb-4">
           <button
             className={`btn btn-secondary btn-md w-2/5 ${isLoading ? "loading" : ""}`}
-            disabled={writeDisabled || step === 1}
+            disabled={writeDisabled || step !== 3}
             onClick={onSubmitHandler}
           >
             Deploy 🚀
@@ -160,9 +172,9 @@ const ProductDashboard = () => {
         </button>
         <button
           className={`btn btn-secondary btn-md w-2/5 ${isLoading ? "loading" : ""}`}
-          disabled={writeDisabled || step === 4}
+          disabled={writeDisabled || step === 3}
           onClick={() => {
-            if (step < 4) {
+            if (step < 3) {
               setStep(step + 1);
             } else {
               return null;
@@ -184,27 +196,9 @@ const ProductDashboard = () => {
     </div>
   );
 
-  const StepCard_2 = () => (
-    <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-3/5 lg:w-1/2 px-6 lg:px-16 py-4 lg:py-8">
-      <h3 className="mb-4 text-2xl font-medium text-left px-4">NFT Metadata</h3>
-      <FileInput setForm={setForm} form={form} stateObjectKey={fileInputKey} />
-      {inputElements}
-      <NavButtons showSubmit={false} />
-    </div>
-  );
-
   const StepCard_3 = () => (
     <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-3/5 lg:w-1/2 px-6 lg:px-16 py-4 lg:py-8">
       <h3 className="mb-4 text-2xl font-medium text-left px-4">Mint Conditions</h3>
-      <FileInput setForm={setForm} form={form} stateObjectKey={fileInputKey} />
-      {inputElements}
-      <NavButtons showSubmit={false} />
-    </div>
-  );
-
-  const StepCard_4 = () => (
-    <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-3/5 lg:w-1/2 px-6 lg:px-16 py-4 lg:py-8">
-      <h3 className="mb-4 text-2xl font-medium text-left px-4">NFT Preview</h3>
       <FileInput setForm={setForm} form={form} stateObjectKey={fileInputKey} />
       {inputElements}
       <NavButtons showSubmit={true} />
@@ -213,18 +207,23 @@ const ProductDashboard = () => {
 
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
-      <h1 className="text-4xl font-semibold text-center">Create NFT Factory</h1>
+      <h1 className="text-4xl font-semibold text-center">Draft your NFT</h1>
       <div className="w-full h-full">
         <div className="w-full flex justify-center mt-8 mb-2 mx-0">
           <ul className="steps w-full md:w-3/5 lg:w-1/2">
-            <li className={`step ${step > 0 ? "step-accent" : ""}`}>Contract</li>
-            <li className={`step ${step > 1 ? "step-accent" : ""}`}>Metadata</li>
-            <li className={`step ${step > 2 ? "step-accent" : ""}`}>Conditions</li>
-            <li className={`step ${step > 3 ? "step-accent" : ""}`}>Preview</li>
+            <li onClick={() => setStep(1)} className={`step ${step > 0 ? "step-accent" : ""}`}>
+              Contract
+            </li>
+            <li onClick={() => setStep(2)} className={`step ${step > 1 ? "step-accent" : ""}`}>
+              Metadata
+            </li>
+            <li onClick={() => setStep(3)} className={`step ${step > 2 ? "step-accent" : ""}`}>
+              Preview
+            </li>
           </ul>
         </div>
         <div className="w-full flex flex-col items-center justify-center px-2 lg:px-0 py-4 lg:py-8">
-          {stepCard()}
+          {stepCards()}
           {/* <div className="w-full hidden order-last md:flex md_flex-col md:items-start md:justify-center px-2 lg:px-0 py-4 lg:py-8">
             <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full lg:w-4/5 px-6 lg:px-16 py-4 lg:py-8">
               <h3 className="mb-4 text-2xl font-medium text-left px-4">Vista Previa</h3>
