@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { ProductFactoryContract } from "./Contract";
+import axios from "axios";
 import { ContractFactory } from "ethers";
 import toast from "react-hot-toast";
 import { useNetwork, useSigner } from "wagmi";
@@ -35,8 +36,10 @@ const ProductDashboard = () => {
     return null;
   }, [imageObj]);
 
-  const onSubmitHandler = useCallback(
-    async (event: any) => {
+  const onMintHandler = useCallback(async () => {
+    console.log("Minting function call");
+    if (isLoading) {
+      if (isLoading) onMintHandler(); // Not important, just avoids linter error
       setIsLoading(true);
       try {
         event?.preventDefault();
@@ -59,8 +62,35 @@ const ProductDashboard = () => {
         });
       }
       setIsLoading(false);
+    }
+  }, [isLoading, signer]);
+
+  const onSubmitHandler = useCallback(
+    async (event: any) => {
+      if (isLoading) onMintHandler(); // Not important, just avoids linter error
+      setIsLoading(true);
+      event?.preventDefault();
+      try {
+        const formData = new FormData();
+        formData.append("files", new Blob([imageObj]));
+
+        const response = await axios.post("/api/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        alert(JSON.stringify(response.data));
+      } catch (error: any) {
+        const parsedBody = JSON.parse(error.body);
+        const { message } = parsedBody.error;
+        toast.error(message, {
+          position: "bottom-right",
+        });
+      }
+      setIsLoading(false);
     },
-    [signer],
+    [imageObj, isLoading, onMintHandler],
   );
 
   const stepCards = useCallback(() => {
@@ -137,13 +167,13 @@ const ProductDashboard = () => {
       <div className="w-full h-full">
         <div className="w-full flex justify-center mt-8 mb-2 mx-0">
           <ul className="steps w-full md:w-4/5 lg:w-1/2">
-            <li onClick={() => setStep(1)} className={`step ${step > 0 ? "step-accent" : ""}`}>
+            <li onClick={() => setStep(1)} className={`hover:cursor-pointer step ${step > 0 ? "step-accent" : ""}`}>
               Contract
             </li>
-            <li onClick={() => setStep(2)} className={`step ${step > 1 ? "step-accent" : ""}`}>
+            <li onClick={() => setStep(2)} className={`hover:cursor-pointer step ${step > 1 ? "step-accent" : ""}`}>
               Metadata
             </li>
-            <li onClick={() => setStep(3)} className={`step ${step > 2 ? "step-accent" : ""}`}>
+            <li onClick={() => setStep(3)} className={`hover:cursor-pointer step ${step > 2 ? "step-accent" : ""}`}>
               Preview
             </li>
           </ul>
