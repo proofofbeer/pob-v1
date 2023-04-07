@@ -13,34 +13,35 @@ type TFileType = {
 };
 
 type FileInputProps = {
-  setForm: Dispatch<SetStateAction<Record<string, any>>>;
-  form: Record<string, any>;
+  setImgObj: Dispatch<SetStateAction<any>>;
   stateObjectKey: string;
+  stateFileNameKey: string;
 };
 
-const FileInput = ({ setForm, stateObjectKey }: FileInputProps) => {
+const FileInput = ({ setImgObj, stateObjectKey }: FileInputProps) => {
   const [file, setFile] = useState<TFileType[]>([]);
 
   const handleFile = (selectedFile: any[]) => {
-    console.log(selectedFile);
     if (selectedFile.length > 0) {
-      const fr = new FileReader();
-      fr.onload = () => {
-        setForm(form => ({ ...form, [stateObjectKey]: fr.result }));
-        // document.getElementById(outImage).src = fr.result;
+      const reader = new FileReader();
+      reader.onabort = () => console.log("file reading was aborted");
+      reader.onerror = () => console.log("file reading has failed");
+      reader.onload = () => {
+        setImgObj(reader.result);
+        setFile(selectedFile);
       };
-      setFile(selectedFile);
+      reader.readAsArrayBuffer(selectedFile[0]);
     }
   };
 
-  const onDrop = useCallback(handleFile, [setForm, stateObjectKey]);
+  const onDrop = useCallback(handleFile, [setImgObj]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, maxFiles: 1 });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   return (
     <div className="flex flex-col items-start justify-center w-full mb-2 lg:mb-4" {...getRootProps()}>
       <p className="font-medium break-words mb-1 ml-2">Image</p>
-      {file.length === 0 ? (
+      {file.length < 1 ? (
         <label className="flex flex-col items-center justify-center w-full border-2 border-base-300 border-dashed bg-base-200 rounded-lg text-accent cursor-pointer hover:bg-gray-100 dark:hover:border-accent dark:hover:bg-base-300 dark:hover:bg-opacity-30 py-2">
           <div className="flex flex-col md:flex-row items-center justify-center">
             <>

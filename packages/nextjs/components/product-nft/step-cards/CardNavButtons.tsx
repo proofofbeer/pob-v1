@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction } from "react";
 
 type TNavButtonsProps = {
   isLoading: boolean;
-  onSubmitHandler: () => void;
+  onSubmitHandler: (event: any) => Promise<void>;
   showSubmit: boolean;
   step: number;
   setStep: Dispatch<SetStateAction<number>>;
@@ -14,11 +14,13 @@ const CardNavButtons = ({ isLoading, onSubmitHandler, showSubmit, setStep, step,
     {showSubmit && (
       <div className="w-full flex items-center justify-center mb-4">
         <button
-          className={`btn btn-secondary btn-md w-2/5 ${isLoading ? "loading" : ""}`}
-          disabled={writeDisabled || step !== 4}
+          className={`btn bg-primary border-primary-focus border-2 text-gray-900 dark:text-slate-200 btn-lg md:btn-md w-3/5 md:w-1/2 ${
+            isLoading ? "loading" : ""
+          }`}
+          disabled={writeDisabled || step !== 3 || isLoading}
           onClick={onSubmitHandler}
         >
-          Deploy 🚀
+          Create Template 🔥
         </button>
       </div>
     )}
@@ -30,7 +32,7 @@ const CardNavButtons = ({ isLoading, onSubmitHandler, showSubmit, setStep, step,
       data-tip={`${writeDisabled && "Wallet not connected or in the wrong network"}`}
     >
       <button
-        className={`btn btn-secondary btn-md w-2/5 ${isLoading ? "loading" : ""}`}
+        className={`btn btn-secondary btn-md w-2/5 md:w-1/4 ${isLoading ? "loading" : ""}`}
         disabled={writeDisabled || step === 1}
         onClick={() => {
           if (step > 1) {
@@ -43,10 +45,10 @@ const CardNavButtons = ({ isLoading, onSubmitHandler, showSubmit, setStep, step,
         Previous
       </button>
       <button
-        className={`btn btn-secondary btn-md w-2/5 ${isLoading ? "loading" : ""}`}
-        disabled={writeDisabled || step === 4}
+        className={`btn btn-secondary btn-md w-2/5 md:w-1/4 ${isLoading ? "loading" : ""}`}
+        disabled={writeDisabled || step === 3}
         onClick={() => {
-          if (step < 4) {
+          if (step < 3) {
             setStep(step + 1);
           } else {
             return null;

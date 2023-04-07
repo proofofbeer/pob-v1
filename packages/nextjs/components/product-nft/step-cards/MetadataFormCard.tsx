@@ -5,9 +5,11 @@ import { TrashIcon } from "@heroicons/react/24/outline";
 import { ContractInput } from "~~/components/scaffold-eth";
 
 type TFormCardProps = {
+  attributesForm: Record<string, any>;
   form: Record<string, any>;
   isLoading: boolean;
-  onSubmitHandler: () => void;
+  onSubmitHandler: (event: any) => Promise<void>;
+  setAttributesForm: Dispatch<SetStateAction<Record<string, any>>>;
   setForm: Dispatch<SetStateAction<Record<string, any>>>;
   setStep: Dispatch<SetStateAction<number>>;
   showSubmit: boolean;
@@ -16,9 +18,11 @@ type TFormCardProps = {
 };
 
 const MetadataFormCard = ({
+  attributesForm,
   form,
   isLoading,
   onSubmitHandler,
+  setAttributesForm,
   setForm,
   setStep,
   showSubmit,
@@ -26,7 +30,6 @@ const MetadataFormCard = ({
   writeDisabled,
 }: TFormCardProps) => {
   const [attributesInputsArray, setAttributesInputsArray] = useState<TInputsArrayElement[]>([]);
-  const [attributesForm, setAttributesForm] = useState<Record<string, any>>({});
 
   const inputElements = metadataInputsArray.map((input: any, inputIndex: number) => {
     const key = getInputKey(input, inputIndex);
@@ -101,17 +104,12 @@ const MetadataFormCard = ({
   };
 
   return (
-    <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-3/5 lg:w-1/2 px-6 lg:px-16 py-4 lg:py-8">
+    <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-4/5 lg:w-3/5 xl:w-1/2 px-6 md:px-16 py-4 md:py-8">
       <h3 className="mb-4 text-2xl font-medium text-left px-4">NFT Metadata</h3>
       {inputElements}
-      <div className="w-full flex items-center justify-center my-8">
-        <button className="btn btn-secondary btn-md w-3/5" onClick={() => console.log(attributesForm)}>
-          Log Attr Form
-        </button>
-      </div>
       {attributeInputElements}
       <div className="w-full flex items-center justify-center my-8">
-        <button className="btn btn-secondary btn-md w-3/5" onClick={addAttribute}>
+        <button className="btn btn-secondary btn-md w-3/5 md:w-1/3" onClick={addAttribute}>
           Add Attribute
         </button>
       </div>
