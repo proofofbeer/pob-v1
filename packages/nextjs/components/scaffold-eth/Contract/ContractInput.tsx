@@ -25,7 +25,6 @@ export const ContractInput = ({ setForm, form, stateObjectKey, paramType }: Cont
     value: form[stateObjectKey],
     placeholder: paramType.name ? `${paramType.type} ${paramType.name}` : paramType.type,
     onChange: (value: any) => {
-      console.log(value);
       setForm(form => ({ ...form, [stateObjectKey]: value }));
     },
   };

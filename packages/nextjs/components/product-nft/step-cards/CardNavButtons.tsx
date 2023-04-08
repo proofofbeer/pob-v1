@@ -14,7 +14,7 @@ const CardNavButtons = ({ isLoading, onSubmitHandler, showSubmit, setStep, step,
     {showSubmit && (
       <div className="w-full flex items-center justify-center mb-4">
         <button
-          className={`btn bg-primary border-primary-focus border-2 text-gray-900 dark:text-slate-200 btn-lg md:btn-md w-3/5 md:w-1/2 ${
+          className={`btn bg-primary border-primary-focus border-2 text-gray-900 dark:text-white btn-lg md:btn-md w-3/5 md:w-1/2 ${
             isLoading ? "loading" : ""
           }`}
           disabled={writeDisabled || step !== 3 || isLoading}
@@ -32,8 +32,8 @@ const CardNavButtons = ({ isLoading, onSubmitHandler, showSubmit, setStep, step,
       data-tip={`${writeDisabled && "Wallet not connected or in the wrong network"}`}
     >
       <button
-        className={`btn btn-secondary btn-md w-2/5 md:w-1/4 ${isLoading ? "loading" : ""}`}
-        disabled={writeDisabled || step === 1}
+        className="btn btn-secondary btn-md w-2/5 md:w-1/4 ${isLoading"
+        disabled={writeDisabled || step === 1 || isLoading}
         onClick={() => {
           if (step > 1) {
             setStep(step - 1);
@@ -45,8 +45,8 @@ const CardNavButtons = ({ isLoading, onSubmitHandler, showSubmit, setStep, step,
         Previous
       </button>
       <button
-        className={`btn btn-secondary btn-md w-2/5 md:w-1/4 ${isLoading ? "loading" : ""}`}
-        disabled={writeDisabled || step === 3}
+        className="btn btn-secondary btn-md w-2/5 md:w-1/4"
+        disabled={writeDisabled || step === 3 || isLoading}
         onClick={() => {
           if (step < 3) {
             setStep(step + 1);

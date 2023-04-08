@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { CloudArrowUpIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { useAppStore } from "~~/services/store/store";
 
 type TFileType = {
   path: string;
@@ -20,21 +21,25 @@ type FileInputProps = {
 
 const FileInput = ({ setImgObj, stateObjectKey }: FileInputProps) => {
   const [file, setFile] = useState<TFileType[]>([]);
+  const setCurrentImgName = useAppStore(state => state.setCurrentImgName);
 
   const handleFile = (selectedFile: any[]) => {
+    console.log(selectedFile);
     if (selectedFile.length > 0) {
       const reader = new FileReader();
       reader.onabort = () => console.log("file reading was aborted");
       reader.onerror = () => console.log("file reading has failed");
       reader.onload = () => {
+        console.log("Saving in imgObj:", reader.result);
         setImgObj(reader.result);
+        setCurrentImgName("image");
         setFile(selectedFile);
       };
       reader.readAsArrayBuffer(selectedFile[0]);
     }
   };
 
-  const onDrop = useCallback(handleFile, [setImgObj]);
+  const onDrop = useCallback(handleFile, [setCurrentImgName, setImgObj]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 

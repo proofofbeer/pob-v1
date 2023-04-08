@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from "react";
-import { ProductFactoryContract } from "./Contract";
+import { useRouter } from "next/router";
 import axios from "axios";
-import { ContractFactory } from "ethers";
 import toast from "react-hot-toast";
-import { useNetwork, useSigner } from "wagmi";
+import { useNetwork } from "wagmi";
+import shallow from "zustand/shallow";
 import ContractFormCard from "~~/components/product-nft/step-cards/ContractFormCard";
 import MetadataFormCard from "~~/components/product-nft/step-cards/MetadataFormCard";
 import PreviewFormCard from "~~/components/product-nft/step-cards/PreviewFormCard";
@@ -12,11 +12,12 @@ import {
   getInitialFormState,
   metadataInputsArray,
 } from "~~/components/product-nft/step-cards/stepCardsInputs";
+import { useAppStore } from "~~/services/store/store";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 const ProductDashboard = () => {
+  const router = useRouter();
   const { chain } = useNetwork();
-  const { data: signer } = useSigner();
   const fileInputKey = "product_nft_file";
   const fileNameInputKey = "product_nft_file_name";
   const [contractForm, setContractForm] = useState<Record<string, any>>(() =>
@@ -28,6 +29,18 @@ const ProductDashboard = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
   const writeDisabled = !chain || chain?.id !== getTargetNetwork().id;
+  const { currentImgName, setDirectoriesCids, setStoreAttributes, setStoreContract, setStoreMetadata, setUserImgObjs } =
+    useAppStore(
+      state => ({
+        currentImgName: state.currentImgName,
+        setDirectoriesCids: state.setDirectoriesCids,
+        setStoreAttributes: state.setStoreAttributes,
+        setStoreContract: state.setStoreContract,
+        setStoreMetadata: state.setStoreMetadata,
+        setUserImgObjs: state.setUserImgObjs,
+      }),
+      shallow,
+    );
 
   const previewImage = useMemo(() => {
     if (imageObj) {
@@ -36,61 +49,70 @@ const ProductDashboard = () => {
     return null;
   }, [imageObj]);
 
-  const onMintHandler = useCallback(async () => {
-    console.log("Minting function call");
-    if (isLoading) {
-      if (isLoading) onMintHandler(); // Not important, just avoids linter error
-      setIsLoading(true);
-      try {
-        event?.preventDefault();
-        const ProductFactory = new ContractFactory(
-          ProductFactoryContract.abi,
-          ProductFactoryContract.bytecode,
-          signer as any,
-        );
-
-        const productFactory = await ProductFactory.deploy();
-
-        const res = await productFactory.deployed();
-
-        console.log(res);
-      } catch (error: any) {
-        const parsedBody = JSON.parse(error.body);
-        const { message } = parsedBody.error;
-        toast.error(message, {
-          position: "bottom-right",
-        });
-      }
-      setIsLoading(false);
-    }
-  }, [isLoading, signer]);
-
-  const onSubmitHandler = useCallback(
+  const onSubmitHandler: any = useCallback(
     async (event: any) => {
-      if (isLoading) onMintHandler(); // Not important, just avoids linter error
       setIsLoading(true);
       event?.preventDefault();
       try {
         const formData = new FormData();
+        formData.append("imgName", currentImgName);
         formData.append("files", new Blob([imageObj]));
+        setUserImgObjs(imageObj);
+        console.log("Saving in setUserImgObjs:", imageObj);
+        console.log("previewImg:", previewImage);
 
-        const response = await axios.post("/api/upload", formData, {
+        const response = await axios.post("/api/upload-files", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
 
+        console.log(response);
+
+        setDirectoriesCids(response.data.cid);
+        setStoreContract(contractForm);
+        setStoreMetadata(metadataForm);
+
+        if (Object.keys(attributesForm).length > 0) {
+          const attributesArray = [];
+          for (const attributeValue in attributesForm) {
+            attributesArray.push(attributesForm[attributeValue]);
+          }
+          setStoreAttributes([...attributesArray]);
+        } else {
+          setStoreAttributes([]);
+        }
+
         alert(JSON.stringify(response.data));
+        router.push("/templates");
       } catch (error: any) {
-        const parsedBody = JSON.parse(error.body);
-        const { message } = parsedBody.error;
-        toast.error(message, {
-          position: "bottom-right",
-        });
+        if (error.body) {
+          const parsedBody = JSON.parse(error.body);
+          const { message } = parsedBody.error;
+          toast.error(message, {
+            position: "bottom-right",
+          });
+        } else {
+          console.error(error);
+        }
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     },
-    [imageObj, isLoading, onMintHandler],
+    [
+      attributesForm,
+      contractForm,
+      currentImgName,
+      imageObj,
+      metadataForm,
+      previewImage,
+      router,
+      setDirectoriesCids,
+      setStoreAttributes,
+      setStoreContract,
+      setStoreMetadata,
+      setUserImgObjs,
+    ],
   );
 
   const stepCards = useCallback(() => {
