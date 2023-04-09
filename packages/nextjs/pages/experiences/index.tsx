@@ -54,6 +54,10 @@ const Experiences = () => {
       });
       setNftCid(res.data.cid);
       await writeAsync();
+
+      toast.success("Successfully deployed the Contract!!!", {
+        position: "top-center",
+      });
     } catch (error: any) {
       if (error.body) {
         const parsedBody = JSON.parse(error.body);

@@ -79,6 +79,9 @@ const ProductDashboard = () => {
         }
 
         alert(JSON.stringify(response.data));
+        toast.success("Successfully created the Template!!!", {
+          position: "top-center",
+        });
         router.push("/templates");
       } catch (error: any) {
         if (error.body) {

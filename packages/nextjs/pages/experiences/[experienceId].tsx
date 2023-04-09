@@ -103,6 +103,9 @@ const ExperienceUI = () => {
       setNftCid(res.data.cid);
       const evmRes = await writeAsync();
       console.log(evmRes);
+      toast.success("NFT Minted successfully!!!", {
+        position: "top-center",
+      });
     } catch (error: any) {
       if (error.body) {
         const parsedBody = JSON.parse(error.body);
