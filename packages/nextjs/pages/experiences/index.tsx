@@ -17,7 +17,7 @@ const Experiences = () => {
   const [mintRecipientAddress, setMintRecipientAddress] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [attributesForm, setAttributesForm] = useState<Record<string, any>>({});
-  const { currentImgName, directoriesCids, userContracts, storeAttributes, storeMetadata, userImgObjs } = useAppStore(
+  const { currentImgName, directoriesCids, userContracts, storeAttributes, storeMetadata } = useAppStore(
     state => ({
       currentImgName: state.currentImgName,
       directoriesCids: state.directoriesCids,
@@ -37,66 +37,23 @@ const Experiences = () => {
 
   const onMintHandler = async (event: any, index: number) => {
     event.preventDefault();
-    console.log(mintRecipientAddress);
-    console.log(attributesForm);
-    console.log(storeMetadata);
-    // const fileMetadata = {
-    //   type: "image/jpeg",
-    // };
-    // const file = new File([userImgObjs[index]], "image.jpg", fileMetadata);
-    // const file = await getExampleImage(index);
-    // console.log(file);
+    setIsLoading(true);
 
-    const imgBlob = new Blob([userImgObjs[0]], { type: "image/jpeg" });
-    console.log("Typeof imgBlob:", typeof imgBlob);
-    console.log("imgBlob:", imgBlob);
     const metadata = getMetadataObject(storeMetadata[index], attributesForm);
-    console.log(metadata);
-    console.log(directoriesCids[index]);
     const body = {
       metadata: metadata,
       imgCid: directoriesCids[index],
       imgName: currentImgName,
     };
 
-    // const formData = new FormData();
-    // formData.append("files", imgBlob);
-    // formData.append("imageCid", JSON.stringify({ imgCid: directoriesCids[index] }));
-    // formData.append("imgName", JSON.stringify({ imgName: currentImgName }));
-    // formData.append("metadata", JSON.stringify(metadata));
-    // console.log(typeof JSON.stringify(metadata));
     try {
       const res = await axios.post("/api/upload-metadata", body, {
         headers: {
           "Content-Type": "application/json",
         },
       });
-      // const response = await axios.post(
-      //   "/api/upload-metadata",
-      //   {
-      //     metadata: {
-      //       name: storeMetadata[index].base_name_string_0,
-      //       description: storeMetadata[index].description_string_1,
-      //       image: imgBlob,
-      //       attributesForm,
-      //     },
-      //   },
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //   },
-      // );
-
-      // const response = await axios.post("/api/upload-metadata", formData, {
-      //   headers: {
-      //     "Content-Type": "multipart/form-data",
-      //   },
-      // });
-      console.log(res.data.cid);
       setNftCid(res.data.cid);
-      const evmRes = await writeAsync();
-      console.log(evmRes);
+      await writeAsync();
     } catch (error: any) {
       if (error.body) {
         const parsedBody = JSON.parse(error.body);
@@ -178,6 +135,7 @@ const Experiences = () => {
       <div className="w-full flex items-center justify-center mb-4">
         <button
           className="btn bg-secondary focus:bg-primary border-primary-focus border-2 text-gray-900 dark:text-gray-900 btn-md md:btn-sm w-3/5 md:w-3/5 lg:w-2/5"
+          disabled={isLoading}
           onClick={() => router.push(`/experiences/${index}`)}
         >
           Interact <span className="ml-2">🔍</span>
@@ -186,6 +144,8 @@ const Experiences = () => {
       <Link
         className="hover:cursor-pointer hover:underline hover:underline-offset-2"
         href={`https://sepolia.etherscan.io/address/${contractData.address}`}
+        target="_blank"
+        rel="noopener noreferrer"
       >
         View on Explorer
       </Link>
@@ -203,7 +163,7 @@ const Experiences = () => {
 
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
-      <h1 className="text-4xl font-semibold text-center">Your Experiences</h1>
+      <h1 className="text-4xl font-semibold text-center">Your Experience NFTs</h1>
       {/* <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-4/5 lg:w-3/5 xl:w-1/2 px-6 md:px-16 py-4 md:py-8"> */}
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-4 lg:gap-8 w-full lg:w-full px-2 md:px-16 lg:px-8 xl:px-24 py-4 lg:py-8 mt-8 mb-2 mx-0">
         {hasHydrated && contracts}

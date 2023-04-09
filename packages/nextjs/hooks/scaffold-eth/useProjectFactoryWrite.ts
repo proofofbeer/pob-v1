@@ -13,20 +13,6 @@ export const useProjectFactoryWrite = ({ contractAddress, functionName, args, va
   const [isMining, setIsMining] = useState(false);
   const configuredNetwork = getTargetNetwork();
 
-  // const contract = useContract({
-  //   address: contractAddress,
-  //   abi: ProductFactoryContract.abi,
-  // });
-
-  // const { config } = usePrepareContractWrite({
-  //   abi: ProductFactoryContract.abi as Abi,
-  //   address: contractAddress,
-  //   functionName: "name",
-  // });
-  // const { data, isLoading, isSuccess, write } = useContractWrite(config);
-
-  // return { data, isLoading, isSuccess, write };
-
   const wagmiContractWrite = useContractWrite({
     abi: ProductFactoryContract.abi as Abi,
     address: contractAddress,

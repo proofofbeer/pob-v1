@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import axios from "axios";
+import { BigNumber } from "ethers";
 import toast from "react-hot-toast";
 import shallow from "zustand/shallow";
 import ImgPlaceholder from "~~/components/product-nft/ImgPlaceholder";
-import { AddressInput } from "~~/components/scaffold-eth";
+import { AddressInput, InputBase } from "~~/components/scaffold-eth";
 import { useHasHydrated } from "~~/hooks/next-zustand/useHasHydrated";
-import { useProjectFactoryWrite } from "~~/hooks/scaffold-eth/useProjectFactoryWrite";
+import { useProjectFactoryRead, useProjectFactoryWrite } from "~~/hooks/scaffold-eth";
 import { useAppStore } from "~~/services/store/store";
 import { getMetadataObject } from "~~/utils/web3";
 
@@ -17,6 +19,7 @@ const ExperienceUI = () => {
   const [nftCid, setNftCid] = useState<any>("");
   const [imgObject, setImgObject] = useState<any>(null);
   const [mintRecipientAddress, setMintRecipientAddress] = useState<string>("");
+  const [tokenId, setTokenId] = useState<any>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [attributesForm, setAttributesForm] = useState<Record<string, any>>({});
   const { currentImgName, directoriesCids, userContracts, storeAttributes, storeMetadata, userImgObjs } = useAppStore(
@@ -32,24 +35,44 @@ const ExperienceUI = () => {
     shallow,
   );
 
+  const {
+    data: dataBalanceOf,
+    isLoading: isLoadingBalanceOf,
+    refetch: refetchBalanceOf,
+  }: any = useProjectFactoryRead({
+    contractAddress: userContracts[experienceId as any]?.address,
+    functionName: "balanceOf",
+    args: [mintRecipientAddress],
+    enabled: false,
+  });
+
+  const {
+    data: dataOwnerOf,
+    isLoading: isLoadingOwnerOf,
+    refetch: refetchOwnerOf,
+  }: any = useProjectFactoryRead({
+    contractAddress: userContracts[experienceId as any]?.address,
+    functionName: "ownerOf",
+    args: [tokenId],
+    enabled: false,
+  });
+
+  const { data: dataTotalSupply }: any = useProjectFactoryRead({
+    contractAddress: userContracts[experienceId as any]?.address,
+    functionName: "totalSupply",
+    args: [],
+  });
+
   const { writeAsync, isLoading: isLoadingWriteTx } = useProjectFactoryWrite({
-    contractAddress: userContracts[0]?.address,
+    contractAddress: userContracts[experienceId as any]?.address,
     functionName: "safeMint",
     args: [mintRecipientAddress, nftCid],
   });
 
   useEffect(() => {
     if (hasHydrated) {
-      console.log(userContracts);
-      console.log(storeMetadata);
-      console.log(userImgObjs[0]);
-      console.log(directoriesCids);
-      console.log(experienceId);
-
-      console.log(userImgObjs[experienceId as any]);
       setImgObject(userImgObjs[experienceId as any]);
     }
-    console.log("RENDER triggered");
   }, [directoriesCids, experienceId, hasHydrated, storeMetadata, userContracts, userImgObjs]);
 
   const previewImage = useMemo(() => {
@@ -61,13 +84,9 @@ const ExperienceUI = () => {
 
   const onMintHandler = async (event: any, index: number) => {
     event.preventDefault();
+    setIsLoading(true);
 
-    const imgBlob = new Blob([userImgObjs[0]], { type: "image/jpeg" });
-    console.log("Typeof imgBlob:", typeof imgBlob);
-    console.log("imgBlob:", imgBlob);
     const metadata = getMetadataObject(storeMetadata[index], attributesForm);
-    console.log(metadata);
-    console.log(directoriesCids[index]);
     const body = {
       metadata: metadata,
       imgCid: directoriesCids[index],
@@ -103,8 +122,16 @@ const ExperienceUI = () => {
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
       <h1 className="text-4xl font-semibold text-center mb-4">
         {experienceId ? userContracts[experienceId as any].name : " Name"}
-        <br className="md:hidden" /> <span className="text-2xl">Experience NFT</span>
+        <br /> <span className="text-2xl">Experience NFT</span>
       </h1>
+      <div className="w-full flex justify-center my-4">
+        <button
+          className="text-md btn bg-primary border-2 text-gray-900 dark:text-white btn-md w-3/5 md:w-1/3 lg:w-1/4 xl:w-1/5"
+          onClick={() => router.push("/experiences")}
+        >
+          Back
+        </button>
+      </div>
       <div className="w-full flex flex-col items-center justify-center px-2 lg:px-0 py-4 lg:py-8">
         <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-4/5 lg:w-3/5 xl:w-1/2 px-6 md:px-16 py-4 md:py-8">
           <h5 className="mb-2 text-lg font-medium text-left px-1">
@@ -119,6 +146,11 @@ const ExperienceUI = () => {
                 ipfsCid={experienceId && directoriesCids[experienceId as any]}
               />
             )}
+          </div>
+          <div tabIndex={0} className="border border-base-300 bg-base-100 rounded-lg my-6 p-4">
+            <div className="text-lg font-medium">
+              <p>Minted: {dataTotalSupply ? parseInt(dataTotalSupply._hex) : "Loading"}</p>
+            </div>
           </div>
           <div tabIndex={0} className="collapse collapse-arrow border border-base-300 bg-base-100 rounded-lg my-6">
             <input type="checkbox" />
@@ -203,41 +235,6 @@ const ExperienceUI = () => {
               </div>
             </div>
           </div>
-
-          <div className="w-full flex items-center justify-center mb-4">
-            <label
-              htmlFor="transfer-modal"
-              className="btn bg-orange-700 hover:bg-orange-600 border-primary-focus border-2 text-gray-900 dark:text-white btn-md w-3/5 md:w-3/5 lg:w-2/5"
-            >
-              Transfer <span className="ml-2">➡️</span>
-            </label>
-            <input type="checkbox" id="transfer-modal" className="modal-toggle" />
-            <div className="modal">
-              <div className="modal-box relative">
-                <label htmlFor="transfer-modal" className="btn btn-sm btn-circle absolute right-2 top-2">
-                  ✕
-                </label>
-                <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Transfer NFT to:</h2>
-                <div className="mb-8 px-4">
-                  <AddressInput
-                    name="mintRecipientAddress"
-                    onChange={(value: any) => setMintRecipientAddress(value)}
-                    placeholder="Enter address or ENS"
-                    value={mintRecipientAddress}
-                  />
-                </div>
-                <div className="w-full flex justify-center mt-8 mb-8">
-                  <button
-                    className="btn bg-orange-700 hover:bg-orange-600 border-primary-focus border-2 text-gray-900 dark:text-white btn-md w-3/5 md:w-3/5 lg:w-2/5"
-                    disabled={isLoading || isLoadingWriteTx}
-                    onClick={(event: any) => onMintHandler(event, experienceId as any)}
-                  >
-                    Transfer <span className="ml-2">➡️</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
           <div className="w-full flex items-center justify-center mb-4">
             <label
               htmlFor="balanceOf-modal"
@@ -260,13 +257,18 @@ const ExperienceUI = () => {
                     value={mintRecipientAddress}
                   />
                 </div>
+                {dataBalanceOf ? (
+                  <div className="w-full flex justify-center mt-8 mb-8">
+                    <p>{parseInt(dataBalanceOf._hex)}</p>
+                  </div>
+                ) : null}
                 <div className="w-full flex justify-center mt-8 mb-8">
                   <button
                     className="btn bg-orange-700 hover:bg-orange-600 border-primary-focus border-2 text-gray-900 dark:text-white btn-md w-3/5 md:w-3/5 lg:w-2/5"
-                    disabled={isLoading || isLoadingWriteTx}
-                    onClick={(event: any) => onMintHandler(event, experienceId as any)}
+                    disabled={isLoadingBalanceOf || isLoadingWriteTx}
+                    onClick={refetchBalanceOf}
                   >
-                    Transfer <span className="ml-2">➡️</span>
+                    Get Balance Of <span className="ml-2">⚖️</span>
                   </button>
                 </div>
               </div>
@@ -287,20 +289,35 @@ const ExperienceUI = () => {
                 </label>
                 <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Owner Of:</h2>
                 <div className="mb-8 px-4">
-                  <AddressInput
+                  <InputBase
                     name="mintRecipientAddress"
-                    onChange={(value: any) => setMintRecipientAddress(value)}
-                    placeholder="Enter address or ENS"
-                    value={mintRecipientAddress}
+                    onChange={(value: any) => {
+                      console.log(BigNumber.from(parseInt(value)).toNumber());
+                      setTokenId(BigNumber.from(parseInt(value)).toNumber());
+                    }}
+                    placeholder="Enter tokenId"
+                    value={tokenId}
                   />
                 </div>
+                {dataOwnerOf ? (
+                  <div className="w-full flex justify-center mt-8 mb-8">
+                    <Link
+                      className="hover:cursor-pointer hover:underline hover:underline-offset-2"
+                      href={`https://sepolia.etherscan.io/address/${dataOwnerOf}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {dataOwnerOf}
+                    </Link>
+                  </div>
+                ) : null}
                 <div className="w-full flex justify-center mt-8 mb-8">
                   <button
                     className="btn bg-orange-700 hover:bg-orange-600 border-primary-focus border-2 text-gray-900 dark:text-white btn-md w-3/5 md:w-3/5 lg:w-2/5"
-                    disabled={isLoading || isLoadingWriteTx}
-                    onClick={(event: any) => onMintHandler(event, experienceId as any)}
+                    disabled={isLoadingOwnerOf || isLoadingWriteTx}
+                    onClick={refetchOwnerOf}
                   >
-                    Transfer <span className="ml-2">➡️</span>
+                    Get Owner Of <span className="ml-2">🥸</span>
                   </button>
                 </div>
               </div>
