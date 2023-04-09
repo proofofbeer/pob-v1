@@ -1,6 +1,6 @@
 import { Abi } from "abitype";
 import { useContractRead } from "wagmi";
-import { ProductFactoryContract } from "~~/pages/product-nft/Contract";
+import { ProductFactoryContract } from "~~/contracts/contractERC721";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 import { AbiFunctionReturnType } from "~~/utils/scaffold-eth/contract";
 

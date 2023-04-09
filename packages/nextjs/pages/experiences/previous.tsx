@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ProductFactoryContract } from "../product-nft/Contract";
+import { ProductFactoryContract } from "../../contracts/contractERC721";
 import { ContractFactory } from "ethers";
 import toast from "react-hot-toast";
 import { useSigner } from "wagmi";
