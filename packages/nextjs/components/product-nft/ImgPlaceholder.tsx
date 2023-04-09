@@ -3,23 +3,24 @@ import { HeartIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
 type TImgPlaceholderProps = {
   chain?: string;
+  ipfsCid?: string;
   previewImage: any;
 };
 
-const ImgPlaceholder = ({ chain, previewImage }: TImgPlaceholderProps) => {
+const ImgPlaceholder = ({ chain, ipfsCid, previewImage }: TImgPlaceholderProps) => {
   return (
     <div className="flex flex-col items-start justify-center w-full md:w-3/5 mb-4 lg:mb-4">
       {previewImage ? (
         <div className="w-full border-base-300 bg-base-200 border-2 rounded-lg">
           <div className="text-sm py-1 px-4 rounded-t-lg flex justify-between items-center">
-            <p>Chain: {chain || "Ethereum"}</p> <HeartIcon className="h-4 w-4" />
+            <p>Chain: {chain || "Sepolia"}</p> <HeartIcon className="h-4 w-4" />
           </div>
           <Image
             className="w-full rounded-b-lg"
-            src={previewImage}
+            src={ipfsCid ? `https://nftstorage.link/ipfs/${ipfsCid}/image` : previewImage}
             alt="Your NFT image preview"
-            width={256}
-            height={256}
+            width={288}
+            height={288}
           />
         </div>
       ) : (

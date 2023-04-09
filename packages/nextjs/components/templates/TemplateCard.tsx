@@ -1,6 +1,9 @@
+import ImgPlaceholder from "../product-nft/ImgPlaceholder";
+
 type TTemplateCard = {
   attributesArray: string[];
   contractForm: Record<string, any>;
+  ipfsCid?: string;
   metadataForm: Record<string, any>;
   isLoading: boolean;
   onSubmitHandler: (event: any) => Promise<void>;
@@ -11,9 +14,11 @@ type TTemplateCard = {
 const TemplateCard = ({
   attributesArray,
   contractForm,
+  ipfsCid,
   metadataForm,
   isLoading,
   onSubmitHandler,
+  previewImage,
   storeIndex,
 }: TTemplateCard) => {
   const attributes = attributesArray.map((attribute, index: number) => (
@@ -34,9 +39,9 @@ const TemplateCard = ({
       </h5>
       <h4 className="mb-0 text-xl font-medium text-left px-1">{metadataForm.base_name_string_0 || "NFT"} #1</h4>
       <h6 className="mb-2 ml-2 text-sm text-left px-1">Owned by 0x12...A1B2</h6>
-      {/* <div className="w-full flex justify-center">
-        <ImgPlaceholder chain={contractForm["product_chain_string_2"]} previewImage={previewImage} />
-      </div> */}
+      <div className="w-full flex justify-center">
+        <ImgPlaceholder chain={contractForm["product_chain_string_2"]} previewImage={previewImage} ipfsCid={ipfsCid} />
+      </div>
       <div tabIndex={0} className="collapse collapse-arrow border border-base-300 bg-base-100 rounded-lg my-6">
         <input type="checkbox" />
         <div className="collapse-title text-lg font-medium">Description</div>

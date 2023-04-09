@@ -1,43 +1,39 @@
 import { useState } from "react";
-import { Abi, ExtractAbiFunctionNames } from "abitype";
+import { Abi } from "abitype";
 import { utils } from "ethers";
 import { useContractWrite, useNetwork } from "wagmi";
 import { getParsedEthersError } from "~~/components/scaffold-eth";
-import { useDeployedContractInfo, useTransactor } from "~~/hooks/scaffold-eth";
+import { useTransactor } from "~~/hooks/scaffold-eth";
+import { ProductFactoryContract } from "~~/pages/product-nft/Contract";
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
-import { ContractAbi, ContractName, UseScaffoldWriteConfig } from "~~/utils/scaffold-eth/contract";
 
-/**
- * @dev wrapper for wagmi's useContractWrite hook(with config prepared by usePrepareContractWrite hook) which loads in deployed contract abi and address automatically
- * @param config - The config settings, including extra wagmi configuration
- * @param config.contractName - deployed contract name
- * @param config.functionName - name of the function to be called
- * @param config.args - arguments for the function
- * @param config.value - value in ETH that will be sent with transaction
- */
-export const useDeployedContractWrite = <
-  TContractName extends ContractName,
-  TFunctionName extends ExtractAbiFunctionNames<ContractAbi<TContractName>, "nonpayable" | "payable">,
->({
-  contractName,
-  functionName,
-  args,
-  value,
-  ...writeConfig
-}: UseScaffoldWriteConfig<TContractName, TFunctionName>) => {
-  const { data: deployedContractData } = useDeployedContractInfo(contractName);
+export const useProjectFactoryWrite = ({ contractAddress, functionName, args, value, ...writeConfig }: any) => {
   const { chain } = useNetwork();
   const writeTx = useTransactor();
   const [isMining, setIsMining] = useState(false);
   const configuredNetwork = getTargetNetwork();
 
+  // const contract = useContract({
+  //   address: contractAddress,
+  //   abi: ProductFactoryContract.abi,
+  // });
+
+  // const { config } = usePrepareContractWrite({
+  //   abi: ProductFactoryContract.abi as Abi,
+  //   address: contractAddress,
+  //   functionName: "name",
+  // });
+  // const { data, isLoading, isSuccess, write } = useContractWrite(config);
+
+  // return { data, isLoading, isSuccess, write };
+
   const wagmiContractWrite = useContractWrite({
-    mode: "recklesslyUnprepared",
-    chainId: configuredNetwork.id,
-    address: deployedContractData?.address,
-    abi: deployedContractData?.abi as Abi,
+    abi: ProductFactoryContract.abi as Abi,
+    address: contractAddress,
     args: args as unknown[],
+    chainId: configuredNetwork.id,
     functionName: functionName as any,
+    mode: "recklesslyUnprepared",
     overrides: {
       value: value ? utils.parseEther(value) : undefined,
     },
@@ -45,7 +41,7 @@ export const useDeployedContractWrite = <
   });
 
   const sendContractWriteTx = async () => {
-    if (!deployedContractData) {
+    if (!contractAddress) {
       notification.error("Target Contract is not deployed, did you forgot to run `yarn deploy`?");
       return;
     }

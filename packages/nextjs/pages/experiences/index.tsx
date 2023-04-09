@@ -1,15 +1,19 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import axios from "axios";
 import toast from "react-hot-toast";
 import shallow from "zustand/shallow";
 import { AddressInput } from "~~/components/scaffold-eth";
 import { useHasHydrated } from "~~/hooks/next-zustand/useHasHydrated";
+import { useProjectFactoryWrite } from "~~/hooks/scaffold-eth/useProjectFactoryWrite";
 import { useAppStore } from "~~/services/store/store";
 import { getMetadataObject } from "~~/utils/web3";
 
 const Experiences = () => {
   const hasHydrated = useHasHydrated();
+  const router = useRouter();
+  const [nftCid, setNftCid] = useState<any>("");
   const [mintRecipientAddress, setMintRecipientAddress] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [attributesForm, setAttributesForm] = useState<Record<string, any>>({});
@@ -25,14 +29,11 @@ const Experiences = () => {
     }),
     shallow,
   );
-  useEffect(() => {
-    if (hasHydrated) {
-      console.log(userContracts);
-      console.log(userImgObjs[0]);
-      console.log(directoriesCids);
-    }
-    console.log("RENDER triggered");
-  }, [directoriesCids, hasHydrated, userContracts, userImgObjs]);
+  const { writeAsync, isLoading: isLoadingWriteTx } = useProjectFactoryWrite({
+    contractAddress: userContracts[0]?.address,
+    functionName: "safeMint",
+    args: [mintRecipientAddress, nftCid],
+  });
 
   const onMintHandler = async (event: any, index: number) => {
     event.preventDefault();
@@ -65,7 +66,7 @@ const Experiences = () => {
     // formData.append("metadata", JSON.stringify(metadata));
     // console.log(typeof JSON.stringify(metadata));
     try {
-      const nftCid = await axios.post("/api/upload-metadata", body, {
+      const res = await axios.post("/api/upload-metadata", body, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -92,7 +93,10 @@ const Experiences = () => {
       //     "Content-Type": "multipart/form-data",
       //   },
       // });
-      console.log(nftCid);
+      console.log(res.data.cid);
+      setNftCid(res.data.cid);
+      const evmRes = await writeAsync();
+      console.log(evmRes);
     } catch (error: any) {
       if (error.body) {
         const parsedBody = JSON.parse(error.body);
@@ -161,6 +165,7 @@ const Experiences = () => {
               <div className="w-full flex justify-center mt-8 mb-8">
                 <button
                   className="btn bg-orange-700 hover:bg-orange-600 border-primary-focus border-2 text-gray-900 dark:text-white btn-md w-3/5 md:w-3/5 lg:w-2/5"
+                  disabled={isLoading || isLoadingWriteTx}
                   onClick={(event: any) => onMintHandler(event, index)}
                 >
                   Mint <span className="ml-2">⛏️</span>
@@ -171,8 +176,11 @@ const Experiences = () => {
         </div>
       </div>
       <div className="w-full flex items-center justify-center mb-4">
-        <button className="btn bg-secondary border-primary-focus border-2 text-gray-900 dark:text-white btn-md md:btn-sm w-3/5 md:w-3/5 lg:w-2/5">
-          Analytics <span className="ml-2">📊</span>
+        <button
+          className="btn bg-secondary focus:bg-primary border-primary-focus border-2 text-gray-900 dark:text-gray-900 btn-md md:btn-sm w-3/5 md:w-3/5 lg:w-2/5"
+          onClick={() => router.push(`/experiences/${index}`)}
+        >
+          Interact <span className="ml-2">🔍</span>
         </button>
       </div>
       <Link

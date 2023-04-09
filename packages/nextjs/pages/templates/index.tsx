@@ -14,10 +14,19 @@ const Templates = () => {
   const router = useRouter();
   const { data: signer } = useSigner();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { currentImgName, setUserContracts, storeAttributes, storeContract, storeMetadata, userImgObjs } = useAppStore(
+  const {
+    currentImgName,
+    directoriesCids,
+    setUserContracts,
+    storeAttributes,
+    storeContract,
+    storeMetadata,
+    userImgObjs,
+  } = useAppStore(
     state => ({
-      setUserContracts: state.setUserContracts,
       currentImgName: state.currentImgName,
+      directoriesCids: state.directoriesCids,
+      setUserContracts: state.setUserContracts,
       storeAttributes: state.storeAttributes,
       storeContract: state.storeContract,
       storeMetadata: state.storeMetadata,
@@ -30,7 +39,8 @@ const Templates = () => {
     console.log(typeof userImgObjs[0]);
     const blob = new Blob([userImgObjs[0]], { type: "image/jpeg" });
     console.log(blob);
-  }, [userImgObjs]);
+    console.log(directoriesCids);
+  }, [directoriesCids, userImgObjs]);
 
   const onDeployHandler = async (index: number) => {
     setIsLoading(true);
@@ -85,8 +95,6 @@ const Templates = () => {
       <label htmlFor={`my-modal-${index}`} className="btn btn-md md:btn-sm bg-primary">
         Expand
       </label>
-
-      {/* Put this part before </body> tag */}
       <input type="checkbox" id={`my-modal-${index}`} className="modal-toggle" />
       <div className="modal">
         <div className="modal-box relative">
@@ -96,6 +104,7 @@ const Templates = () => {
           <TemplateCard
             attributesArray={storeAttributes[index]}
             contractForm={storeContract[index]}
+            ipfsCid={directoriesCids[index]}
             isLoading={isLoading}
             metadataForm={storeMetadata[index]}
             onSubmitHandler={onDeployHandler}
@@ -109,7 +118,6 @@ const Templates = () => {
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
       <h1 className="text-4xl font-semibold text-center">Your Templates</h1>
-      {/* <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full md:w-4/5 lg:w-3/5 xl:w-1/2 px-6 md:px-16 py-4 md:py-8"> */}
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:grid-cols-4 md:gap-4 lg:gap-8 w-full lg:w-full px-2 md:px-16 lg:px-8 xl:px-24 py-4 lg:py-8 mt-8 mb-2 mx-0">
         {hasHydrated && templates}
       </div>
