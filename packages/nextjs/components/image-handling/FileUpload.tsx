@@ -15,12 +15,15 @@ type TFileType = {
 
 type TFileUploadProps = {
   fileFormKeyState: string;
+  imgWidthClass: string;
   setImgObj: Dispatch<SetStateAction<any>>;
 };
 
-const FileUpload = ({ setImgObj, fileFormKeyState }: TFileUploadProps) => {
+const FileUpload = ({ fileFormKeyState, imgWidthClass, setImgObj }: TFileUploadProps) => {
   const [file, setFile] = useState<TFileType[]>([]);
   const setCurrentImgName = useAppStore(state => state.setCurrentImgName);
+
+  console.log(imgWidthClass);
 
   const handleFile = (selectedFile: any[]) => {
     console.log(selectedFile);
@@ -43,13 +46,12 @@ const FileUpload = ({ setImgObj, fileFormKeyState }: TFileUploadProps) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   return (
-    <div className="flex flex-col items-start justify-center w-full mb-2 lg:mb-4" {...getRootProps()}>
-      <p className="font-medium break-words mb-1 ml-2">Image</p>
+    <div className="flex flex-col items-center justify-center w-full" {...getRootProps()}>
       {file.length < 1 ? (
-        <label className="flex flex-col items-center justify-center w-full border-2 border-base-300 border-dashed bg-base-200 rounded-lg text-accent cursor-pointer hover:bg-gray-100 dark:hover:border-accent dark:hover:bg-base-300 dark:hover:bg-opacity-30 py-2">
-          <div className="flex flex-col md:flex-row items-center justify-center">
+        <div className="w-full aspect-square flex flex-col items-center justify-center border-2 border-base-300 border-dashed bg-base-200 rounded-lg text-accent cursor-pointer hover:bg-gray-100 dark:hover:border-accent dark:hover:bg-base-300 dark:hover:bg-opacity-30">
+          <label className="flex flex-col md:flex-row items-center justify-center">
             <>
-              <CloudArrowUpIcon className="h-8 w-8 mr-2" />
+              <CloudArrowUpIcon className="h-8 w-8" />
               {isDragActive ? (
                 <p className="text-accent/50 font-medium text-center">Drop the files here ...</p>
               ) : (
@@ -67,8 +69,8 @@ const FileUpload = ({ setImgObj, fileFormKeyState }: TFileUploadProps) => {
                 {...getInputProps()}
               />
             </>
-          </div>
-        </label>
+          </label>
+        </div>
       ) : (
         <div className="flex items-center justify-center w-full border-2 border-base-300 border-dashed bg-base-200 rounded-lg text-accent cursor-pointer hover:bg-gray-100 dark:hover:border-accent dark:hover:bg-base-300 dark:hover:bg-opacity-30 py-3 relative">
           <p className="text-accent/50 font-medium">{file[0].name}</p>
