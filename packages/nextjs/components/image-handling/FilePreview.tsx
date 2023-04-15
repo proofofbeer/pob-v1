@@ -1,8 +1,7 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 import Image from "next/image";
 import FileUpload from "./FileUpload";
 import { HeartIcon, PencilIcon } from "@heroicons/react/24/outline";
-import useGetWindowSize from "~~/hooks/UI/useGetWindowSize";
 
 type TFilePreviewProps = {
   chain?: string;
@@ -13,40 +12,6 @@ type TFilePreviewProps = {
 };
 
 const FilePreview = ({ chain, fileFormKey, ipfsCid, previewImage, setImgObj }: TFilePreviewProps) => {
-  const { width: windowWidth } = useGetWindowSize();
-  const [imgWidth, setImgWidth] = useState<string>("256");
-  const [imgWidthClass, setImgWidthClass] = useState<string>("w-64");
-
-  const calculateImgWidth = (currentWindowWidth: number) => {
-    const x_padding = 8;
-    let imgWidth: number;
-
-    if (currentWindowWidth < 304) {
-      imgWidth = currentWindowWidth - x_padding * 2;
-      // setImgWidthClass("w-64 h-64");
-    } else if (currentWindowWidth < 400) {
-      imgWidth = currentWindowWidth - x_padding * 2;
-      // setImgWidthClass("w-72 h-72");
-    } else if (currentWindowWidth < 500) {
-      imgWidth = currentWindowWidth - x_padding * 2;
-      // setImgWidthClass("w-80 h-80");
-    } else if (currentWindowWidth < 768) {
-      imgWidth = currentWindowWidth - x_padding * 4;
-      // setImgWidthClass("w-96 h-96");
-    } else {
-      imgWidth = currentWindowWidth;
-    }
-    setImgWidthClass("w-full aspect-square");
-
-    return imgWidth.toString();
-  };
-
-  useEffect(() => {
-    if (windowWidth) {
-      setImgWidth(calculateImgWidth(windowWidth));
-    }
-  }, [windowWidth]);
-
   return (
     <div className="flex flex-col items-center justify-center w-full md:w-3/5 p-4">
       {previewImage ? (
@@ -72,7 +37,7 @@ const FilePreview = ({ chain, fileFormKey, ipfsCid, previewImage, setImgObj }: T
         </>
       ) : (
         <>
-          <FileUpload setImgObj={setImgObj} fileFormKeyState={fileFormKey} imgWidthClass={imgWidthClass} />
+          <FileUpload setImgObj={setImgObj} fileFormKeyState={fileFormKey} />
           <div className="w-full flex items-center justify-center m-4 mb-2 px-2">Select an image</div>
         </>
       )}

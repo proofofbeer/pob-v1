@@ -15,15 +15,12 @@ type TFileType = {
 
 type TFileUploadProps = {
   fileFormKeyState: string;
-  imgWidthClass: string;
   setImgObj: Dispatch<SetStateAction<any>>;
 };
 
-const FileUpload = ({ fileFormKeyState, imgWidthClass, setImgObj }: TFileUploadProps) => {
+const FileUpload = ({ fileFormKeyState, setImgObj }: TFileUploadProps) => {
   const [file, setFile] = useState<TFileType[]>([]);
   const setCurrentImgName = useAppStore(state => state.setCurrentImgName);
-
-  console.log(imgWidthClass);
 
   const handleFile = (selectedFile: any[]) => {
     console.log(selectedFile);
