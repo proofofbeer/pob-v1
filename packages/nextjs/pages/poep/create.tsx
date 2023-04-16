@@ -1,12 +1,17 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import axios from "axios";
+import toast from "react-hot-toast";
 import Loader from "~~/components/common/Loader";
 import BackButton from "~~/components/common/buttons/BackButton";
 import FilePreview from "~~/components/image-handling/FilePreview";
 import { InputBase } from "~~/components/inputs/InputBase";
 import ToggleInput from "~~/components/inputs/ToggleInput";
 import { createPoepInputsArray, getInitialPoepFormState } from "~~/components/poep/poep-form-inputs";
+import { useAppStore } from "~~/services/store/store";
 
 const CreatePOEP = () => {
+  const router = useRouter();
   const fileFormKey = "poap_image_file";
   const [form, setForm] = useState<Record<string, any>>(() =>
     getInitialPoepFormState(createPoepInputsArray, fileFormKey),
@@ -14,7 +19,10 @@ const CreatePOEP = () => {
   const [imageObj, setImgObj] = useState<any>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const currentImgName = useAppStore(state => state.currentImgName);
+
   const previewImage = useMemo(() => {
+    console.log(imageObj);
     if (imageObj) {
       return URL.createObjectURL(new Blob([imageObj]));
     }
@@ -61,14 +69,47 @@ const CreatePOEP = () => {
     [form],
   );
 
-  const handleSubmit = (event: any) => {
-    event.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
+  const handleSubmit: any = useCallback(
+    async (event: any) => {
+      setIsLoading(true);
+      event?.preventDefault();
       console.log(form);
-      setIsLoading(false);
-    }, 1500);
-  };
+      try {
+        const formData = new FormData();
+        formData.append("imgFileName", currentImgName);
+        formData.append("files", new Blob([imageObj]));
+        if (Object.keys(form).length > 0) {
+          for (const key in form) {
+            formData.append(key, form[key]);
+          }
+        }
+        const response = await axios.post("/api/upload-files", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        alert(JSON.stringify(response.data));
+        toast.success("Successfully created your POEP drop!!!", {
+          position: "top-center",
+        });
+        router.push("/poep");
+      } catch (error: any) {
+        if (error.body) {
+          const parsedBody = JSON.parse(error.body);
+          const { message } = parsedBody.error;
+          toast.error(message, {
+            position: "bottom-right",
+          });
+        } else {
+          console.error(error);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [currentImgName, form, imageObj, router],
+  );
 
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
