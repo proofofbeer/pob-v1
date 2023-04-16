@@ -13,7 +13,7 @@ type TFilePreviewProps = {
 
 const FilePreview = ({ chain, fileFormKey, ipfsCid, previewImage, setImgObj }: TFilePreviewProps) => {
   return (
-    <div className="flex flex-col items-center justify-center w-full md:w-3/5 p-4">
+    <div className="flex flex-col items-center justify-center w-full md:w-3/5 p-6">
       {previewImage ? (
         <>
           <div className="w-full border-base-300 bg-base-200 border-2 rounded-lg">
