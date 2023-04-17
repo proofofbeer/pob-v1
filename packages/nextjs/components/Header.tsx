@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import logo_black_bg from "../public/logo/logo_black_bg_512.svg";
-import { Bars3Icon, CheckBadgeIcon, DocumentIcon, HomeIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, CheckBadgeIcon, DocumentIcon, RectangleGroupIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 
@@ -38,9 +38,9 @@ export const Header = () => {
   const navLinks = (
     <>
       <li>
-        <NavLink href="/">
-          <HomeIcon className="h-4 w-4" />
-          Home
+        <NavLink href="/dashboard">
+          <RectangleGroupIcon className="h-4 w-4" />
+          Dashboard
         </NavLink>
       </li>
       <li>

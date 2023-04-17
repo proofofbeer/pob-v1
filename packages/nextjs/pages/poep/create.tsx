@@ -112,7 +112,7 @@ const CreatePOEP = () => {
   );
 
   return (
-    <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
+    <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center">
       <h1 className="text-4xl font-semibold text-center mb-4">Create POEP Drop</h1>
       <BackButton />
       <div

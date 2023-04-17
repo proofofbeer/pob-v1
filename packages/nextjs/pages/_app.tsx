@@ -31,7 +31,7 @@ const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
       <RainbowKitProvider chains={appChains.chains} avatar={BlockieAvatar}>
         <div className="flex flex-col min-h-screen overflow-hidden">
           <Head>
-            <title>POEP | Proof of Experience Protocol</title>
+            <title>POEP | Proof of Engagement Protocol</title>
             <meta name="description" content="Unlock your Memories with a digital Proof of Experience" />
             <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
             <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />

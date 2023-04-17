@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import { ProductFactoryContract } from "../../contracts/contractERC721";
+import { ProductFactoryContract } from "../../contracts/ERC721Contract";
 import { ContractFactory } from "ethers";
 import toast from "react-hot-toast";
 import { useSigner } from "wagmi";

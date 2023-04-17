@@ -3,7 +3,7 @@ import { Abi } from "abitype";
 import { utils } from "ethers";
 import { useContractWrite, useNetwork } from "wagmi";
 import { getParsedEthersError } from "~~/components/scaffold-eth";
-import { ProductFactoryContract } from "~~/contracts/contractERC721";
+import { ERC721Contract } from "~~/contracts/ERC721Contract";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
 
@@ -14,7 +14,7 @@ export const useProjectFactoryWrite = ({ contractAddress, functionName, args, va
   const configuredNetwork = getTargetNetwork();
 
   const wagmiContractWrite = useContractWrite({
-    abi: ProductFactoryContract.abi as Abi,
+    abi: ERC721Contract.abi as Abi,
     address: contractAddress,
     args: args as unknown[],
     chainId: configuredNetwork.id,

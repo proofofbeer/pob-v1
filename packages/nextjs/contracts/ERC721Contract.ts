@@ -1,4 +1,4 @@
-export const ProductFactoryContract = {
+export const ERC721Contract = {
   abi: [
     {
       inputs: [

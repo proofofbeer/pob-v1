@@ -1,6 +1,6 @@
 import { Abi } from "abitype";
 import { useContractRead } from "wagmi";
-import { ERC721Contract } from "~~/contracts/ERC721Contract";
+import { ERC721Contract, POEPFactoryContract } from "~~/contracts";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 import { AbiFunctionReturnType } from "~~/utils/scaffold-eth/contract";
 
@@ -11,9 +11,18 @@ import { AbiFunctionReturnType } from "~~/utils/scaffold-eth/contract";
  * @param config.functionName - name of the function to be called
  * @param config.args - args to be passed to the function call
  */
-export const useProjectFactoryRead = ({ contractAddress, functionName, args, ...readConfig }: any) => {
+export const useDeployedContractRead = ({ contractAddress, contractName, functionName, args, ...readConfig }: any) => {
+  let selectedAbi;
+  switch (contractName) {
+    case "POEPProfileFactory":
+      selectedAbi = POEPFactoryContract.abi as Abi;
+      break;
+    case "ERC721":
+      selectedAbi = ERC721Contract.abi as Abi;
+      break;
+  }
   return useContractRead({
-    abi: ERC721Contract.abi as Abi,
+    abi: selectedAbi,
     address: contractAddress,
     chainId: getTargetNetwork().id,
     functionName: functionName as any,

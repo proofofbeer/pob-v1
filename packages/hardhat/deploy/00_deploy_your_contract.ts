@@ -21,10 +21,10 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("ProjectFactory", {
+  await deploy("POEPProfileFactory", {
     from: deployer,
     // Contract constructor arguments
-    args: ["Project Factory", "PROJECT"],
+    args: ["POEPv0.1"],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the contract deployment transaction. There is no effect on live networks.
@@ -39,4 +39,4 @@ export default deployYourContract;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags YourContract
-deployYourContract.tags = ["ProjectFactory"];
+deployYourContract.tags = ["POEPProfileFactory"];
