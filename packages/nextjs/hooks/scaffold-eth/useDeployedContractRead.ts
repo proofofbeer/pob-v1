@@ -1,6 +1,7 @@
 import { Abi } from "abitype";
 import { useContractRead } from "wagmi";
 import { ERC721Contract, POEPFactoryContract } from "~~/contracts";
+import POEPProfileContract from "~~/contracts/POEPProfile.json";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 import { AbiFunctionReturnType } from "~~/utils/scaffold-eth/contract";
 
@@ -16,6 +17,9 @@ export const useDeployedContractRead = ({ contractAddress, contractName, functio
   switch (contractName) {
     case "POEPProfileFactory":
       selectedAbi = POEPFactoryContract.abi as Abi;
+      break;
+    case "POEPProfile":
+      selectedAbi = POEPProfileContract.abi as Abi;
       break;
     case "ERC721":
       selectedAbi = ERC721Contract.abi as Abi;

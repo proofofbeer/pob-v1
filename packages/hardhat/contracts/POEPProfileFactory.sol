@@ -23,18 +23,12 @@ contract POEPProfileFactory is Ownable {
     require(profileHandleToProfile[_name] == address(0), "POEPProfileFactory: Profile handle has been taken");
 
     POEPProfile newPoepProfile = new POEPProfile(_name, _symbol);
+    newPoepProfile.transferOwnership(msgSender);
     poepProfilesArray.push(newPoepProfile);
     profileHandleToProfile[_name] = address(newPoepProfile);
     profileHandleToWallet[_name] = msgSender;
     walletToProfile[msgSender] = address(newPoepProfile);
-
-    console.log("Profile address (from userAddr):", walletToProfile[msgSender]);
-    console.log("Profile address (from handle):", profileHandleToProfile[_name]);
-    console.log("User address:", profileHandleToWallet[_name]);
   }
-  // function getProfileFromHandle(string memory _handle) public view returns(address) {
-  //   return _profileHandleToProfile[_handle];
-  // }
 
   receive() external payable {}
 

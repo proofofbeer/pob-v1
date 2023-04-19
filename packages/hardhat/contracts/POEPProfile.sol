@@ -13,14 +13,15 @@ contract POEPProfile is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
   using Counters for Counters.Counter;
 
   Counters.Counter private _tokenIdCounter;
+  string public globalTokenURI;
 
   constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
 
-  function safeMint(address to, string memory uri) public {
+  function safeMint(address to) public {
     uint256 tokenId = _tokenIdCounter.current();
     _tokenIdCounter.increment();
     _safeMint(to, tokenId);
-    _setTokenURI(tokenId, uri);
+    _setTokenURI(tokenId, globalTokenURI);
   }
 
   // The following functions are overrides required by Solidity.
@@ -43,6 +44,11 @@ contract POEPProfile is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         returns (string memory)
     {
         return super.tokenURI(tokenId);
+    }
+
+    function setGlobalTokenURI(string memory _uri) public {
+        console.log(_uri);
+        globalTokenURI = _uri;
     }
 
     function supportsInterface(bytes4 interfaceId)
