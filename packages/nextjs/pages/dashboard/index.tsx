@@ -220,7 +220,7 @@ const Index = () => {
         console.log("to this address", userProfileAddress);
         console.log("this is crap", newGlobalURI);
         const tx = await poepProfileContract.setGlobalTokenURI(res.data.cid);
-        toast.success("Successfully set your Personal POEP", {
+        toast.success("Successfully set your Personal BEER", {
           position: "top-center",
         });
         console.log(tx);
@@ -284,20 +284,20 @@ const Index = () => {
 
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
-      <h1 className="text-4xl font-semibold text-center mb-4">Welcome to POEP</h1>
+      <h1 className="text-4xl font-semibold text-center mb-4">Your BEERS</h1>
       <NavButton
-        buttonText="Create DROP"
+        buttonText="Create BEER"
         isDisabled={
           (userProfileAddress && parseInt(userProfileAddress) == 0) || isLoadingUserProfileAddress || isLoading
         }
-        path="/poep/create"
+        path="/beer/create"
       />
       <div
-        id="personal-poep-container"
+        id="personal-beer-container"
         className="w-full md:w-11/12 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
       >
         <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
-          <h2 className="text-center text-2xl w-full">Your Personal POEP</h2>
+          <h2 className="text-center text-2xl w-full">Your Personal BEER</h2>
           {isLoadingUserProfileAddress && (
             <div className="mt-14">
               <Spinner width="50px" height="50px" />
@@ -313,13 +313,13 @@ const Index = () => {
                 </div>
               ) : (
                 <div className="text-center text-lg font-medium w-full md:w-3/5 p-4">
-                  <p className="m-4">Let&apos;s set up your POEP!</p>
+                  <p className="m-4">Let&apos;s set up your Personal BEER!</p>
                   <div className="m-2 px-8 lg:px-20 xl:px-24 2xl:px-32">
                     <FilePreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
                   </div>
                   <div className="w-full mt-0">
                     <PrimaryButton
-                      buttonText="Set Personal POEP"
+                      buttonText="Set Personal BEER"
                       classModifier="text-lg w-3/5"
                       isDisabled={!previewImage || isLoading}
                       onClick={writeSetGlobalTokenURI}
@@ -329,9 +329,24 @@ const Index = () => {
               )}
               <div className="text-center text-lg font-medium w-full md:w-2/5 md:flex md:flex-col md:mt-6 lg:mt-0 xl:mt-4">
                 <div className="w-full flex justify-center gap-4 lg:m-4">
-                  <button className="btn btn-primary w-1/4 lg:w-1/5 normal-case">Mint</button>
-                  <button className="btn btn-primary w-1/4 lg:w-1/5 normal-case">Share</button>
-                  <button className="btn btn-primary w-1/4 lg:w-1/5 normal-case">Change</button>
+                  <button
+                    className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
+                    disabled={currentGlobalTokenURI ? false : true}
+                  >
+                    Drink
+                  </button>
+                  <button
+                    className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
+                    disabled={currentGlobalTokenURI ? false : true}
+                  >
+                    Share
+                  </button>
+                  <button
+                    className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
+                    disabled={currentGlobalTokenURI ? false : true}
+                  >
+                    Change
+                  </button>
                 </div>
                 <p className="mt-4">Username: {username}</p>
                 <a
@@ -340,10 +355,14 @@ const Index = () => {
                 >
                   Profile Contract <ArrowTopRightOnSquareIcon className="w-5 h-5 mb-1 ml-2" />
                 </a>
-                <p className="mt-6 mb-2 text-xl font-bold">Available: 6</p>
-                <p className="mt-4">POEP Drops: 0</p>
-                <p className="mt-4">POEP Mints: 0</p>
-                <p className="mt-4">POEP Collects: 0</p>
+                {currentGlobalTokenURI && (
+                  <>
+                    <p className="mt-6 mb-2 text-xl font-bold">BEERS available: 6</p>
+                    <p className="mt-4">BEERS Drank: 0</p>
+                    <p className="mt-4">BEERS Shared: 0</p>
+                    <p className="mt-4">BEERS Collected: 0</p>
+                  </>
+                )}
               </div>
             </>
           ) : !currentGlobalTokenURI ? (
@@ -352,7 +371,7 @@ const Index = () => {
               onSubmit={handleSubmit}
             >
               <legend className="mb-8 lg:mb-4 text-lg text-center">
-                It looks like you don&apos;t have a POEP Profile!
+                It looks like you don&apos;t have a PoB Profile!
               </legend>
               <div className="w-full flex border-2 border-base-300 bg-base-200 rounded-lg text-accent">
                 <input
