@@ -17,14 +17,8 @@ import { INFTMetadata } from "~~/types/nft-metadata/nft-metadata";
 import { getPersonalPOEPMetadata } from "~~/utils/poep";
 
 const Index = () => {
-  // const POEPFactoryAddress = process.env.NEXT_PUBLIC_POEP_PROFILE_FACTORY_ADDRESS;
-
-  // const ethereum = (window as any).ethereum;
-  // const provider = new ethers.providers.Web3Provider(ethereum);
-  // const wagmiProvider = getProvider();
   const contractName = "POEPProfileFactory";
   const fileFormKey = "poep_image";
-  const metadataURI = "";
 
   const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined);
   const [imgObj, setImgObj] = useState<any>(undefined);
@@ -74,13 +68,6 @@ const Index = () => {
     args: [profileHandle, profileHandle.toUpperCase()],
   });
 
-  // const { writeAsync: writeGlobalURI, isLoading: isLoadingSetGlobalURI } = useDeployedContractWrite({
-  //   contractAddress: userProfileAddress,
-  //   contractName: "POEPProfile",
-  //   functionName: "setGlobalTokenURI",
-  //   args: [metadataURI],
-  // });
-
   const checkHandleAvailability = async () => {
     try {
       await refetchHandleAssignedAddress();
@@ -99,10 +86,10 @@ const Index = () => {
     try {
       await checkHandleAvailability();
       const res = await createProfile();
-      console.log(res);
+      if (res !== undefined) console.log(res);
+      setTimeout(() => setIsLoading(false), 1500);
     } catch (error) {
       console.log(error);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -132,53 +119,6 @@ const Index = () => {
     }
   }, [imgObj, profileHandle]);
 
-  // const handleSetGlobalTokenURI: any = useCallback(
-  //   async (event: any) => {
-  //     event.preventDefault();
-  //     setIsLoading(true);
-  //     if (!userProfileAddress || !username) {
-  //       setIsLoading(false);
-  //       return toast.error("No Profile Contract or Username connected", {
-  //         position: "top-center",
-  //       });
-  //     }
-  //     try {
-  //       const imgCid = await getFilesCid();
-  //       const metadata: INFTMetadata = getPersonalPOEPMetadata({
-  //         imgCid,
-  //         profileAddress: userProfileAddress,
-  //         username,
-  //       });
-  //       const res = await axios.post(
-  //         "/api/upload-metadata",
-  //         { metadata },
-  //         {
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //           },
-  //         },
-  //       );
-  //       console.log("metadataURI:", res.data.cid);
-  //       metadataURI = res.data.cid;
-  //       setNewGlobalURI(res.data.cid);
-  //       console.log("sending this", metadataURI);
-  //       console.log("to this address", userProfileAddress);
-  //       console.log("this is crap", newGlobalURI);
-  //       setTimeout(async () => {
-  //         await writeGlobalURI();
-  //         toast.success("Successfully set your Personal POEP", {
-  //           position: "top-center",
-  //         });
-  //       }, 2000);
-  //     } catch (error) {
-  //       console.log(error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   },
-  //   [getFilesCid, userProfileAddress, username, writeGlobalURI],
-  // );
-
   const writeSetGlobalTokenURI: any = useCallback(
     async (event: any) => {
       event.preventDefault();
@@ -190,10 +130,6 @@ const Index = () => {
         });
       }
 
-      // const accounts = await ethereum.request({
-      //   method: "eth_requestAccounts",
-      // });
-      // const signer = provider.getSigner(accounts[0]);
       const signer = await fetchSigner();
       const poepProfileContract = new ethers.Contract(userProfileAddress, POEPProfileContract.abi, signer as any);
 
@@ -213,21 +149,17 @@ const Index = () => {
             },
           },
         );
-        console.log("metadataURI:", res.data.cid);
-        // metadataURI = res.data.cid;
+        // console.log("metadataURI:", res.data.cid);
         setNewGlobalURI(res.data.cid);
-        console.log("sending this", metadataURI);
-        console.log("to this address", userProfileAddress);
-        console.log("this is crap", newGlobalURI);
+        // console.log("sending this", metadataURI);
+        // console.log("to this address", userProfileAddress);
+        // console.log("this is crap", newGlobalURI);
         const tx = await poepProfileContract.setGlobalTokenURI(res.data.cid);
         toast.success("Successfully set your Personal BEER", {
           position: "top-center",
         });
-        console.log(tx);
-        console.log(tx.hash);
-        // setTimeout(async () => {
-        //   await writeGlobalURI();
-        // }, 2000);
+        // console.log(tx);
+        // console.log(tx.hash);
       } catch (error) {
         console.log(error);
       } finally {
@@ -245,7 +177,7 @@ const Index = () => {
 
   const getNftImageURI = useCallback(
     async ({ nftCid, protocolStr = "ipfs://", httpStr = "" }: TGetNftImageURIParams) => {
-      console.log("calling from getNftImageURI", nftCid);
+      // console.log("calling from getNftImageURI", nftCid);
       if (!nftCid) return "";
       const cidString = nftCid.replace(protocolStr, httpStr);
       const res = await axios.get(`https://nftstorage.link/ipfs/${cidString}`);
@@ -260,7 +192,7 @@ const Index = () => {
     const fetchImageURI = async () => {
       let formattedImageURI = "";
       if (currentGlobalTokenURI && username) {
-        console.log("calling from useEffect", currentGlobalTokenURI);
+        // console.log("calling from useEffect", currentGlobalTokenURI);
         formattedImageURI = await getNftImageURI({ nftCid: currentGlobalTokenURI });
         setNftImageURI(formattedImageURI);
       }
@@ -269,8 +201,6 @@ const Index = () => {
     if (currentGlobalTokenURI && !nftImageURI) {
       fetchImageURI();
     }
-    console.log(currentGlobalTokenURI);
-    console.log(userProfileAddress);
 
     currentGlobalTokenURI && getNftImageURI(currentGlobalTokenURI);
   }, [currentGlobalTokenURI, getNftImageURI, nftImageURI, userProfileAddress, username]);
@@ -391,6 +321,7 @@ const Index = () => {
                   buttonText="Create Profile"
                   classModifier="text-lg w-3/5 md:w-1/2"
                   isDisabled={ishandleAssignedAddressRefetching || isLoading}
+                  isLoading={isLoading}
                 />
               </div>
             </form>

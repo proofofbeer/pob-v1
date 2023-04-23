@@ -1,14 +1,25 @@
 import { useRouter } from "next/router";
+import Loader from "../Loader";
 
 type TPrimaryButtonProps = {
   buttonText: string;
   classModifier: string;
   isDisabled?: boolean;
+  isLoading?: boolean;
   onClick?: () => void;
   path?: string;
+  showLoader?: boolean;
 };
 
-const PrimaryButton = ({ buttonText, classModifier = "w-full", isDisabled, onClick, path }: TPrimaryButtonProps) => {
+const PrimaryButton = ({
+  buttonText,
+  classModifier = "w-full",
+  isDisabled,
+  isLoading,
+  onClick,
+  path,
+  showLoader,
+}: TPrimaryButtonProps) => {
   const router = useRouter();
   return (
     <div className="w-full flex justify-center my-4">
@@ -18,6 +29,7 @@ const PrimaryButton = ({ buttonText, classModifier = "w-full", isDisabled, onCli
         disabled={isDisabled}
       >
         {buttonText}
+        {showLoader && isLoading && <Loader />}
       </button>
     </div>
   );
