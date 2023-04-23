@@ -16,7 +16,7 @@ import { useDeployedContractRead } from "~~/hooks/scaffold-eth/useDeployedContra
 import { INFTMetadata } from "~~/types/nft-metadata/nft-metadata";
 import { getPersonalPOEPMetadata } from "~~/utils/poep";
 
-const Index = () => {
+const Dashboard = () => {
   const contractName = "POEPProfileFactory";
   const fileFormKey = "poep_image";
 
@@ -153,12 +153,12 @@ const Index = () => {
         setNewGlobalURI(res.data.cid);
         // console.log("sending this", metadataURI);
         // console.log("to this address", userProfileAddress);
-        // console.log("this is crap", newGlobalURI);
+        console.log("this is crap", newGlobalURI);
         const tx = await poepProfileContract.setGlobalTokenURI(res.data.cid);
         toast.success("Successfully set your Personal BEER", {
           position: "top-center",
         });
-        // console.log(tx);
+        console.log(tx);
         // console.log(tx.hash);
       } catch (error) {
         console.log(error);
@@ -220,7 +220,7 @@ const Index = () => {
         isDisabled={
           (userProfileAddress && parseInt(userProfileAddress) == 0) || isLoadingUserProfileAddress || isLoading
         }
-        path="/beer/create"
+        path="/pob/create"
       />
       <div
         id="personal-beer-container"
@@ -334,4 +334,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Dashboard;
