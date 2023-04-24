@@ -31,7 +31,7 @@ const Dashboard = () => {
 
   const { data: userProfileAddress, isLoading: isLoadingUserProfileAddress } = useScaffoldContractRead({
     contractName,
-    functionName: "walletToProfile",
+    functionName: "userAddressToProfile",
     args: [address],
   });
 
@@ -41,7 +41,7 @@ const Dashboard = () => {
     refetch: refetchHandleAssignedAddress,
   } = useScaffoldContractRead({
     contractName,
-    functionName: "profileHandleToWallet",
+    functionName: "profileHandleToUserAddress",
     args: [profileHandle],
     enabled: false,
   });
