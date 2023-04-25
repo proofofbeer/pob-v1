@@ -31,10 +31,20 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   //   autoMine: true,
   // });
 
-  await deploy("PersonalPOBFactory", {
+  // await deploy("PersonalPOBFactory", {
+  //   from: deployer,
+  //   // Contract constructor arguments
+  //   args: ["PersonalPOB-v1", "0x7086D9FeC9f9FD0E74D165ad6E2C1c7537691d3E", 1],
+  //   log: true,
+  //   // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
+  //   // automatically mining the contract deployment transaction. There is no effect on live networks.
+  //   autoMine: true,
+  // });
+
+  await deploy("PersonalPOB", {
     from: deployer,
     // Contract constructor arguments
-    args: ["PersonalPOB-v1", "0x7086D9FeC9f9FD0E74D165ad6E2C1c7537691d3E", 1],
+    args: ["Test", "TEST"],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the contract deployment transaction. There is no effect on live networks.

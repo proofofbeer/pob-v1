@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { fetchSigner } from "@wagmi/core";
 import axios from "axios";
 import { ethers } from "ethers";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { Spinner } from "~~/components/Spinner";
 import NavButton from "~~/components/common/buttons/NavButton";
 import PrimaryButton from "~~/components/common/buttons/PrimaryButton";
@@ -71,10 +73,26 @@ const Dashboard = () => {
     enabled: true,
   });
 
+  const { data: profilePobTotalSupply }: any = useDeployedContractRead({
+    contractAddress: userProfileAddress,
+    contractName: "POEPProfile",
+    functionName: "totalSupply",
+    args: [],
+    enabled: true,
+  });
+
   const { data: personalPobTokenURI, refetch: refetchPersonalPobTokenURI }: any = useDeployedContractRead({
     contractAddress: personalPobAddress,
     contractName: "PersonalPOB",
     functionName: "globalTokenURI",
+    args: [],
+    enabled: false,
+  });
+
+  const { data: personalPobTotalSupply, refetch: refetchPersonalPobTotalSupply }: any = useDeployedContractRead({
+    contractAddress: personalPobAddress,
+    contractName: "PersonalPOB",
+    functionName: "totalSupply",
     args: [],
     enabled: false,
   });
@@ -85,19 +103,26 @@ const Dashboard = () => {
     args: [profileHandle, profileHandle.toUpperCase()],
   });
 
-  const { writeAsync: writeMintProfilePob, isLoading: isLoadingMintProfilePob } = useDeployedContractWrite({
+  const {
+    writeAsync: writeMintProfilePob,
+    isLoading: isLoadingMintProfilePob,
+    isMining: isMiningMintProfilePob,
+  } = useDeployedContractWrite({
     contractAddress: userProfileAddress,
-    contractName: "ERC721",
+    contractName: "POEPProfile",
     functionName: "safeMint",
     args: [mintProfilePobAddress],
   });
 
-  const { writeAsync: writeMintPersonalPob } = useDeployedContractWrite({
+  const {
+    writeAsync: writeMintPersonalPob,
+    isLoading: isLoadingMintPersonalPob,
+    isMining: isMiningMintPersonalPob,
+  } = useDeployedContractWrite({
     contractAddress: personalPobAddress,
-    contractName: "ERC721",
+    contractName: "PersonalPOB",
     functionName: "safeMint",
     args: [mintPersonalPobAddress],
-    value: "1",
   });
 
   const checkHandleAvailability = async () => {
@@ -254,20 +279,16 @@ const Dashboard = () => {
     if (currentGlobalTokenURI && !nftImageURI) {
       fetchImageURI(currentGlobalTokenURI, "profileImage");
     }
-    // if (personalPobAddress && parseInt(personalPobAddress) != 0 && !personalPobTokenURI) {
-    //   console.log("pobContractAddress:", personalPobAddress);
-    //   refetchPersonalPobTokenURI();
-    // }
     if (personalPobAddress) {
       console.log("pobContractAddress:", personalPobAddress);
       refetchPersonalPobTokenURI();
+      refetchPersonalPobTotalSupply();
     }
     if (personalPobTokenURI) {
       console.log("pobContractAddress:", personalPobAddress);
       console.log("personalPobTokenURI:", personalPobTokenURI);
       fetchImageURI(personalPobTokenURI, "pobImage");
     }
-    console.log("personalPob address:", personalPobAddress);
     // console.log("profile address:", userProfileAddress);
     // console.log(currentGlobalTokenURI);
 
@@ -282,6 +303,7 @@ const Dashboard = () => {
     refetchPersonalPobTokenURI,
     userProfileAddress,
     username,
+    refetchPersonalPobTotalSupply,
   ]);
 
   const previewImage = useMemo(() => {
@@ -352,11 +374,10 @@ const Dashboard = () => {
                                 <PrimaryButton
                                   buttonText="Mint"
                                   classModifier="w-3/5 md:w-3/5 lg:w-2/5 text-xl"
-                                  isDisabled={isLoading || isLoadingMintProfilePob}
-                                  onClick={() => {
-                                    console.log(userProfileAddress);
-                                    console.log(mintProfilePobAddress);
-                                    writeMintProfilePob();
+                                  isDisabled={isLoading || isLoadingMintProfilePob || isMiningMintProfilePob}
+                                  onClick={async () => {
+                                    await writeMintProfilePob();
+                                    setMintProfilePobAddress("");
                                   }}
                                 />
                               </div>
@@ -414,32 +435,21 @@ const Dashboard = () => {
                           </div>
                         </div>
                       </div>
-                      {/* <div className="w-full flex items-center justify-center mb-4">
-                        <label
-                          htmlFor="profile-pob-modal"
-                          className="btn bg-orange-700 hover:bg-orange-600 border-primary-focus border-2 text-gray-900 dark:text-white btn-md md:btn-sm w-3/5 md:w-3/5 lg:w-2/5"
+                      <div className="mt-4">
+                        <p className="mb-2">
+                          Total minted: {profilePobTotalSupply && parseInt(profilePobTotalSupply._hex)}
+                        </p>
+                        <Link
+                          className="flex justify-center items-center hover:cursor-pointer hover:underline hover:underline-offset-2 w-full mb-2"
+                          href={`https://mumbai.polygonscan.com/address/${userProfileAddress}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
-                          Mint <span className="ml-2">⛏️</span>
-                        </label>
-                        <input type="checkbox" id="profile-pob-modal" className="modal-toggle" />
-                        <div className="modal">
-                          <div className="modal-box relative">
-                            <label htmlFor="profile-pob-modal" className="btn btn-sm btn-circle absolute right-2 top-2">
-                              ✕
-                            </label>
-                            <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Mint NFT and transfer to:</h2>
-                            <div className="mb-8 px-4">
-                              <AddressInput
-                                name="mintRecipientAddress"
-                                onChange={(value: any) => setMintProfilePobAddress(value)}
-                                placeholder="Enter address or ENS"
-                                value={mintProfilePobAddress}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div> */}
-                      <div className="w-full flex justify-center gap-4 mt-4">Sharing and changing coming soon!</div>
+                          View on Explorer
+                          <ArrowTopRightOnSquareIcon className="w-4 ml-2" />
+                        </Link>
+                        <p>Sharing and changing coming soon!</p>
+                      </div>
                     </div>
                   </div>
                 </>
@@ -510,14 +520,87 @@ const Dashboard = () => {
                   </div>
                   <div className="text-center text-lg font-medium w-full">
                     <div className="w-full flex justify-center gap-4 mt-8">
-                      <button className="btn btn-primary w-1/4 lg:w-1/5 normal-case" disabled={!personalPobTokenURI}>
-                        Mint
-                      </button>
-                      <button className="btn btn-primary w-1/4 lg:w-1/5 normal-case" disabled={true}>
-                        Share
-                      </button>
+                      <div className="w-1/4 lg:w-1/5">
+                        <label
+                          htmlFor="mint-personal-pob-modal"
+                          className="btn btn-primary normal-case w-full"
+                          // disabled={currentGlobalTokenURI ? false : true}
+                        >
+                          Mint
+                        </label>
+                        <input type="checkbox" id="mint-personal-pob-modal" className="modal-toggle" />
+                        <div className="modal">
+                          <div className="modal-box relative">
+                            <label
+                              htmlFor="mint-personal-pob-modal"
+                              className="btn btn-sm btn-circle absolute right-2 top-2"
+                            >
+                              ✕
+                            </label>
+                            <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Mint NFT and transfer to:</h2>
+                            <div className="mb-8 px-4">
+                              <AddressInput
+                                name="mintRecipientAddress"
+                                onChange={(value: any) => setMintPersonalPobAddress(value)}
+                                placeholder="Enter address or ENS"
+                                value={mintPersonalPobAddress}
+                              />
+                            </div>
+                            <div className="w-full flex justify-center mt-8 mb-8">
+                              <PrimaryButton
+                                buttonText="Mint"
+                                classModifier="w-3/5 md:w-3/5 lg:w-2/5 text-xl"
+                                isDisabled={isLoading || isLoadingMintPersonalPob || isMiningMintPersonalPob}
+                                onClick={async () => {
+                                  await writeMintPersonalPob();
+                                  setMintPersonalPobAddress("");
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="w-1/4 lg:w-1/5">
+                        <label htmlFor="share-profile-pob-modal" className="btn btn-disabled normal-case w-full">
+                          Share
+                        </label>
+                        <input disabled type="checkbox" id="share-profile-pob-modal" className="modal-toggle" />
+                        <div className="modal">
+                          <div className="modal-box relative">
+                            <label
+                              htmlFor="share-profile-pob-modal"
+                              className="btn btn-sm btn-circle absolute right-2 top-2"
+                            >
+                              ✕
+                            </label>
+                            <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Share mint link:</h2>
+                            <div className="mb-8 px-4">
+                              <AddressInput
+                                name="mintRecipientAddress"
+                                onChange={(value: any) => setMintPersonalPobAddress(value)}
+                                placeholder="Enter address or ENS"
+                                value={mintPersonalPobAddress}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="w-full flex justify-center gap-4 mt-4">Sharing coming soon!</div>
+                    <div className="mt-4">
+                      <p className="mb-2">
+                        Total minted: {personalPobTotalSupply && parseInt(personalPobTotalSupply._hex)}
+                      </p>
+                      <Link
+                        className="flex justify-center items-center hover:cursor-pointer hover:underline hover:underline-offset-2 w-full mb-2"
+                        href={`https://mumbai.polygonscan.com/address/${personalPobAddress}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View on Explorer
+                        <ArrowTopRightOnSquareIcon className="w-4 ml-2" />
+                      </Link>
+                      <p>Sharing coming soon!</p>
+                    </div>
                   </div>
                 </div>
               </>

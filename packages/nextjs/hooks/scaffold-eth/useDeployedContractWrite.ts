@@ -3,7 +3,7 @@ import { Abi } from "abitype";
 import { utils } from "ethers";
 import { useContractWrite, useNetwork } from "wagmi";
 import { getParsedEthersError } from "~~/components/scaffold-eth";
-import { ERC721Contract, POEPFactoryContract, POEPProfileContract } from "~~/contracts";
+import { ERC721Contract, POEPFactoryContract, POEPProfileContract, PersonalPOBContract } from "~~/contracts";
 // import POEPProfileContract from "~~/contracts/POEPProfile.json";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
@@ -22,9 +22,6 @@ export const useDeployedContractWrite = ({
   const configuredNetwork = getTargetNetwork();
 
   let selectedContractAbi;
-  let gasPrice;
-  let gasLimit;
-  console.log(contractAddress);
 
   switch (contractName) {
     case "POEPProfileFactory":
@@ -33,10 +30,11 @@ export const useDeployedContractWrite = ({
     case "POEPProfile":
       selectedContractAbi = POEPProfileContract.abi as Abi;
       break;
+    case "PersonalPOB":
+      selectedContractAbi = PersonalPOBContract.abi as Abi;
+      break;
     case "ERC721":
       selectedContractAbi = ERC721Contract.abi as Abi;
-      gasPrice = 100000;
-      gasLimit = 10000000;
       break;
     default:
       selectedContractAbi = ERC721Contract.abi as Abi;
@@ -52,8 +50,6 @@ export const useDeployedContractWrite = ({
     mode: "recklesslyUnprepared",
     overrides: {
       value: value ? utils.parseEther(value) : undefined,
-      gasPrice: 250e9,
-      gasLimit: 20000000,
     },
     onError(error) {
       console.log("Error", error);

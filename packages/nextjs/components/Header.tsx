@@ -1,8 +1,8 @@
 import React, { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Bars3Icon, BeakerIcon, RectangleGroupIcon } from "@heroicons/react/24/outline";
-import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
+import { Bars3Icon, RectangleGroupIcon } from "@heroicons/react/24/outline";
+import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
