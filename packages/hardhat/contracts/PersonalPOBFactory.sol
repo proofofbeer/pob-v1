@@ -23,12 +23,12 @@ contract PersonalPOBFactory is Ownable {
     pobTotalSupply = 0;
   }
 
-  function createNewPersonalPob(string memory _collectionName, address _userAddress, address _profileAddress) public payable {
+  function createNewPersonalPob(string memory _collectionName, address _userAddress, address _profileAddress, string memory _globalTokenURI) public payable {
     address msgSender = _msgSender();
     require(msg.value >= pobContractPrice, "POBFactory: Not enough MATIC to purchase POB Contract");
     require(IPOEPProfileFactory(_POBProfileFactoryAddress).getUserAddressToProfile(_userAddress) != address(0), "POBFactory: User does not have POB Profile");
     require(block.timestamp > profileAddressToPobExpiration[_profileAddress], "POBFactory: Sender already has an active Personal POB");
-    PersonalPOB newPersonalPob = new PersonalPOB(_collectionName);
+    PersonalPOB newPersonalPob = new PersonalPOB(_collectionName, _globalTokenURI);
     newPersonalPob.transferOwnership(msgSender);
     personalPobArray.push(newPersonalPob);
     ++pobTotalSupply;

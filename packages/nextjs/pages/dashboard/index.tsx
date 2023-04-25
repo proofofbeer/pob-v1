@@ -149,13 +149,9 @@ const Dashboard = () => {
             },
           },
         );
-        // console.log("metadataURI:", res.data.cid);
         setNewGlobalURI(res.data.cid);
-        // console.log("sending this", metadataURI);
-        // console.log("to this address", userProfileAddress);
-        console.log("this is crap", newGlobalURI);
         const tx = await poepProfileContract.setGlobalTokenURI(res.data.cid);
-        toast.success("Successfully set your Personal BEER", {
+        toast.success("Successfully set your Profile", {
           position: "top-center",
         });
         console.log(tx);
@@ -166,7 +162,7 @@ const Dashboard = () => {
         setIsLoading(false);
       }
     },
-    [getFilesCid, newGlobalURI, userProfileAddress, username],
+    [getFilesCid, userProfileAddress, username],
   );
 
   type TGetNftImageURIParams = {
@@ -179,8 +175,12 @@ const Dashboard = () => {
     async ({ nftCid, protocolStr = "ipfs://", httpStr = "" }: TGetNftImageURIParams) => {
       // console.log("calling from getNftImageURI", nftCid);
       if (!nftCid) return "";
+      console.log(nftCid);
       const cidString = nftCid.replace(protocolStr, httpStr);
-      const res = await axios.get(`https://nftstorage.link/ipfs/${cidString}`);
+      console.log(cidString);
+      const res = await axios.get(`https://${nftCid}.ipfs.nftstorage.link/nft-1`);
+      console.log(`https://${nftCid}.ipfs.nftstorage.link/nft-1`);
+      // const res = await axios.get(`https://nftstorage.link/ipfs/${nftCid}/nft-1`);
       const imgCid = res.data.image;
       console.log(`https://nftstorage.link/ipfs/${imgCid}/${username}-personal-poep-file`);
       return `https://nftstorage.link/ipfs/${imgCid}/${username}-personal-poep-file`;
@@ -202,6 +202,9 @@ const Dashboard = () => {
       fetchImageURI();
     }
 
+    console.log(userProfileAddress);
+    console.log(currentGlobalTokenURI);
+
     currentGlobalTokenURI && getNftImageURI(currentGlobalTokenURI);
   }, [currentGlobalTokenURI, getNftImageURI, nftImageURI, userProfileAddress, username]);
 
@@ -214,20 +217,19 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
-      <h1 className="text-4xl font-semibold text-center mb-4">Your BEERS</h1>
+      <h1 className="text-4xl font-semibold text-center mb-4">Welcome</h1>
       <NavButton
-        buttonText="Create BEER"
+        buttonText="Create POB"
         isDisabled={
           (userProfileAddress && parseInt(userProfileAddress) == 0) || isLoadingUserProfileAddress || isLoading
         }
         path="/pob/create"
       />
       <div
-        id="personal-beer-container"
+        id="profile-pob-container"
         className="w-full md:w-11/12 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
       >
         <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
-          <h2 className="text-center text-2xl w-full">Your Personal BEER</h2>
           {isLoadingUserProfileAddress && (
             <div className="mt-14">
               <Spinner width="50px" height="50px" />
@@ -236,73 +238,70 @@ const Dashboard = () => {
           {userProfileAddress && parseInt(userProfileAddress) ? (
             <>
               {currentGlobalTokenURI && nftImageURI ? (
-                <div className="text-center text-lg font-medium w-full md:w-3/5 p-4">
-                  <div className="m-2 px-8 lg:px-20 xl:px-24 2xl:px-32">
-                    <NFTImage imageURI={nftImageURI} />
+                <>
+                  <h3 className="text-center text-2xl font-medium w-full">Your Profile</h3>
+                  <div className="text-center text-lg font-medium w-full md:w-3/5 p-4">
+                    <div className="m-2 px-8 lg:px-20 xl:px-24 2xl:px-32">
+                      <NFTImage imageURI={nftImageURI} />
+                    </div>
+                    <div className="text-center text-lg font-medium w-full md:w-2/5 md:flex md:flex-col md:mt-6 lg:mt-0 xl:mt-4">
+                      <div className="w-full flex justify-center gap-4 mt-8">
+                        <button
+                          className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
+                          disabled={currentGlobalTokenURI ? false : true}
+                        >
+                          Share
+                        </button>
+                        <button
+                          className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
+                          disabled={currentGlobalTokenURI ? false : true}
+                        >
+                          Change
+                        </button>
+                      </div>
+                      {/* <p className="mt-4">Username: {username}</p>
+                      <a
+                        href={`https://polygonscan.com/address/${userProfileAddress}`}
+                        className="mt-2 flex items-center justify-center w-full"
+                      >
+                        Profile Contract <ArrowTopRightOnSquareIcon className="w-5 h-5 mb-1 ml-2" />
+                      </a>
+                      {currentGlobalTokenURI && (
+                        <>
+                          <p className="mt-6 mb-2 text-xl font-bold">POBs available: 6</p>
+                          <p className="mt-4">POBs Drank: 0</p>
+                          <p className="mt-4">POBs Shared: 0</p>
+                          <p className="mt-4">POBs Collected: 0</p>
+                        </>
+                      )} */}
+                    </div>
                   </div>
-                </div>
+                </>
               ) : (
-                <div className="text-center text-lg font-medium w-full md:w-3/5 p-4">
-                  <p className="m-4">Let&apos;s set up your Personal BEER!</p>
-                  <div className="m-2 px-8 lg:px-20 xl:px-24 2xl:px-32">
-                    <FilePreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
+                <>
+                  <p className="text-center text-lg font-medium w-full">Let&apos;s set up your Profile POB!</p>
+                  <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4">
+                    <div className="m-2 px-4 lg:px-4 xl:px-24 2xl:px-32">
+                      <FilePreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
+                    </div>
+                    <div className="w-full mt-0">
+                      <PrimaryButton
+                        buttonText="Set Profile POB"
+                        classModifier="text-lg w-3/5"
+                        isDisabled={!previewImage || isLoading}
+                        onClick={writeSetGlobalTokenURI}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full mt-0">
-                    <PrimaryButton
-                      buttonText="Set Personal BEER"
-                      classModifier="text-lg w-3/5"
-                      isDisabled={!previewImage || isLoading}
-                      onClick={writeSetGlobalTokenURI}
-                    />
-                  </div>
-                </div>
+                </>
               )}
-              <div className="text-center text-lg font-medium w-full md:w-2/5 md:flex md:flex-col md:mt-6 lg:mt-0 xl:mt-4">
-                <div className="w-full flex justify-center gap-4 lg:m-4">
-                  <button
-                    className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
-                    disabled={currentGlobalTokenURI ? false : true}
-                  >
-                    Drink
-                  </button>
-                  <button
-                    className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
-                    disabled={currentGlobalTokenURI ? false : true}
-                  >
-                    Share
-                  </button>
-                  <button
-                    className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
-                    disabled={currentGlobalTokenURI ? false : true}
-                  >
-                    Change
-                  </button>
-                </div>
-                <p className="mt-4">Username: {username}</p>
-                <a
-                  href={`https://polygonscan.com/address/${userProfileAddress}`}
-                  className="mt-2 flex items-center justify-center w-full"
-                >
-                  Profile Contract <ArrowTopRightOnSquareIcon className="w-5 h-5 mb-1 ml-2" />
-                </a>
-                {currentGlobalTokenURI && (
-                  <>
-                    <p className="mt-6 mb-2 text-xl font-bold">BEERS available: 6</p>
-                    <p className="mt-4">BEERS Drank: 0</p>
-                    <p className="mt-4">BEERS Shared: 0</p>
-                    <p className="mt-4">BEERS Collected: 0</p>
-                  </>
-                )}
-              </div>
             </>
           ) : !currentGlobalTokenURI ? (
             <form
               className="flex flex-col items-center justify-center w-full md:w-3/5 lg:w-1/2 xl:w-2/5 pb-4 pt-8 px-4"
               onSubmit={handleSubmit}
             >
-              <legend className="mb-8 lg:mb-4 text-lg text-center">
-                It looks like you don&apos;t have a PoB Profile!
-              </legend>
+              <legend className="mb-8 lg:mb-4 text-lg text-center">It looks like you don&apos;t have one!</legend>
               <div className="w-full flex border-2 border-base-300 bg-base-200 rounded-lg text-accent">
                 <input
                   className="input input-ghost focus:outline-none focus:bg-transparent focus:text-gray-400 h-[2.5rem] min-h-[2.5rem] border w-full font-medium placeholder:text-accent/50 text-gray-400 text-lg text-center"
@@ -320,7 +319,7 @@ const Dashboard = () => {
                 <PrimaryButton
                   buttonText="Create Profile"
                   classModifier="text-lg w-3/5 md:w-1/2"
-                  isDisabled={ishandleAssignedAddressRefetching || isLoading}
+                  isDisabled={profileHandle.length < 5 || ishandleAssignedAddressRefetching || isLoading}
                   isLoading={isLoading}
                 />
               </div>
@@ -330,6 +329,47 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+      {userProfileAddress && parseInt(userProfileAddress) && (
+        <div
+          id="personal-pobs-container"
+          className="w-full md:w-11/12 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
+        >
+          <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
+            {currentGlobalTokenURI && nftImageURI && (
+              <>
+                <h3 className="text-center text-2xl font-medium w-full">Active POBs</h3>
+                <div className="text-center text-lg font-medium w-full md:w-3/5 p-4">
+                  <div className="m-2 px-8 lg:px-20 xl:px-24 2xl:px-32">
+                    <NFTImage imageURI={nftImageURI} />
+                  </div>
+                  <div className="text-center text-lg font-medium w-full md:w-2/5 md:flex md:flex-col md:mt-6 lg:mt-0 xl:mt-4">
+                    <div className="w-full flex justify-center gap-4 mt-8">
+                      <button
+                        className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
+                        disabled={currentGlobalTokenURI ? false : true}
+                      >
+                        Drink
+                      </button>
+                      <button
+                        className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
+                        disabled={currentGlobalTokenURI ? false : true}
+                      >
+                        Share
+                      </button>
+                      <button
+                        className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
+                        disabled={currentGlobalTokenURI ? false : true}
+                      >
+                        Change
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

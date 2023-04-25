@@ -16,7 +16,9 @@ contract PersonalPOB is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
   string public globalTokenURI;
   uint256 public maxSupply = 25;
 
-  constructor(string memory _name) ERC721(_name, "POB") {}
+  constructor(string memory _name, string memory _globalTokenURI) ERC721(_name, "POB") {
+    globalTokenURI = _globalTokenURI;
+  }
 
   function safeMint(address _to) public {
     uint256 tokenId = _tokenIdCounter.current();

@@ -4,10 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./POEPProfile.sol";
-
-interface IPOEPProfileFactory {
-  function getUserAddressToProfile(address _userAddress) external view returns (address profileAddress);
-}
+import "./interfaces/IPOEPProfileFactory.sol";
 
 contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
   string private _poepVersion;
@@ -34,7 +31,7 @@ contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
     userAddressToProfile[msgSender] = address(newPoepProfile);
   }
 
-  function getUserAddressToProfile(address _userAddress) external view override returns (address) {
+  function getUserAddressToProfile(address _userAddress) external view returns (address) {
     return userAddressToProfile[_userAddress];
   }
 
