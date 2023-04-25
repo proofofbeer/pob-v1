@@ -19,9 +19,7 @@ const upload = multer({
 
 uploadApi.use(upload.array("files"));
 const getPersonalPOBMetadata = (metadata: any, imgCid: string) => {
-  console.log("call from getMetadata fn:", typeof metadata);
   if (metadata.event_type === "Virtual") {
-    console.log("entro a virtual");
     return {
       name: metadata.name,
       description: metadata.description,
@@ -36,7 +34,6 @@ const getPersonalPOBMetadata = (metadata: any, imgCid: string) => {
       },
     };
   } else if (metadata.event_type === "In-person") {
-    console.log("entro a in person");
     return {
       name: metadata.name,
       description: metadata.description,
@@ -55,14 +52,8 @@ const getPersonalPOBMetadata = (metadata: any, imgCid: string) => {
 
 uploadApi.post(async (req, res) => {
   const files = req.files;
-  // const body = JSON.stringify(req.body);
-  console.log(req.body);
-  console.log(files);
   const nftStorage = new NFTStorage({ token });
 
-  // const imageCid = await nftStorage.storeDirectory(
-  //   files.map((file: any, index: number) => new File([file.buffer], `image-${index}`)),
-  // );
   const imageCid = await nftStorage.storeDirectory([
     ...files.map((file: any, index: number) => new File([file.buffer], `image-${index}`)),
   ]);
@@ -77,7 +68,6 @@ uploadApi.post(async (req, res) => {
   const nftUrl = `https://${cid}.ipfs.nftstorage.link/nft-0`;
 
   res.json({ cid, imageCid, imageStatus, nftUrl, status });
-  // res.json({ status: "lol" });
 });
 
 export default uploadApi;

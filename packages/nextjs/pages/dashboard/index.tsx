@@ -195,14 +195,12 @@ const Dashboard = () => {
       const poepProfileContract = new ethers.Contract(userProfileAddress, POEPProfileContract.abi, signer as any);
 
       try {
-        console.log(username);
         const imgCid = await getFilesCid();
         const metadata: INFTMetadata = getPersonalPOEPMetadata({
           imgCid,
           profileAddress: userProfileAddress,
           username,
         });
-        console.log(metadata);
         const res = await axios.post(
           "/api/upload-metadata",
           { metadata },
@@ -217,7 +215,6 @@ const Dashboard = () => {
           position: "top-center",
         });
         console.log(tx);
-        // console.log(tx.hash);
       } catch (error) {
         console.log(error);
       } finally {
@@ -228,47 +225,8 @@ const Dashboard = () => {
     [getFilesCid, router, userProfileAddress, username],
   );
 
-  type TGetNftImageURIParams = {
-    nftCid: string;
-    pobNameImage: string;
-  };
-
-  const getNftImageURI = useCallback(async ({ nftCid, pobNameImage }: TGetNftImageURIParams) => {
-    // console.log("calling from getNftImageURI", nftCid);
-    let nftUrl = "";
-    if (!nftCid) return "";
-    if (pobNameImage === "profileImage") {
-      // nftUrl = `https://${nftCid}.ipfs.nftstorage.link/nft-1`;
-      nftUrl = `https://${nftCid}.ipfs.nftstorage.link/nft-1`;
-    } else if (pobNameImage === "pobImage") {
-      console.log("nftCid:", nftCid);
-      // nftUrl = `https://${nftCid}.ipfs.nftstorage.link/nft-0`;
-      nftUrl = `https://${nftCid}.ipfs.nftstorage.link/nft-0`;
-      console.log("nftURL:", nftUrl);
-    } else {
-      return "";
-    }
-    // const cidString = nftCid.replace(protocolStr, httpStr);
-    // console.log(cidString);
-    const res = await axios.get(nftUrl);
-    // console.log(`https://${nftCid}.ipfs.nftstorage.link/nft-1`);
-    // const res = await axios.get(`https://nftstorage.link/ipfs/${nftCid}/nft-1`);
-    console.log(res);
-    const imgCid = res.data.image;
-    if (pobNameImage === "profileImage") {
-      console.log(`https://nftstorage.link/ipfs/${imgCid}/image-0`);
-      return `https://nftstorage.link/ipfs/${imgCid}/image-0`;
-    } else if (pobNameImage === "pobImage") {
-      console.log(`https://nftstorage.link/ipfs/${imgCid}/image-0`);
-      return `https://nftstorage.link/ipfs/${imgCid}/image-0`;
-    } else {
-      return "";
-    }
-  }, []);
-
   const getDirectImageUrl = useCallback(async (nftUrl: string) => {
     const res = await axios.get(nftUrl);
-    console.log(res);
     return res.data.image;
   }, []);
 
@@ -276,15 +234,11 @@ const Dashboard = () => {
     const fetchImageURI = async (tokenURI: string, pobNameImage: string) => {
       let formattedImageURI = "";
       if (currentGlobalTokenURI && username && pobNameImage === "profileImage") {
-        console.log("calling PROFILE from useEffect", currentGlobalTokenURI);
-        // formattedImageURI = await getNftImageURI({ nftCid: tokenURI, pobNameImage });
         formattedImageURI = await getDirectImageUrl(tokenURI);
         setNftImageURI(formattedImageURI);
       }
       if (personalPobTokenURI && username && pobNameImage === "pobImage") {
-        console.log("calling pob from useEffect", personalPobTokenURI);
         formattedImageURI = await getDirectImageUrl(tokenURI);
-        console.log(formattedImageURI);
         setPersonalPobImageURI(formattedImageURI);
       }
       return formattedImageURI;
@@ -293,22 +247,14 @@ const Dashboard = () => {
       fetchImageURI(currentGlobalTokenURI, "profileImage");
     }
     if (personalPobAddress) {
-      console.log("pobContractAddress:", personalPobAddress);
       refetchPersonalPobTokenURI();
       refetchPersonalPobTotalSupply();
     }
     if (personalPobTokenURI) {
-      console.log("pobContractAddress:", personalPobAddress);
-      console.log("personalPobTokenURI:", personalPobTokenURI);
       fetchImageURI(personalPobTokenURI, "pobImage");
     }
-    // console.log("profile address:", userProfileAddress);
-    // console.log(currentGlobalTokenURI);
-
-    // currentGlobalTokenURI && getDirectImageUrl(currentGlobalTokenURI);
   }, [
     currentGlobalTokenURI,
-    getNftImageURI,
     nftImageURI,
     personalPobTokenURI,
     personalPobAddress,

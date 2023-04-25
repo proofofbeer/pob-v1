@@ -13,7 +13,6 @@ const uploadMetadataApi = nextConnect<NextApiRequest, NextApiResponse>({
 });
 
 uploadMetadataApi.post(async (req, res) => {
-  console.log(req.body);
   const { metadata } = req.body;
 
   const imageUrl = `https://nftstorage.link/ipfs/${metadata.image}/image-0`;

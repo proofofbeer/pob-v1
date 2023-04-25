@@ -106,7 +106,6 @@ const CreatePOB = () => {
     async (event: any) => {
       event.preventDefault();
       setIsLoading(true);
-      console.log(form);
       if (!userPobProfileAddress || parseInt(userPobProfileAddress) == 0) return;
       const signer = await fetchSigner();
       const personalPobFactoryContract = new ethers.Contract(
@@ -125,7 +124,6 @@ const CreatePOB = () => {
             }
           }
         }
-        console.log("Todo bien hasta aquí", userPobProfileAddress);
         const res = await axios.post("/api/upload-personal-pob", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
