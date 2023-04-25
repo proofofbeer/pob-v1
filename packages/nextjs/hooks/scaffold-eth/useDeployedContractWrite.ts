@@ -22,6 +22,9 @@ export const useDeployedContractWrite = ({
   const configuredNetwork = getTargetNetwork();
 
   let selectedContractAbi;
+  let gasPrice;
+  let gasLimit;
+  console.log(contractAddress);
 
   switch (contractName) {
     case "POEPProfileFactory":
@@ -32,6 +35,8 @@ export const useDeployedContractWrite = ({
       break;
     case "ERC721":
       selectedContractAbi = ERC721Contract.abi as Abi;
+      gasPrice = 100000;
+      gasLimit = 10000000;
       break;
     default:
       selectedContractAbi = ERC721Contract.abi as Abi;
@@ -47,6 +52,8 @@ export const useDeployedContractWrite = ({
     mode: "recklesslyUnprepared",
     overrides: {
       value: value ? utils.parseEther(value) : undefined,
+      gasPrice: 250e9,
+      gasLimit: 20000000,
     },
     onError(error) {
       console.log("Error", error);
