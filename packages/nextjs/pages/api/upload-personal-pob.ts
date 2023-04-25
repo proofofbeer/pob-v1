@@ -18,7 +18,6 @@ const upload = multer({
 });
 
 uploadApi.use(upload.array("files"));
-
 const getPersonalPOBMetadata = (metadata: any, imgCid: string) => {
   console.log("call from getMetadata fn:", typeof metadata);
   if (metadata.event_type === "Virtual") {
@@ -26,8 +25,8 @@ const getPersonalPOBMetadata = (metadata: any, imgCid: string) => {
     return {
       name: metadata.name,
       description: metadata.description,
-      image: imgCid,
-      external_url: `https://kukulcan.xyz/profile/${metadata.profileAddress}`,
+      image: `https://nftstorage.link/ipfs/${imgCid}/image-0`,
+      external_url: `https://pob.lol/pob/${metadata.profileAddress}`,
       attributes: {
         start_date: metadata.event_start_date,
         end_date: metadata.event_end_date,
@@ -41,8 +40,8 @@ const getPersonalPOBMetadata = (metadata: any, imgCid: string) => {
     return {
       name: metadata.name,
       description: metadata.description,
-      image: imgCid,
-      external_url: `https://kukulcan.xyz/profile/${metadata.profileAddress}`,
+      image: `https://nftstorage.link/ipfs/${imgCid}/image-0`,
+      external_url: `https://pob.lol/pob/${metadata.profileAddress}`,
       attributes: {
         start_date: metadata.event_start_date,
         end_date: metadata.event_end_date,
@@ -70,15 +69,14 @@ uploadApi.post(async (req, res) => {
 
   const imageStatus = await nftStorage.status(imageCid);
 
-  console.log(imageCid);
-
   const metadata = getPersonalPOBMetadata(req.body, imageCid);
-  console.log(metadata);
 
   const cid = await nftStorage.storeDirectory([new File([JSON.stringify(metadata)], `nft-0`)]);
   const status = await nftStorage.status(cid);
 
-  res.json({ imageCid, imageStatus, cid, status });
+  const nftUrl = `https://${cid}.ipfs.nftstorage.link/nft-0`;
+
+  res.json({ cid, imageCid, imageStatus, nftUrl, status });
   // res.json({ status: "lol" });
 });
 

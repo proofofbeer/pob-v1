@@ -131,24 +131,17 @@ const CreatePOB = () => {
             "Content-Type": "multipart/form-data",
           },
         });
-        // const res = await createPersonalPob();
-        console.log(res.data);
-        console.log("collection name:", form.name);
-        console.log("user address:", userAddress);
-        console.log("profile address:", userPobProfileAddress);
-        console.log("image cid:", res.data.cid);
 
         const tx = await personalPobFactoryContract.createNewPersonalPob(
           form.name,
           userAddress,
           userPobProfileAddress,
-          res.data.cid,
+          res.data.nftUrl,
           { value: ethers.utils.parseEther("1.0") },
         );
 
         console.log(tx);
 
-        alert(JSON.stringify(res.data));
         toast.success("Successfully created your POB!!!", {
           position: "top-center",
         });

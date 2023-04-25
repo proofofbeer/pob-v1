@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { fetchSigner } from "@wagmi/core";
 import axios from "axios";
 import { ethers } from "ethers";
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const [mintPersonalPobAddress, setMintPersonalPobAddress] = useState<string>("");
 
   const { address: userAddress } = useAccount();
+  const router = useRouter();
 
   const { data: userProfileAddress, isLoading: isLoadingUserProfileAddress } = useScaffoldContractRead({
     contractName,
@@ -73,7 +75,7 @@ const Dashboard = () => {
     enabled: true,
   });
 
-  const { data: profilePobTotalSupply }: any = useDeployedContractRead({
+  const { data: profilePobTotalSupply, refetch: refetchProfilePobTotalSupply }: any = useDeployedContractRead({
     contractAddress: userProfileAddress,
     contractName: "POEPProfile",
     functionName: "totalSupply",
@@ -148,6 +150,8 @@ const Dashboard = () => {
     } catch (error) {
       console.log(error);
       setIsLoading(false);
+    } finally {
+      router.push("/dashboard");
     }
   };
 
@@ -208,7 +212,7 @@ const Dashboard = () => {
             },
           },
         );
-        const tx = await poepProfileContract.setGlobalTokenURI(res.data.cid);
+        const tx = await poepProfileContract.setGlobalTokenURI(res.data.nftUrl);
         toast.success("Successfully set your Profile", {
           position: "top-center",
         });
@@ -218,9 +222,10 @@ const Dashboard = () => {
         console.log(error);
       } finally {
         setIsLoading(false);
+        router.push("/dashboard");
       }
     },
-    [getFilesCid, userProfileAddress, username],
+    [getFilesCid, router, userProfileAddress, username],
   );
 
   type TGetNftImageURIParams = {
@@ -261,16 +266,24 @@ const Dashboard = () => {
     }
   }, []);
 
+  const getDirectImageUrl = useCallback(async (nftUrl: string) => {
+    const res = await axios.get(nftUrl);
+    console.log(res);
+    return res.data.image;
+  }, []);
+
   useEffect(() => {
     const fetchImageURI = async (tokenURI: string, pobNameImage: string) => {
       let formattedImageURI = "";
       if (currentGlobalTokenURI && username && pobNameImage === "profileImage") {
-        formattedImageURI = await getNftImageURI({ nftCid: tokenURI, pobNameImage });
+        console.log("calling PROFILE from useEffect", currentGlobalTokenURI);
+        // formattedImageURI = await getNftImageURI({ nftCid: tokenURI, pobNameImage });
+        formattedImageURI = await getDirectImageUrl(tokenURI);
         setNftImageURI(formattedImageURI);
       }
       if (personalPobTokenURI && username && pobNameImage === "pobImage") {
         console.log("calling pob from useEffect", personalPobTokenURI);
-        formattedImageURI = await getNftImageURI({ nftCid: tokenURI, pobNameImage });
+        formattedImageURI = await getDirectImageUrl(tokenURI);
         console.log(formattedImageURI);
         setPersonalPobImageURI(formattedImageURI);
       }
@@ -292,7 +305,7 @@ const Dashboard = () => {
     // console.log("profile address:", userProfileAddress);
     // console.log(currentGlobalTokenURI);
 
-    currentGlobalTokenURI && getNftImageURI(currentGlobalTokenURI);
+    // currentGlobalTokenURI && getDirectImageUrl(currentGlobalTokenURI);
   }, [
     currentGlobalTokenURI,
     getNftImageURI,
@@ -304,6 +317,7 @@ const Dashboard = () => {
     userProfileAddress,
     username,
     refetchPersonalPobTotalSupply,
+    getDirectImageUrl,
   ]);
 
   const previewImage = useMemo(() => {
@@ -378,6 +392,7 @@ const Dashboard = () => {
                                   onClick={async () => {
                                     await writeMintProfilePob();
                                     setMintProfilePobAddress("");
+                                    refetchProfilePobTotalSupply();
                                   }}
                                 />
                               </div>
@@ -477,7 +492,9 @@ const Dashboard = () => {
               className="flex flex-col items-center justify-center w-full md:w-3/5 lg:w-4/5 pb-4 pt-8 px-4"
               onSubmit={handleSubmit}
             >
-              <legend className="mb-8 lg:mb-4 text-lg text-center">It looks like you don&apos;t have one!</legend>
+              <legend className="mb-8 lg:mb-4 text-lg text-center">
+                It looks like you don&apos;t have a POB Profile!
+              </legend>
               <div className="w-full flex border-2 border-base-300 bg-base-200 rounded-lg text-accent">
                 <input
                   className="input input-ghost focus:outline-none focus:bg-transparent focus:text-gray-400 h-[2.5rem] min-h-[2.5rem] border w-full font-medium placeholder:text-accent/50 text-gray-400 text-lg text-center"
@@ -554,6 +571,7 @@ const Dashboard = () => {
                                 onClick={async () => {
                                   await writeMintPersonalPob();
                                   setMintPersonalPobAddress("");
+                                  refetchPersonalPobTotalSupply();
                                 }}
                               />
                             </div>

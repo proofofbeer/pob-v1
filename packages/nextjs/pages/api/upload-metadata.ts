@@ -16,12 +16,17 @@ uploadMetadataApi.post(async (req, res) => {
   console.log(req.body);
   const { metadata } = req.body;
 
+  const imageUrl = `https://nftstorage.link/ipfs/${metadata.image}/image-0`;
+  metadata["image"] = imageUrl;
+
   const nftStorage = new NFTStorage({ token });
 
   const cid = await nftStorage.storeDirectory([new File([JSON.stringify(metadata)], `nft-${1}`) as any]);
   const status = await nftStorage.status(cid);
 
-  res.status(200).json({ cid, status });
+  const nftUrl = `https://${cid}.ipfs.nftstorage.link/nft-1`;
+
+  res.status(200).json({ cid, nftUrl, status });
 });
 
 export default uploadMetadataApi;
