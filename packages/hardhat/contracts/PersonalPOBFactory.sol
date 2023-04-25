@@ -11,6 +11,7 @@ contract PersonalPOBFactory is Ownable {
   uint256 public pobTotalSupply;
   uint256 public pobContractPrice;
   address private _POBProfileFactoryAddress;
+  address private _withdrawFundsAddress = 0x752c9459Bb3A76caFF270bbe7b8e20A71A67648A;
   PersonalPOB[] public personalPobArray;
   mapping (address => address) public userAddressToPobAddress;
   mapping (address => address) public profileAddressToPobAddress;
@@ -36,6 +37,11 @@ contract PersonalPOBFactory is Ownable {
     profileAddressToPobAddress[_profileAddress] = msgSender;
     profileAddressToPobExpiration[_profileAddress] = block.timestamp + 604800;
   }
+
+  function withdraw(uint256 amount) public {
+    require(amount <= address(this).balance, "Insufficient balance in the contract");
+    payable(_withdrawFundsAddress).transfer(amount);
+}
 
   receive() external payable {}
 

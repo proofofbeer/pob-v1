@@ -1,8 +1,6 @@
 import React, { useCallback, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import logo_black_bg from "../public/logo/logo_black_bg_512.svg";
 import { Bars3Icon, BeakerIcon, RectangleGroupIcon } from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
@@ -40,13 +38,7 @@ export const Header = () => {
       <li>
         <NavLink href="/dashboard">
           <RectangleGroupIcon className="h-4 w-4" />
-          Dashboard
-        </NavLink>
-      </li>
-      <li>
-        <NavLink href="/beers">
-          <BeakerIcon className="h-4 w-4" />
-          BEERS
+          App
         </NavLink>
       </li>
     </>
@@ -88,7 +80,6 @@ export const Header = () => {
       </div>
       <div className="navbar-end flex-grow mr-4">
         <RainbowKitCustomConnectButton />
-        <FaucetButton />
       </div>
     </div>
   );
