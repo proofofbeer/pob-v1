@@ -4,7 +4,6 @@ import axios from "axios";
 import { ethers } from "ethers";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { Spinner } from "~~/components/Spinner";
 import NavButton from "~~/components/common/buttons/NavButton";
 import PrimaryButton from "~~/components/common/buttons/PrimaryButton";
@@ -23,16 +22,17 @@ const Dashboard = () => {
   const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined);
   const [imgObj, setImgObj] = useState<any>(undefined);
   const [nftImageURI, setNftImageURI] = useState<string | undefined>(undefined);
+  const [personalPobImageURI, setPersonalPobImageURI] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [profileHandle, setProfileHandle] = useState<string>("");
   const [newGlobalURI, setNewGlobalURI] = useState<string | undefined>(undefined);
 
-  const { address } = useAccount();
+  const { address: userAddress } = useAccount();
 
   const { data: userProfileAddress, isLoading: isLoadingUserProfileAddress } = useScaffoldContractRead({
     contractName,
     functionName: "userAddressToProfile",
-    args: [address],
+    args: [userAddress],
   });
 
   const {
@@ -44,6 +44,12 @@ const Dashboard = () => {
     functionName: "profileHandleToUserAddress",
     args: [profileHandle],
     enabled: false,
+  });
+
+  const { data: personalPobAddress } = useScaffoldContractRead({
+    contractName: "PersonalPOBFactory",
+    functionName: "userAddressToPobAddress",
+    args: [userAddress],
   });
 
   const { data: currentGlobalTokenURI }: any = useDeployedContractRead({
@@ -60,6 +66,14 @@ const Dashboard = () => {
     functionName: "name",
     args: [],
     enabled: true,
+  });
+
+  const { data: personalPobTokenURI, refetch: refetchPersonalPobTokenURI }: any = useDeployedContractRead({
+    contractAddress: personalPobAddress,
+    contractName: "PersonalPOB",
+    functionName: "globalTokenURI",
+    args: [],
+    enabled: false,
   });
 
   const { writeAsync: createProfile } = useScaffoldContractWrite({
@@ -97,7 +111,7 @@ const Dashboard = () => {
   const getFilesCid: any = useCallback(async () => {
     try {
       const formData = new FormData();
-      formData.append("imgName", `${profileHandle}-personal-poep-file`);
+      formData.append("imgName", "image-0");
       formData.append("files", new Blob([imgObj]));
       const response = await axios.post("/api/upload-files", formData, {
         headers: {
@@ -117,7 +131,7 @@ const Dashboard = () => {
         console.error(error);
       }
     }
-  }, [imgObj, profileHandle]);
+  }, [imgObj]);
 
   const writeSetGlobalTokenURI: any = useCallback(
     async (event: any) => {
@@ -134,12 +148,14 @@ const Dashboard = () => {
       const poepProfileContract = new ethers.Contract(userProfileAddress, POEPProfileContract.abi, signer as any);
 
       try {
+        console.log(username);
         const imgCid = await getFilesCid();
         const metadata: INFTMetadata = getPersonalPOEPMetadata({
           imgCid,
           profileAddress: userProfileAddress,
           username,
         });
+        console.log(metadata);
         const res = await axios.post(
           "/api/upload-metadata",
           { metadata },
@@ -167,46 +183,89 @@ const Dashboard = () => {
 
   type TGetNftImageURIParams = {
     nftCid: string;
-    protocolStr?: string;
-    httpStr?: string;
+    pobNameImage: string;
   };
 
-  const getNftImageURI = useCallback(
-    async ({ nftCid, protocolStr = "ipfs://", httpStr = "" }: TGetNftImageURIParams) => {
-      // console.log("calling from getNftImageURI", nftCid);
-      if (!nftCid) return "";
-      console.log(nftCid);
-      const cidString = nftCid.replace(protocolStr, httpStr);
-      console.log(cidString);
-      const res = await axios.get(`https://${nftCid}.ipfs.nftstorage.link/nft-1`);
-      console.log(`https://${nftCid}.ipfs.nftstorage.link/nft-1`);
-      // const res = await axios.get(`https://nftstorage.link/ipfs/${nftCid}/nft-1`);
-      const imgCid = res.data.image;
-      console.log(`https://nftstorage.link/ipfs/${imgCid}/${username}-personal-poep-file`);
-      return `https://nftstorage.link/ipfs/${imgCid}/${username}-personal-poep-file`;
-    },
-    [username],
-  );
+  const getNftImageURI = useCallback(async ({ nftCid, pobNameImage }: TGetNftImageURIParams) => {
+    // console.log("calling from getNftImageURI", nftCid);
+    let nftUrl = "";
+    if (!nftCid) return "";
+    if (pobNameImage === "profileImage") {
+      // nftUrl = `https://${nftCid}.ipfs.nftstorage.link/nft-1`;
+      nftUrl = `https://${nftCid}.ipfs.nftstorage.link/nft-1`;
+    } else if (pobNameImage === "pobImage") {
+      console.log("nftCid:", nftCid);
+      // nftUrl = `https://${nftCid}.ipfs.nftstorage.link/nft-0`;
+      nftUrl = `https://${nftCid}.ipfs.nftstorage.link/nft-0`;
+      console.log("nftURL:", nftUrl);
+    } else {
+      return "";
+    }
+    // const cidString = nftCid.replace(protocolStr, httpStr);
+    // console.log(cidString);
+    const res = await axios.get(nftUrl);
+    // console.log(`https://${nftCid}.ipfs.nftstorage.link/nft-1`);
+    // const res = await axios.get(`https://nftstorage.link/ipfs/${nftCid}/nft-1`);
+    console.log(res);
+    const imgCid = res.data.image;
+    if (pobNameImage === "profileImage") {
+      console.log(`https://nftstorage.link/ipfs/${imgCid}/image-0`);
+      return `https://nftstorage.link/ipfs/${imgCid}/image-0`;
+    } else if (pobNameImage === "pobImage") {
+      console.log(`https://nftstorage.link/ipfs/${imgCid}/image-0`);
+      return `https://nftstorage.link/ipfs/${imgCid}/image-0`;
+    } else {
+      return "";
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchImageURI = async () => {
+    const fetchImageURI = async (tokenURI: string, pobNameImage: string) => {
       let formattedImageURI = "";
-      if (currentGlobalTokenURI && username) {
-        // console.log("calling from useEffect", currentGlobalTokenURI);
-        formattedImageURI = await getNftImageURI({ nftCid: currentGlobalTokenURI });
+      if (currentGlobalTokenURI && username && pobNameImage === "profileImage") {
+        formattedImageURI = await getNftImageURI({ nftCid: tokenURI, pobNameImage });
         setNftImageURI(formattedImageURI);
+      }
+      if (personalPobTokenURI && username && pobNameImage === "pobImage") {
+        console.log("calling pob from useEffect", personalPobTokenURI);
+        formattedImageURI = await getNftImageURI({ nftCid: tokenURI, pobNameImage });
+        console.log(formattedImageURI);
+        setPersonalPobImageURI(formattedImageURI);
       }
       return formattedImageURI;
     };
     if (currentGlobalTokenURI && !nftImageURI) {
-      fetchImageURI();
+      fetchImageURI(currentGlobalTokenURI, "profileImage");
     }
-
-    console.log(userProfileAddress);
-    console.log(currentGlobalTokenURI);
+    // if (personalPobAddress && parseInt(personalPobAddress) != 0 && !personalPobTokenURI) {
+    //   console.log("pobContractAddress:", personalPobAddress);
+    //   refetchPersonalPobTokenURI();
+    // }
+    if (personalPobAddress) {
+      console.log("pobContractAddress:", personalPobAddress);
+      refetchPersonalPobTokenURI();
+    }
+    if (personalPobTokenURI) {
+      console.log("pobContractAddress:", personalPobAddress);
+      console.log("personalPobTokenURI:", personalPobTokenURI);
+      fetchImageURI(personalPobTokenURI, "pobImage");
+    }
+    console.log("personalPob address:", personalPobAddress);
+    // console.log("profile address:", userProfileAddress);
+    // console.log(currentGlobalTokenURI);
 
     currentGlobalTokenURI && getNftImageURI(currentGlobalTokenURI);
-  }, [currentGlobalTokenURI, getNftImageURI, nftImageURI, userProfileAddress, username]);
+  }, [
+    currentGlobalTokenURI,
+    getNftImageURI,
+    nftImageURI,
+    personalPobTokenURI,
+    personalPobAddress,
+    personalPobImageURI,
+    refetchPersonalPobTokenURI,
+    userProfileAddress,
+    username,
+  ]);
 
   const previewImage = useMemo(() => {
     if (imgObj) {
@@ -216,8 +275,8 @@ const Dashboard = () => {
   }, [imgObj]);
 
   return (
-    <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
-      <h1 className="text-4xl font-semibold text-center mb-4">Welcome</h1>
+    <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 lg:flex-row lg:flex-wrap justify-center items-center min-h-full">
+      <h1 className="w-full text-4xl font-semibold text-center mb-4">Welcome</h1>
       <NavButton
         buttonText="Create POB"
         isDisabled={
@@ -227,9 +286,9 @@ const Dashboard = () => {
       />
       <div
         id="profile-pob-container"
-        className="w-full md:w-11/12 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
+        className="w-full md:w-11/12 lg:w-2/5 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
       >
-        <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
+        <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 justify-center items-center md:items-start">
           {isLoadingUserProfileAddress && (
             <div className="mt-14">
               <Spinner width="50px" height="50px" />
@@ -240,25 +299,26 @@ const Dashboard = () => {
               {currentGlobalTokenURI && nftImageURI ? (
                 <>
                   <h3 className="text-center text-2xl font-medium w-full">Your Profile</h3>
-                  <div className="text-center text-lg font-medium w-full md:w-3/5 p-4">
-                    <div className="m-2 px-8 lg:px-20 xl:px-24 2xl:px-32">
+                  <div className="text-center text-lg font-medium w-full md:w-3/5 lg:w-full p-4">
+                    <div className="m-2 px-8 lg:px-16 xl:px-24">
                       <NFTImage imageURI={nftImageURI} />
                     </div>
-                    <div className="text-center text-lg font-medium w-full md:w-2/5 md:flex md:flex-col md:mt-6 lg:mt-0 xl:mt-4">
+                    <div className="text-center text-lg font-medium w-full">
                       <div className="w-full flex justify-center gap-4 mt-8">
                         <button
                           className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
                           disabled={currentGlobalTokenURI ? false : true}
                         >
+                          Mint
+                        </button>
+                        <button className="btn btn-primary w-1/4 lg:w-1/5 normal-case" disabled={true}>
                           Share
                         </button>
-                        <button
-                          className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
-                          disabled={currentGlobalTokenURI ? false : true}
-                        >
+                        <button className="btn btn-primary w-1/4 lg:w-1/5 normal-case" disabled={true}>
                           Change
                         </button>
                       </div>
+                      <div className="w-full flex justify-center gap-4 mt-4">Sharing and changing coming soon!</div>
                       {/* <p className="mt-4">Username: {username}</p>
                       <a
                         href={`https://polygonscan.com/address/${userProfileAddress}`}
@@ -280,8 +340,8 @@ const Dashboard = () => {
               ) : (
                 <>
                   <p className="text-center text-lg font-medium w-full">Let&apos;s set up your Profile POB!</p>
-                  <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4">
-                    <div className="m-2 px-4 lg:px-4 xl:px-24 2xl:px-32">
+                  <div className="text-center text-lg font-medium w-full md:w-3/5 lg:w-full p-4">
+                    <div className="m-2 px-8 lg:px-16 xl:px-24">
                       <FilePreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
                     </div>
                     <div className="w-full mt-0">
@@ -298,7 +358,7 @@ const Dashboard = () => {
             </>
           ) : !currentGlobalTokenURI ? (
             <form
-              className="flex flex-col items-center justify-center w-full md:w-3/5 lg:w-1/2 xl:w-2/5 pb-4 pt-8 px-4"
+              className="flex flex-col items-center justify-center w-full md:w-3/5 lg:w-4/5 pb-4 pt-8 px-4"
               onSubmit={handleSubmit}
             >
               <legend className="mb-8 lg:mb-4 text-lg text-center">It looks like you don&apos;t have one!</legend>
@@ -329,47 +389,36 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-      {userProfileAddress && parseInt(userProfileAddress) && (
+      {personalPobAddress && parseInt(personalPobAddress) ? (
         <div
           id="personal-pobs-container"
-          className="w-full md:w-11/12 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
+          className="w-full md:w-11/12 lg:w-2/5 lg:ml-8 xl:ml-16 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
         >
-          <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
-            {currentGlobalTokenURI && nftImageURI && (
+          <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 justify-center items-center md:items-start">
+            {personalPobTokenURI && personalPobImageURI && (
               <>
                 <h3 className="text-center text-2xl font-medium w-full">Active POBs</h3>
-                <div className="text-center text-lg font-medium w-full md:w-3/5 p-4">
-                  <div className="m-2 px-8 lg:px-20 xl:px-24 2xl:px-32">
-                    <NFTImage imageURI={nftImageURI} />
+                <div className="text-center text-lg font-medium w-full md:w-3/5 lg:w-full p-4">
+                  <div className="m-2 px-8 lg:px-16 xl:px-24">
+                    <NFTImage imageURI={personalPobImageURI} />
                   </div>
-                  <div className="text-center text-lg font-medium w-full md:w-2/5 md:flex md:flex-col md:mt-6 lg:mt-0 xl:mt-4">
+                  <div className="text-center text-lg font-medium w-full">
                     <div className="w-full flex justify-center gap-4 mt-8">
-                      <button
-                        className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
-                        disabled={currentGlobalTokenURI ? false : true}
-                      >
-                        Drink
+                      <button className="btn btn-primary w-1/4 lg:w-1/5 normal-case" disabled={!personalPobTokenURI}>
+                        Mint
                       </button>
-                      <button
-                        className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
-                        disabled={currentGlobalTokenURI ? false : true}
-                      >
+                      <button className="btn btn-primary w-1/4 lg:w-1/5 normal-case" disabled={true}>
                         Share
                       </button>
-                      <button
-                        className="btn btn-primary w-1/4 lg:w-1/5 normal-case"
-                        disabled={currentGlobalTokenURI ? false : true}
-                      >
-                        Change
-                      </button>
                     </div>
+                    <div className="w-full flex justify-center gap-4 mt-4">Sharing coming soon!</div>
                   </div>
                 </div>
               </>
             )}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

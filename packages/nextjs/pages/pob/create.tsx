@@ -32,13 +32,15 @@ const CreatePOB = () => {
   //   args: [userAddress],
   // });
 
-  const {
-    data: userPobProfileAddress,
-    isRefetching: isRefetchingUserPobProfileAddress,
-    refetch: refetchUserPobProfileAddress,
-  } = useScaffoldContractRead({
+  const { data: userPobProfileAddress } = useScaffoldContractRead({
     contractName,
     functionName: "userAddressToProfile",
+    args: [userAddress],
+  });
+
+  const { data: currentUserPobAddress } = useScaffoldContractRead({
+    contractName: "PersonalPOBFactory",
+    functionName: "userAddressToPobAddress",
     args: [userAddress],
   });
 
@@ -130,7 +132,11 @@ const CreatePOB = () => {
           },
         });
         // const res = await createPersonalPob();
-        console.log(res);
+        console.log(res.data);
+        console.log("collection name:", form.name);
+        console.log("user address:", userAddress);
+        console.log("profile address:", userPobProfileAddress);
+        console.log("image cid:", res.data.cid);
 
         const tx = await personalPobFactoryContract.createNewPersonalPob(
           form.name,
@@ -146,7 +152,7 @@ const CreatePOB = () => {
         toast.success("Successfully created your POB!!!", {
           position: "top-center",
         });
-        router.push("/poep");
+        router.push("/dashboard");
       } catch (error: any) {
         if (error.body) {
           const parsedBody = JSON.parse(error.body);
@@ -172,34 +178,48 @@ const CreatePOB = () => {
         id="personal-pob-container"
         className="w-full md:w-11/12 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
       >
-        <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
-          <p className="text-center text-lg font-medium w-full">Please fill the details:</p>
-          <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4">
-            <div className="m-2 px-4 lg:px-4 xl:px-24 2xl:px-32">
-              <FilePreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
-            </div>
+        {currentUserPobAddress && parseInt(currentUserPobAddress) != 0 ? (
+          <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
+            <p className="text-center text-lg font-medium px-4">
+              Currently only one active POB supported.
+              <br /> We will update when more active POBs are supported.
+            </p>
+
+            <p className="text-4xl mt-4 w-full flex justify-center">🤓</p>
           </div>
-          {userPobProfileAddress && parseInt(userPobProfileAddress) ? (
-            <form
-              className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:pt-4 lg:pr-12 xl:pr-20"
-              onSubmit={handleCreatePersonalPob}
-            >
-              {poepFormInputs}
-              <div className="w-full mt-12 md:mt-6 lg:mt-4">
-                <PrimaryButton
-                  buttonText="Create POB"
-                  classModifier="text-lg w-3/5"
-                  isDisabled={!previewImage || isLoading}
-                />
+        ) : (
+          <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
+            <p className="text-center text-lg font-medium w-full">Please fill the details:</p>
+            <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4">
+              <div className="m-2 px-4 lg:px-4 xl:px-24 2xl:px-32">
+                <FilePreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
               </div>
-            </form>
-          ) : (
-            <div className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:mt-12 xl:pr-20">
-              <h4 className="text-xl">You need a POB Profile</h4>
-              <PrimaryButton buttonText="I want my Profile" classModifier="text-lg py-2 px-8" path="/dashboard" />
             </div>
-          )}
-        </div>
+            {userPobProfileAddress && parseInt(userPobProfileAddress) ? (
+              <form
+                className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:pt-4 lg:pr-12 xl:pr-20"
+                onSubmit={handleCreatePersonalPob}
+              >
+                {poepFormInputs}
+                <div className="w-full mt-12 md:mt-6 lg:mt-4">
+                  <div className="flex justify-center">
+                    <p className="font-medium border-orange-700 border-2 rounded-xl w-3/5 py-2">Cost: 1 MATIC</p>
+                  </div>
+                  <PrimaryButton
+                    buttonText="Create POB"
+                    classModifier="text-lg w-3/5"
+                    isDisabled={!previewImage || isLoading}
+                  />
+                </div>
+              </form>
+            ) : (
+              <div className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:mt-12 xl:pr-20">
+                <h4 className="text-xl">You need a POB Profile</h4>
+                <PrimaryButton buttonText="I want my Profile" classModifier="text-lg py-2 px-8" path="/dashboard" />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
