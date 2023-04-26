@@ -23,7 +23,7 @@ const getPersonalPOBMetadata = (metadata: any, imgCid: string) => {
     return {
       name: metadata.name,
       description: metadata.description,
-      image: `https://nftstorage.link/ipfs/${imgCid}/image-0`,
+      image: `ipfs://${imgCid}/image-0`,
       external_url: `https://pob.lol/pob/${metadata.profileAddress}`,
       attributes: {
         start_date: metadata.event_start_date,
@@ -37,7 +37,7 @@ const getPersonalPOBMetadata = (metadata: any, imgCid: string) => {
     return {
       name: metadata.name,
       description: metadata.description,
-      image: `https://nftstorage.link/ipfs/${imgCid}/image-0`,
+      image: `ipfs://${imgCid}/image-0`,
       external_url: `https://pob.lol/pob/${metadata.profileAddress}`,
       attributes: {
         start_date: metadata.event_start_date,
@@ -65,7 +65,7 @@ uploadApi.post(async (req, res) => {
   const cid = await nftStorage.storeDirectory([new File([JSON.stringify(metadata)], `nft-0`)]);
   const status = await nftStorage.status(cid);
 
-  const nftUrl = `https://${cid}.ipfs.nftstorage.link/nft-0`;
+  const nftUrl = `ipfs://${cid}/nft-0`;
 
   res.json({ cid, imageCid, imageStatus, nftUrl, status });
 });

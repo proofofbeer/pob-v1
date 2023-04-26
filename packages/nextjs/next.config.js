@@ -10,6 +10,14 @@ const nextConfig = {
     ignoreDuringBuilds: process.env.NEXT_PUBLIC_IGNORE_BUILD_ERROR === "true",
   },
   images: {
+    domains: [
+      "apefomo-ipfs-gateway.mypinata.cloud",
+      "ipfs.io",
+      "cloudflare-ipfs.com",
+      "corsproxy.apefomo.workers.dev",
+      "dweb.link",
+      "ipfs://",
+    ],
     remotePatterns: [
       {
         protocol: "https",

@@ -151,7 +151,7 @@ const Dashboard = () => {
       console.log(error);
       setIsLoading(false);
     } finally {
-      router.push("/dashboard");
+      router.reload(window.location.pathname);
     }
   };
 
@@ -225,20 +225,30 @@ const Dashboard = () => {
     [getFilesCid, router, userProfileAddress, username],
   );
 
-  const getDirectImageUrl = useCallback(async (nftUrl: string) => {
-    const res = await axios.get(nftUrl);
-    return res.data.image;
+  // const getDirectImageUrl = useCallback(async (nftUrl: string) => {
+  //   const res = await axios.get(nftUrl);
+  //   return res.data.image;
+  // }, []);
+
+  const getGatewayImageUrl = useCallback(async (nftUrl: string) => {
+    const nftCid = nftUrl.substring(7);
+    console.log(`https://apefomo-ipfs-gateway.mypinata.cloud/ipfs/${nftCid}`);
+    const res = await axios.get(`https://apefomo-ipfs-gateway.mypinata.cloud/ipfs/${nftCid}`);
+    const { image: imageUri } = res.data;
+    const imageCid = imageUri.substring(7);
+
+    return `https://apefomo-ipfs-gateway.mypinata.cloud/ipfs/${imageCid}`;
   }, []);
 
   useEffect(() => {
     const fetchImageURI = async (tokenURI: string, pobNameImage: string) => {
       let formattedImageURI = "";
       if (currentGlobalTokenURI && username && pobNameImage === "profileImage") {
-        formattedImageURI = await getDirectImageUrl(tokenURI);
+        formattedImageURI = await getGatewayImageUrl(tokenURI);
         setNftImageURI(formattedImageURI);
       }
       if (personalPobTokenURI && username && pobNameImage === "pobImage") {
-        formattedImageURI = await getDirectImageUrl(tokenURI);
+        formattedImageURI = await getGatewayImageUrl(tokenURI);
         setPersonalPobImageURI(formattedImageURI);
       }
       return formattedImageURI;
@@ -263,7 +273,7 @@ const Dashboard = () => {
     userProfileAddress,
     username,
     refetchPersonalPobTotalSupply,
-    getDirectImageUrl,
+    getGatewayImageUrl,
   ]);
 
   const previewImage = useMemo(() => {

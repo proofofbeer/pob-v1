@@ -15,7 +15,7 @@ const uploadMetadataApi = nextConnect<NextApiRequest, NextApiResponse>({
 uploadMetadataApi.post(async (req, res) => {
   const { metadata } = req.body;
 
-  const imageUrl = `https://nftstorage.link/ipfs/${metadata.image}/image-0`;
+  const imageUrl = `ipfs://${metadata.image}/image-0`;
   metadata["image"] = imageUrl;
 
   const nftStorage = new NFTStorage({ token });
@@ -23,7 +23,7 @@ uploadMetadataApi.post(async (req, res) => {
   const cid = await nftStorage.storeDirectory([new File([JSON.stringify(metadata)], `nft-${1}`) as any]);
   const status = await nftStorage.status(cid);
 
-  const nftUrl = `https://${cid}.ipfs.nftstorage.link/nft-1`;
+  const nftUrl = `ipfs://${cid}/nft-1`;
 
   res.status(200).json({ cid, nftUrl, status });
 });
