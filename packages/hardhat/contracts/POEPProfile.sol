@@ -46,8 +46,7 @@ contract POEPProfile is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         return super.tokenURI(tokenId);
     }
 
-    function setGlobalTokenURI(string memory _uri) public {
-        console.log(_uri);
+    function setGlobalTokenURI(string memory _uri) public onlyOwner {
         globalTokenURI = _uri;
     }
 

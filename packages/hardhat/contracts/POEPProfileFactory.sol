@@ -20,7 +20,7 @@ contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
   function createNewPoepProfile(string memory _name, string memory _symbol) public {
     address msgSender = _msgSender();
 
-    require(userAddressToProfile[msgSender] == address(0), "POEPProfileFactory: Only one POEP Profile per address");
+    require(userAddressToProfile[msgSender] == address(0), "POEPProfileFactory: Only one Profile per address");
     require(profileHandleToProfile[_name] == address(0), "POEPProfileFactory: Profile handle has been taken");
 
     POEPProfile newPoepProfile = new POEPProfile(_name, _symbol);
