@@ -8,31 +8,37 @@ import "./interfaces/IPOEPProfileFactory.sol";
 
 contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
   string private _poepVersion;
-  POEPProfile[] public poepProfilesArray;
-  mapping (string => address) public profileHandleToProfile;
-  mapping (string => address) public profileHandleToUserAddress;
-  mapping (address => address) public userAddressToProfile;
+  uint256 private _changeGlobalTokenPrice;
+  uint256 private _changePeriod;
 
-  constructor(string memory _deployedPoepVersion) {
-    _poepVersion = _deployedPoepVersion;
+  POEPProfile[] public poepProfilesArray;
+
+  mapping(string => address) public profileHandleToProfile;
+  mapping(string => address) public profileHandleToUserAddress;
+  mapping(address => address) public userAddressToProfile;
+
+  constructor(string memory deployedPoepVersion_, uint256 changePeriod_, uint256 changeGlobalTokenPrice_) {
+    _poepVersion = deployedPoepVersion_;
+    _changeGlobalTokenPrice = changeGlobalTokenPrice_;
+    _changePeriod = changePeriod_;
   }
 
-  function createNewPoepProfile(string memory _name, string memory _symbol) public {
+  function createNewPoepProfile(string memory name_, string memory symbol_) public {
     address msgSender = _msgSender();
 
     require(userAddressToProfile[msgSender] == address(0), "POEPProfileFactory: Only one Profile per address");
-    require(profileHandleToProfile[_name] == address(0), "POEPProfileFactory: Profile handle has been taken");
+    require(profileHandleToProfile[name_] == address(0), "POEPProfileFactory: Profile handle has been taken");
 
-    POEPProfile newPoepProfile = new POEPProfile(_name, _symbol);
+    POEPProfile newPoepProfile = new POEPProfile(name_, symbol_, _changePeriod, _changeGlobalTokenPrice, address(this));
     newPoepProfile.transferOwnership(msgSender);
     poepProfilesArray.push(newPoepProfile);
-    profileHandleToProfile[_name] = address(newPoepProfile);
-    profileHandleToUserAddress[_name] = msgSender;
+    profileHandleToProfile[name_] = address(newPoepProfile);
+    profileHandleToUserAddress[name_] = msgSender;
     userAddressToProfile[msgSender] = address(newPoepProfile);
   }
 
-  function getUserAddressToProfile(address _userAddress) external view returns (address) {
-    return userAddressToProfile[_userAddress];
+  function getUserAddressToProfile(address userAddress_) external view returns (address) {
+    return userAddressToProfile[userAddress_];
   }
 
   receive() external payable {}
