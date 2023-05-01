@@ -18,10 +18,17 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
   address private _pobAdmin;
   string public globalTokenURI;
   uint256 public maxSupply = 25;
+  uint256 public mintExpirationDate;
 
-  constructor(string memory name_, string memory globalTokenURI_, address pobAdmin_) ERC721(name_, "POB") {
+  constructor(
+    string memory name_,
+    string memory globalTokenURI_,
+    address pobAdmin_,
+    uint256 mintExpirationPeriod_
+  ) ERC721(name_, "POB") {
     globalTokenURI = globalTokenURI_;
     _pobAdmin = pobAdmin_;
+    mintExpirationDate = block.timestamp + mintExpirationPeriod_;
   }
 
   function safeMint(address to_, address profileAddress_) external {

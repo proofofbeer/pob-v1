@@ -11,17 +11,24 @@ contract PersonalPOBFactory is Ownable {
   string private _pobVersion;
   uint256 public pobTotalSupply;
   uint256 public pobContractPrice;
+  uint256 public mintExpirationPeriod;
   address private _POBProfileFactoryAddress;
   address private _withdrawFundsAddress;
   PersonalPOB[] public personalPobArray;
   mapping(address => address[]) public userAddressToPobAddresses;
   mapping(address => address[]) public profileAddressToPobAddresses;
 
-  constructor(string memory deployedPobVersion_, address deployedPOBProfileFactoryAddress_, uint256 pobContractPrice_) {
+  constructor(
+    string memory deployedPobVersion_,
+    address deployedPOBProfileFactoryAddress_,
+    uint256 pobContractPrice_,
+    uint256 mintExpirationPeriod_
+  ) {
     _pobVersion = deployedPobVersion_;
     _POBProfileFactoryAddress = deployedPOBProfileFactoryAddress_;
     _withdrawFundsAddress = deployedPOBProfileFactoryAddress_;
     pobContractPrice = pobContractPrice_;
+    mintExpirationPeriod = mintExpirationPeriod_;
     pobTotalSupply = 0;
   }
 
