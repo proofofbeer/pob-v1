@@ -5,43 +5,57 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./PersonalPOB.sol";
 import "./interfaces/IPOEPProfileFactory.sol";
+import "./interfaces/IPersonalPOB.sol";
 
 contract PersonalPOBFactory is Ownable {
   string private _pobVersion;
   uint256 public pobTotalSupply;
   uint256 public pobContractPrice;
   address private _POBProfileFactoryAddress;
-  address private _withdrawFundsAddress = 0x752c9459Bb3A76caFF270bbe7b8e20A71A67648A;
+  address private _withdrawFundsAddress;
   PersonalPOB[] public personalPobArray;
-  mapping (address => address) public userAddressToPobAddress;
-  mapping (address => address) public profileAddressToPobAddress;
-  mapping (address => uint256) public profileAddressToPobExpiration;
+  mapping(address => address[]) public userAddressToPobAddresses;
+  mapping(address => address[]) public profileAddressToPobAddresses;
 
-  constructor(string memory _deployedPobVersion, address _deployedPOBProfileFactoryAddress, uint256 _pobContractPrice) {
-    _pobVersion = _deployedPobVersion;
-    _POBProfileFactoryAddress = _deployedPOBProfileFactoryAddress;
-    pobContractPrice = _pobContractPrice;
+  constructor(string memory deployedPobVersion_, address deployedPOBProfileFactoryAddress_, uint256 pobContractPrice_) {
+    _pobVersion = deployedPobVersion_;
+    _POBProfileFactoryAddress = deployedPOBProfileFactoryAddress_;
+    _withdrawFundsAddress = deployedPOBProfileFactoryAddress_;
+    pobContractPrice = pobContractPrice_;
     pobTotalSupply = 0;
   }
 
-  function createNewPersonalPob(string memory _collectionName, address _userAddress, address _profileAddress, string memory _globalTokenURI) public payable {
-    address msgSender = _msgSender();
+  function createNewPersonalPob(
+    string memory collectionName_,
+    address userAddress_,
+    address profileAddress_,
+    string memory globalTokenURI_
+  ) public payable {
     require(msg.value >= pobContractPrice, "POBFactory: Not enough MATIC to purchase POB Contract");
-    require(IPOEPProfileFactory(_POBProfileFactoryAddress).getUserAddressToProfile(_userAddress) != address(0), "POBFactory: User does not have Profile");
-    require(block.timestamp > profileAddressToPobExpiration[_profileAddress], "POBFactory: Sender already has an active Personal POB");
-    PersonalPOB newPersonalPob = new PersonalPOB(_collectionName, _globalTokenURI);
-    newPersonalPob.transferOwnership(msgSender);
+    require(
+      IPOEPProfileFactory(_POBProfileFactoryAddress).getUserAddressToProfile(userAddress_) != address(0),
+      "POBFactory: User does not have Profile"
+    );
+    PersonalPOB newPersonalPob = new PersonalPOB(collectionName_, globalTokenURI_, owner());
+    newPersonalPob.transferOwnership(_msgSender());
     personalPobArray.push(newPersonalPob);
     ++pobTotalSupply;
-    userAddressToPobAddress[_userAddress] = address(newPersonalPob);
-    profileAddressToPobAddress[_profileAddress] = msgSender;
-    profileAddressToPobExpiration[_profileAddress] = block.timestamp + 604800;
+    userAddressToPobAddresses[userAddress_].push(address(newPersonalPob));
+    profileAddressToPobAddresses[profileAddress_].push(address(newPersonalPob));
   }
 
-  function withdraw(uint256 amount) public {
-    require(amount <= address(this).balance, "Insufficient balance in the contract");
-    payable(_withdrawFundsAddress).transfer(amount);
-}
+  function getUserPobAddresses(address userAddress_) public view returns (address[] memory) {
+    return userAddressToPobAddresses[userAddress_];
+  }
+
+  function getProfilePobAddresses(address userAddress_) public view returns (address[] memory) {
+    return profileAddressToPobAddresses[userAddress_];
+  }
+
+  function withdraw(uint256 amount_) public onlyOwner {
+    require(amount_ <= address(this).balance, "POBFactory:Insufficient balance in the contract");
+    payable(_withdrawFundsAddress).transfer(amount_);
+  }
 
   receive() external payable {}
 

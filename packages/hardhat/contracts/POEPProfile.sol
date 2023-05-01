@@ -8,8 +8,9 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "./interfaces/IPOEPProfile.sol";
 
-contract POEPProfile is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
+contract POEPProfile is IPOEPProfile, ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
   using Counters for Counters.Counter;
 
   Counters.Counter private _tokenIdCounter;
@@ -17,6 +18,7 @@ contract POEPProfile is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
   uint256 public timeUntilNextChange;
   uint256 public requestChangeGlobalTokenURIPrice;
   address payable public paymentAddress;
+  address[] public mintedPobAddresses;
 
   constructor(
     string memory name_,
@@ -46,6 +48,11 @@ contract POEPProfile is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     require(msg.value > requestChangeGlobalTokenURIPrice, "POEPProfile: Not enough MATIC to request token URI change");
     paymentAddress.transfer(msg.value);
     _setGlobalTokenURI(newGlobalTokenURI_);
+  }
+
+  function addMintedPobAddress(address pobAddress_, address msgSender_) external {
+    require(msgSender_ == owner(), "POEPProfile: Only Profile owner can trigger this function");
+    mintedPobAddresses.push(pobAddress_);
   }
 
   function _setGlobalTokenURI(string memory newGlobalTokenURI_) private {
