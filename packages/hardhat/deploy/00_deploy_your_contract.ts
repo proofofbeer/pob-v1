@@ -21,35 +21,37 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
+  const etherPrice = 1;
+
   // await deploy("POEPProfileFactory", {
   //   from: deployer,
   //   // Contract constructor arguments
-  //   args: ["POBProfile-v1"],
+  //   args: ["POBProfile-v1.1", 30, etherPrice],
   //   log: true,
   //   // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
   //   // automatically mining the contract deployment transaction. There is no effect on live networks.
   //   autoMine: true,
   // });
 
-  // await deploy("PersonalPOBFactory", {
-  //   from: deployer,
-  //   // Contract constructor arguments
-  //   args: ["PersonalPOB-v1", "0x7086D9FeC9f9FD0E74D165ad6E2C1c7537691d3E", 1],
-  //   log: true,
-  //   // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
-  //   // automatically mining the contract deployment transaction. There is no effect on live networks.
-  //   autoMine: true,
-  // });
-
-  await deploy("PersonalPOB", {
+  await deploy("PersonalPOBFactory", {
     from: deployer,
     // Contract constructor arguments
-    args: ["Test", "TEST"],
+    args: ["PersonalPOB-v1.1", "0x5FbDB2315678afecb367f032d93F642f64180aa3", etherPrice, 30],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the contract deployment transaction. There is no effect on live networks.
     autoMine: true,
   });
+
+  // await deploy("PersonalPOB", {
+  //   from: deployer,
+  //   // Contract constructor arguments
+  //   args: ["Test", "TEST"],
+  //   log: true,
+  //   // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
+  //   // automatically mining the contract deployment transaction. There is no effect on live networks.
+  //   autoMine: true,
+  // });
 
   // Get the deployed contract
   // const yourContract = await hre.ethers.getContract("YourContract", deployer);

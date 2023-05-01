@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { fetchSigner } from "@wagmi/core";
 import axios from "axios";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
@@ -21,7 +21,11 @@ import { INFTMetadata } from "~~/types/nft-metadata/nft-metadata";
 import { getPersonalPOEPMetadata } from "~~/utils/poep";
 
 const Dashboard = () => {
-  const contractName = "POEPProfileFactory";
+  const poepProfileFactoryName = "POEPProfileFactory";
+  const personalPobFactoryName = "PersonalPOBFactory";
+  const poepProfileName = "POEPProfile";
+  const personalPobName = "PersonalPOB";
+  // const personalPobContractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
   const fileFormKey = "poep_image";
 
   const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined);
@@ -32,12 +36,13 @@ const Dashboard = () => {
   const [profileHandle, setProfileHandle] = useState<string>("");
   const [mintProfilePobAddress, setMintProfilePobAddress] = useState<string>("");
   const [mintPersonalPobAddress, setMintPersonalPobAddress] = useState<string>("");
+  const pobContractAddress = BigNumber.from("0x0"); // adding this to remove lint errors, check later!
 
   const { address: userAddress } = useAccount();
   const router = useRouter();
 
   const { data: userProfileAddress, isLoading: isLoadingUserProfileAddress } = useScaffoldContractRead({
-    contractName,
+    contractName: poepProfileFactoryName,
     functionName: "userAddressToProfile",
     args: [userAddress],
   });
@@ -47,21 +52,21 @@ const Dashboard = () => {
     isRefetching: ishandleAssignedAddressRefetching,
     refetch: refetchHandleAssignedAddress,
   } = useScaffoldContractRead({
-    contractName,
+    contractName: poepProfileFactoryName,
     functionName: "profileHandleToUserAddress",
     args: [profileHandle],
     enabled: false,
   });
 
   const { data: personalPobAddress } = useScaffoldContractRead({
-    contractName: "PersonalPOBFactory",
-    functionName: "userAddressToPobAddress",
-    args: [userAddress],
+    contractName: personalPobFactoryName,
+    functionName: "userAddressToPobAddresses",
+    args: [userAddress, pobContractAddress],
   });
 
   const { data: currentGlobalTokenURI }: any = useDeployedContractRead({
     contractAddress: userProfileAddress,
-    contractName: "POEPProfile",
+    contractName: poepProfileName,
     functionName: "globalTokenURI",
     args: [],
     enabled: true,
@@ -69,7 +74,7 @@ const Dashboard = () => {
 
   const { data: username }: any = useDeployedContractRead({
     contractAddress: userProfileAddress,
-    contractName: "POEPProfile",
+    contractName: poepProfileName,
     functionName: "name",
     args: [],
     enabled: true,
@@ -77,7 +82,7 @@ const Dashboard = () => {
 
   const { data: profilePobTotalSupply, refetch: refetchProfilePobTotalSupply }: any = useDeployedContractRead({
     contractAddress: userProfileAddress,
-    contractName: "POEPProfile",
+    contractName: poepProfileName,
     functionName: "totalSupply",
     args: [],
     enabled: true,
@@ -85,7 +90,7 @@ const Dashboard = () => {
 
   const { data: personalPobTokenURI, refetch: refetchPersonalPobTokenURI }: any = useDeployedContractRead({
     contractAddress: personalPobAddress,
-    contractName: "PersonalPOB",
+    contractName: personalPobName,
     functionName: "globalTokenURI",
     args: [],
     enabled: false,
@@ -93,14 +98,14 @@ const Dashboard = () => {
 
   const { data: personalPobTotalSupply, refetch: refetchPersonalPobTotalSupply }: any = useDeployedContractRead({
     contractAddress: personalPobAddress,
-    contractName: "PersonalPOB",
+    contractName: personalPobName,
     functionName: "totalSupply",
     args: [],
     enabled: false,
   });
 
   const { writeAsync: createProfile } = useScaffoldContractWrite({
-    contractName: "POEPProfileFactory",
+    contractName: poepProfileFactoryName,
     functionName: "createNewPoepProfile",
     args: [profileHandle, profileHandle.toUpperCase()],
   });
@@ -111,7 +116,7 @@ const Dashboard = () => {
     isMining: isMiningMintProfilePob,
   } = useDeployedContractWrite({
     contractAddress: userProfileAddress,
-    contractName: "POEPProfile",
+    contractName: poepProfileName,
     functionName: "safeMint",
     args: [mintProfilePobAddress],
   });
@@ -122,7 +127,7 @@ const Dashboard = () => {
     isMining: isMiningMintPersonalPob,
   } = useDeployedContractWrite({
     contractAddress: personalPobAddress,
-    contractName: "PersonalPOB",
+    contractName: personalPobName,
     functionName: "safeMint",
     args: [mintPersonalPobAddress],
   });
@@ -151,7 +156,7 @@ const Dashboard = () => {
       console.log(error);
       setIsLoading(false);
     } finally {
-      router.reload(window.location.pathname);
+      router.reload();
     }
   };
 

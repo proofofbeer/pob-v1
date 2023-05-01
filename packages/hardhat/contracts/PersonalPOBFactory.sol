@@ -27,7 +27,7 @@ contract PersonalPOBFactory is Ownable {
     _pobVersion = deployedPobVersion_;
     _POBProfileFactoryAddress = deployedPOBProfileFactoryAddress_;
     _withdrawFundsAddress = deployedPOBProfileFactoryAddress_;
-    pobContractPrice = pobContractPrice_;
+    pobContractPrice = pobContractPrice_ * 10 ** 18;
     mintExpirationPeriod = mintExpirationPeriod_;
     pobTotalSupply = 0;
   }

@@ -19,7 +19,7 @@ contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
 
   constructor(string memory deployedPoepVersion_, uint256 changePeriod_, uint256 changeGlobalTokenPrice_) {
     _poepVersion = deployedPoepVersion_;
-    _changeGlobalTokenPrice = changeGlobalTokenPrice_;
+    _changeGlobalTokenPrice = changeGlobalTokenPrice_ * 10 ** 18;
     _changePeriod = changePeriod_;
   }
 
