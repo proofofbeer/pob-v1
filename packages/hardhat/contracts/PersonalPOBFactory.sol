@@ -43,7 +43,7 @@ contract PersonalPOBFactory is Ownable {
       IPOEPProfileFactory(_POBProfileFactoryAddress).getUserAddressToProfile(userAddress_) != address(0),
       "POBFactory: User does not have Profile"
     );
-    PersonalPOB newPersonalPob = new PersonalPOB(collectionName_, globalTokenURI_, owner());
+    PersonalPOB newPersonalPob = new PersonalPOB(collectionName_, globalTokenURI_, owner(), mintExpirationPeriod);
     newPersonalPob.transferOwnership(_msgSender());
     personalPobArray.push(newPersonalPob);
     ++pobTotalSupply;
