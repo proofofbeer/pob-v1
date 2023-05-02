@@ -29,7 +29,7 @@ const PrimaryButton = ({
         disabled={isDisabled}
       >
         {buttonText}
-        {showLoader && isLoading && <Loader />}
+        {showLoader && isLoading && <Loader classModifier="ml-2" />}
       </button>
     </div>
   );

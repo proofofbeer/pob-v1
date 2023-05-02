@@ -19,6 +19,7 @@ import { useDeployedContractRead } from "~~/hooks/scaffold-eth/useDeployedContra
 import { useDeployedContractWrite } from "~~/hooks/scaffold-eth/useDeployedContractWrite";
 import { INFTMetadata } from "~~/types/nft-metadata/nft-metadata";
 import { getPersonalPOEPMetadata } from "~~/utils/poep";
+import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 const Dashboard = () => {
   const poepProfileFactoryName = "POEPProfileFactory";
@@ -36,9 +37,18 @@ const Dashboard = () => {
   const [profileHandle, setProfileHandle] = useState<string>("");
   const [mintProfilePobAddress, setMintProfilePobAddress] = useState<string>("");
   const [mintPersonalPobAddress, setMintPersonalPobAddress] = useState<string>("");
+  const [timeUntilNextChange, setTimeUntilNextChange] = useState<number | undefined>(undefined);
+  const [isChangeModalOpen, setIsChangeModalOpen] = useState<boolean>(false);
+
   const pobContractAddress = BigNumber.from("0x0"); // adding this to remove lint errors, check later!
 
   const { address: userAddress } = useAccount();
+  const {
+    color: networkColor,
+    id: networkId,
+    name: networkName,
+    nativeCurrency: networkNativeCurrency,
+  } = getTargetNetwork();
   const router = useRouter();
 
   const { data: userProfileAddress, isLoading: isLoadingUserProfileAddress } = useScaffoldContractRead({
@@ -64,7 +74,11 @@ const Dashboard = () => {
     args: [userAddress, pobContractAddress],
   });
 
-  const { data: currentGlobalTokenURI }: any = useDeployedContractRead({
+  const {
+    data: currentGlobalTokenURI,
+    refetch: refetchCurrentGlobalTokenURI,
+    isRefetching: isRefetchingCurrentGlobalTokenURI,
+  }: any = useDeployedContractRead({
     contractAddress: userProfileAddress,
     contractName: poepProfileName,
     functionName: "globalTokenURI",
@@ -87,6 +101,15 @@ const Dashboard = () => {
     args: [],
     enabled: true,
   });
+
+  const { data: profilePobTimeUntilNextChange, refetch: refetchProfilePobTimeUntilNextChange }: any =
+    useDeployedContractRead({
+      contractAddress: userProfileAddress,
+      contractName: poepProfileName,
+      functionName: "timeUntilNextChange",
+      args: [],
+      enabled: true,
+    });
 
   const { data: personalPobTokenURI, refetch: refetchPersonalPobTokenURI }: any = useDeployedContractRead({
     contractAddress: personalPobAddress,
@@ -151,16 +174,18 @@ const Dashboard = () => {
       await checkHandleAvailability();
       const res = await createProfile();
       if (res !== undefined) console.log(res);
-      setTimeout(() => setIsLoading(false), 1500);
+      setTimeout(() => {
+        setIsLoading(false);
+        if (res !== undefined) router.reload();
+      }, 2500);
     } catch (error) {
       console.log(error);
       setIsLoading(false);
-    } finally {
-      router.reload();
     }
   };
 
   const getFilesCid: any = useCallback(async () => {
+    if (!imgObj) return;
     try {
       const formData = new FormData();
       formData.append("imgName", "image-0");
@@ -216,6 +241,7 @@ const Dashboard = () => {
           },
         );
         const tx = await poepProfileContract.changeGlobalTokenURI(res.data.nftUrl);
+        refetchCurrentGlobalTokenURI();
         toast.success("Successfully set your Profile", {
           position: "top-center",
         });
@@ -224,16 +250,11 @@ const Dashboard = () => {
         console.log(error);
       } finally {
         setIsLoading(false);
-        router.push("/dashboard");
+        router.reload();
       }
     },
-    [getFilesCid, router, userProfileAddress, username],
+    [getFilesCid, refetchCurrentGlobalTokenURI, router, userProfileAddress, username],
   );
-
-  // const getDirectImageUrl = useCallback(async (nftUrl: string) => {
-  //   const res = await axios.get(nftUrl);
-  //   return res.data.image;
-  // }, []);
 
   const getGatewayImageUrl = useCallback(async (nftUrl: string) => {
     const nftCid = nftUrl.substring(7);
@@ -244,6 +265,65 @@ const Dashboard = () => {
 
     return `https://apefomo-ipfs-gateway.mypinata.cloud/ipfs/${imageCid}`;
   }, []);
+
+  const changeProfilePobImage: any = useCallback(
+    async (event: any) => {
+      event.preventDefault();
+      setIsLoading(true);
+
+      if (!userProfileAddress || !username) {
+        setIsLoading(false);
+        return toast.error("No Profile Contract or Username connected", {
+          position: "top-center",
+        });
+      }
+      if (timeUntilNextChange && Date.now() < timeUntilNextChange) {
+        setErrorMsg("You used your free change per month, you can make additional changes for 1 MATIC");
+        setIsLoading(false);
+        return toast.error("You used your free change per month, you can make additional changes for 1 MATIC", {
+          position: "top-center",
+        });
+      }
+
+      const signer = await fetchSigner();
+      const poepProfileContract = new ethers.Contract(userProfileAddress, POEPProfileContract.abi, signer as any);
+
+      try {
+        const imgCid = await getFilesCid();
+        const metadata: INFTMetadata = getPersonalPOEPMetadata({
+          imgCid,
+          profileAddress: userProfileAddress,
+          username,
+        });
+        const res = await axios.post(
+          "/api/upload-metadata",
+          { metadata },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+        const tx = await poepProfileContract.changeGlobalTokenURI(res.data.nftUrl);
+        console.log(res.data);
+        await refetchCurrentGlobalTokenURI();
+        setNftImageURI(undefined);
+        console.log(tx);
+        setTimeout(() => {
+          setIsChangeModalOpen(false);
+          setImgObj(undefined);
+          setIsLoading(false);
+          toast.success("Successfully set your Profile", {
+            position: "top-center",
+          });
+        }, 500);
+      } catch (error) {
+        console.log(error);
+        setIsLoading(false);
+      }
+    },
+    [getFilesCid, refetchCurrentGlobalTokenURI, timeUntilNextChange, userProfileAddress, username],
+  );
 
   useEffect(() => {
     const fetchImageURI = async (tokenURI: string, pobNameImage: string) => {
@@ -260,6 +340,14 @@ const Dashboard = () => {
     };
     if (currentGlobalTokenURI && !nftImageURI) {
       fetchImageURI(currentGlobalTokenURI, "profileImage");
+      setTimeUntilNextChange(parseInt(profilePobTimeUntilNextChange) * 1000);
+      console.log(parseInt(profilePobTimeUntilNextChange) * 1000);
+      console.log(new Date(parseInt(profilePobTimeUntilNextChange) * 1000));
+      if (timeUntilNextChange) {
+        console.log(Date.now());
+        console.log(timeUntilNextChange);
+        console.log(Date.now() > timeUntilNextChange);
+      }
     }
     if (personalPobAddress) {
       refetchPersonalPobTokenURI();
@@ -279,6 +367,8 @@ const Dashboard = () => {
     username,
     refetchPersonalPobTotalSupply,
     getGatewayImageUrl,
+    profilePobTimeUntilNextChange,
+    timeUntilNextChange,
   ]);
 
   const previewImage = useMemo(() => {
@@ -312,10 +402,10 @@ const Dashboard = () => {
             <>
               {currentGlobalTokenURI && nftImageURI ? (
                 <>
-                  <h3 className="text-center text-2xl font-medium w-full">Your Profile</h3>
+                  <h2 className="text-center text-2xl font-medium w-full">Your Profile</h2>
                   <div className="text-center text-lg font-medium w-full md:w-3/5 lg:w-full p-4">
                     <div className="m-2 px-8 lg:px-16 xl:px-24">
-                      <NFTImage imageURI={nftImageURI} />
+                      <NFTImage chain={networkName} imageURI={nftImageURI} />
                     </div>
                     <div className="text-center text-lg font-medium w-full">
                       <div className="w-full flex justify-center gap-4 mt-8">
@@ -346,11 +436,13 @@ const Dashboard = () => {
                                   buttonText="Mint"
                                   classModifier="w-3/5 md:w-3/5 lg:w-2/5 text-xl"
                                   isDisabled={isLoading || isLoadingMintProfilePob || isMiningMintProfilePob}
+                                  isLoading={isLoading || isLoadingMintProfilePob || isMiningMintProfilePob}
                                   onClick={async () => {
                                     await writeMintProfilePob();
                                     setMintProfilePobAddress("");
                                     refetchProfilePobTotalSupply();
                                   }}
+                                  showLoader={true}
                                 />
                               </div>
                             </div>
@@ -382,16 +474,30 @@ const Dashboard = () => {
                           </div>
                         </div>
                         <div className="w-1/4 lg:w-1/5">
-                          <label htmlFor="change-profile-pob-modal" className="btn btn-primary normal-case w-full">
+                          <label
+                            htmlFor="change-profile-pob-modal"
+                            className="btn btn-primary normal-case w-full"
+                            onClick={() => setIsChangeModalOpen(true)}
+                          >
                             Change
                           </label>
-                          <input type="checkbox" id="change-profile-pob-modal" className="modal-toggle" />
+                          <input
+                            className="modal-toggle"
+                            checked={isChangeModalOpen}
+                            id="change-profile-pob-modal"
+                            readOnly
+                            type="checkbox"
+                          />
                           <div className="modal">
                             <div className="modal-box relative">
                               <label
                                 htmlFor="change-profile-pob-modal"
                                 className="btn btn-sm btn-circle absolute right-2 top-2"
-                                onClick={() => setImgObj(undefined)}
+                                onClick={() => {
+                                  setIsChangeModalOpen(false);
+                                  console.log("changinnnnng");
+                                  setImgObj(undefined);
+                                }}
                               >
                                 ✕
                               </label>
@@ -399,10 +505,25 @@ const Dashboard = () => {
                               <div className="mb-8 px-4">
                                 <div className="m-2 px-6 lg:px-16 xl:px-24">
                                   <FilePreview
+                                    chain={networkName}
                                     fileFormKey={fileFormKey}
                                     previewImage={previewImage}
                                     setImgObj={setImgObj}
                                   />
+                                </div>
+                                <div className="w-full flex flex-wrap justify-center mt-8 mb-8">
+                                  <PrimaryButton
+                                    buttonText="Change"
+                                    classModifier="w-3/5 md:w-3/5 lg:w-2/5 text-xl"
+                                    isDisabled={!imgObj || isLoading}
+                                    isLoading={isLoading}
+                                    onClick={changeProfilePobImage}
+                                    showLoader={true}
+                                  />
+                                  {timeUntilNextChange && Date.now() < timeUntilNextChange && (
+                                    <p className="text-lg w-full text-red-400">Ypu have to pay 1 MATIC</p>
+                                  )}
+                                  {errorMsg && <p className="text-lg w-full text-red-400">{errorMsg}</p>}
                                 </div>
                               </div>
                             </div>
@@ -432,14 +553,21 @@ const Dashboard = () => {
                   <p className="text-center text-lg font-medium w-full">Let&apos;s set up your Profile POB!</p>
                   <div className="text-center text-lg font-medium w-full md:w-3/5 lg:w-full p-4">
                     <div className="m-2 px-8 lg:px-16 xl:px-24">
-                      <FilePreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
+                      <FilePreview
+                        chain={networkName}
+                        fileFormKey={fileFormKey}
+                        previewImage={previewImage}
+                        setImgObj={setImgObj}
+                      />
                     </div>
                     <div className="w-full mt-0">
                       <PrimaryButton
                         buttonText="Set Profile POB"
                         classModifier="text-lg w-3/5"
                         isDisabled={!previewImage || isLoading}
+                        isLoading={isLoading}
                         onClick={writeSetGlobalTokenURI}
+                        showLoader={true}
                       />
                     </div>
                   </div>
@@ -448,13 +576,13 @@ const Dashboard = () => {
             </>
           ) : !currentGlobalTokenURI ? (
             <form
-              className="flex flex-col items-center justify-center w-full md:w-3/5 lg:w-4/5 pb-4 pt-8 px-4"
+              className="flex flex-col items-center justify-center w-full md:w-3/5 lg:w-4/5 p-2 px-4"
               onSubmit={handleSubmit}
             >
-              <legend className="mb-8 lg:mb-4 text-lg text-center">
+              <h3 className="text-center text-xl font-medium w-full mb-8">
                 It looks like you don&apos;t have a POB Profile!
-              </legend>
-              <div className="w-full flex border-2 border-base-300 bg-base-200 rounded-lg text-accent">
+              </h3>
+              <div className="w-full flex border-2 border-base-300 bg-base-200 rounded-lg text-accent mb-6">
                 <input
                   className="input input-ghost focus:outline-none focus:bg-transparent focus:text-gray-400 h-[2.5rem] min-h-[2.5rem] border w-full font-medium placeholder:text-accent/50 text-gray-400 text-lg text-center"
                   type="text"
@@ -466,13 +594,14 @@ const Dashboard = () => {
                   autoComplete="off"
                 />
               </div>
-              {errorMsg && <p className="font-medium text-center text-red-600 mt-4">{errorMsg}</p>}
-              <div className="w-full mt-6 lg:mt-2">
+              {errorMsg && <p className="font-medium text-center text-red-600 mb-4">{errorMsg}</p>}
+              <div className="w-full">
                 <PrimaryButton
                   buttonText="Create Profile"
                   classModifier="text-lg w-3/5 md:w-1/2"
                   isDisabled={profileHandle.length < 5 || ishandleAssignedAddressRefetching || isLoading}
                   isLoading={isLoading}
+                  showLoader={true}
                 />
               </div>
             </form>
@@ -489,7 +618,7 @@ const Dashboard = () => {
           <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 justify-center items-center md:items-start">
             {personalPobTokenURI && personalPobImageURI && (
               <>
-                <h3 className="text-center text-2xl font-medium w-full">Active POBs</h3>
+                <h2 className="text-center text-2xl font-medium w-full">Active POBs</h2>
                 <div className="text-center text-lg font-medium w-full md:w-3/5 lg:w-full p-4">
                   <div className="m-2 px-8 lg:px-16 xl:px-24">
                     <NFTImage imageURI={personalPobImageURI} />
@@ -527,11 +656,13 @@ const Dashboard = () => {
                                 buttonText="Mint"
                                 classModifier="w-3/5 md:w-3/5 lg:w-2/5 text-xl"
                                 isDisabled={isLoading || isLoadingMintPersonalPob || isMiningMintPersonalPob}
+                                isLoading={isLoading}
                                 onClick={async () => {
                                   await writeMintPersonalPob();
                                   setMintPersonalPobAddress("");
                                   refetchPersonalPobTotalSupply();
                                 }}
+                                showLoader={true}
                               />
                             </div>
                           </div>

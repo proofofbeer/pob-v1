@@ -14,6 +14,8 @@ contract POEPProfile is IPOEPProfile, ERC721, ERC721Enumerable, ERC721URIStorage
   using Counters for Counters.Counter;
 
   Counters.Counter private _tokenIdCounter;
+  uint256 private _changePeriod;
+
   string public globalTokenURI;
   uint256 public timeUntilNextChange;
   uint256 public requestChangeGlobalTokenURIPrice;
@@ -27,7 +29,8 @@ contract POEPProfile is IPOEPProfile, ERC721, ERC721Enumerable, ERC721URIStorage
     uint256 requestChangeGlobalTokenURIPrice_,
     address paymentAddress_
   ) ERC721(name_, symbol_) {
-    timeUntilNextChange = changePeriod_;
+    _changePeriod = changePeriod_;
+    timeUntilNextChange = block.timestamp + _changePeriod;
     requestChangeGlobalTokenURIPrice = requestChangeGlobalTokenURIPrice_;
     paymentAddress = payable(paymentAddress_);
   }
@@ -42,6 +45,7 @@ contract POEPProfile is IPOEPProfile, ERC721, ERC721Enumerable, ERC721URIStorage
   function changeGlobalTokenURI(string memory newGlobalTokenURI_) public onlyOwner {
     require(block.timestamp > timeUntilNextChange, "POEPProfile: Profile URI change not ready");
     _setGlobalTokenURI(newGlobalTokenURI_);
+    timeUntilNextChange = block.timestamp + _changePeriod;
   }
 
   function requestChangeGlobalTokenURI(string memory newGlobalTokenURI_) public payable onlyOwner {
