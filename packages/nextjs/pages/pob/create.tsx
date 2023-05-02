@@ -117,7 +117,7 @@ const CreatePOB = () => {
       try {
         const formData = new FormData();
         formData.append("files", new Blob([imgObj]));
-        // formData.append("profileAddress", userPobProfileAddress);
+        formData.append("profileAddress", userPobProfileAddress);
         if (Object.keys(form).length > 0) {
           for (const key in form) {
             if (form[key]) {

@@ -277,13 +277,13 @@ const Dashboard = () => {
           position: "top-center",
         });
       }
-      if (timeUntilNextChange && Date.now() < timeUntilNextChange) {
-        setErrorMsg("You used your free change per month, you can make additional changes for 1 MATIC");
-        setIsLoading(false);
-        return toast.error("You used your free change per month, you can make additional changes for 1 MATIC", {
-          position: "top-center",
-        });
-      }
+      // if (timeUntilNextChange && Date.now() < timeUntilNextChange) {
+      //   setErrorMsg("You used your free change per month, you can make additional changes for 1 MATIC");
+      //   setIsLoading(false);
+      //   return toast.error("You used your free change per month, you can make additional changes for 1 MATIC", {
+      //     position: "top-center",
+      //   });
+      // }
 
       const signer = await fetchSigner();
       const poepProfileContract = new ethers.Contract(userProfileAddress, POEPProfileContract.abi, signer as any);
@@ -304,7 +304,14 @@ const Dashboard = () => {
             },
           },
         );
-        const tx = await poepProfileContract.changeGlobalTokenURI(res.data.nftUrl);
+        let tx;
+        if (timeUntilNextChange && Date.now() >= timeUntilNextChange) {
+          tx = await poepProfileContract.changeGlobalTokenURI(res.data.nftUrl);
+        } else if (timeUntilNextChange && Date.now() < timeUntilNextChange) {
+          tx = await poepProfileContract.requestChangeGlobalTokenURI(res.data.nftUrl, {
+            value: ethers.utils.parseEther("1.0"),
+          });
+        }
         console.log(res.data);
         await refetchCurrentGlobalTokenURI();
         setNftImageURI(undefined);
@@ -511,18 +518,23 @@ const Dashboard = () => {
                                     setImgObj={setImgObj}
                                   />
                                 </div>
-                                <div className="w-full flex flex-wrap justify-center mt-8 mb-8">
+
+                                {timeUntilNextChange && Date.now() < timeUntilNextChange && (
+                                  <div className="w-full flex justify-center mt-8 mb-2">
+                                    <p className="font-medium border-orange-700 border-2 rounded-xl w-3/5 lg:w-2/5 text-md py-2">
+                                      Cost: 1 MATIC
+                                    </p>
+                                  </div>
+                                )}
+                                <div className="w-full flex flex-wrap justify-center mb-8">
                                   <PrimaryButton
                                     buttonText="Change"
-                                    classModifier="w-3/5 md:w-3/5 lg:w-2/5 text-xl"
+                                    classModifier="w-3/5 md:w-3/5 lg:w-2/5 text-xl lg:text-md"
                                     isDisabled={!imgObj || isLoading}
                                     isLoading={isLoading}
                                     onClick={changeProfilePobImage}
                                     showLoader={true}
                                   />
-                                  {timeUntilNextChange && Date.now() < timeUntilNextChange && (
-                                    <p className="text-lg w-full text-red-400">Ypu have to pay 1 MATIC</p>
-                                  )}
                                   {errorMsg && <p className="text-lg w-full text-red-400">{errorMsg}</p>}
                                 </div>
                               </div>

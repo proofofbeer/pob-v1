@@ -16,7 +16,7 @@ export const getPersonalPOEPMetadata = ({
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
   return {
-    name: `${username} Profile POB`,
+    name: `${username} - Profile POB`,
     description: `We met on ${MONTHS[currentMonth]} '${currentYear - 2000}`,
     image: imgCid,
     external_url: `https://pob.lol/profile/${profileAddress}`,

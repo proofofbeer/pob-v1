@@ -49,7 +49,7 @@ contract POEPProfile is IPOEPProfile, ERC721, ERC721Enumerable, ERC721URIStorage
   }
 
   function requestChangeGlobalTokenURI(string memory newGlobalTokenURI_) public payable onlyOwner {
-    require(msg.value > requestChangeGlobalTokenURIPrice, "POEPProfile: Not enough MATIC to request token URI change");
+    require(msg.value >= requestChangeGlobalTokenURIPrice, "POEPProfile: Not enough MATIC to request token URI change");
     paymentAddress.transfer(msg.value);
     _setGlobalTokenURI(newGlobalTokenURI_);
   }
