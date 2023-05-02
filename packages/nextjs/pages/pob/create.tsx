@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import router from "next/router";
 import { fetchSigner } from "@wagmi/core";
 import axios from "axios";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
 import BackButton from "~~/components/common/buttons/BackButton";
@@ -23,6 +23,7 @@ const CreatePOB = () => {
   const [form, setForm] = useState<Record<string, any>>(() => getInitialPobFormState(createPobInputsArray));
   const [imgObj, setImgObj] = useState<any>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const pobContractAddress = BigNumber.from("0x0"); // adding this to remove lint errors, check later!
 
   const { address: userAddress } = useAccount();
 
@@ -40,8 +41,8 @@ const CreatePOB = () => {
 
   const { data: currentUserPobAddress } = useScaffoldContractRead({
     contractName: "PersonalPOBFactory",
-    functionName: "userAddressToPobAddress",
-    args: [userAddress],
+    functionName: "userAddressToPobAddresses",
+    args: [userAddress, pobContractAddress],
   });
 
   // TODO: Implement fetch POB contract address (call profileAddressToPobAddress with Profile address from zustand store)

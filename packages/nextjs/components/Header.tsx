@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Bars3Icon, RectangleGroupIcon } from "@heroicons/react/24/outline";
-import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
+import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
@@ -69,9 +69,6 @@ export const Header = () => {
           )}
         </div>
         <div className="hidden lg:flex items-center gap-2 ml-4 mr-6">
-          {/* <Link href="/" passHref className="flex relative w-10 h-10">
-            <Image alt="POEP logo" height={36} width={36} className="cursor-pointer" src={logo_black_bg} />
-          </Link> */}
           <Link href="/" passHref className="flex items-center relative text-4xl">
             🍻 <span className="font-semibold leading-tight text-lg ml-1">Proof of BEER</span>
           </Link>
@@ -80,6 +77,7 @@ export const Header = () => {
       </div>
       <div className="navbar-end flex-grow mr-4">
         <RainbowKitCustomConnectButton />
+        <FaucetButton />
       </div>
     </div>
   );

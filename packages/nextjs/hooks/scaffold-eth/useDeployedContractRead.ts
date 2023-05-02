@@ -1,7 +1,6 @@
 import { Abi } from "abitype";
 import { useContractRead } from "wagmi";
-import { ERC721Contract, POEPFactoryContract, PersonalPOBContract } from "~~/contracts";
-import POEPProfileContract from "~~/contracts/POEPProfile.json";
+import { ERC721Contract, POEPFactoryContract, POEPProfileContract, PersonalPOBContract } from "~~/contracts";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 import { AbiFunctionReturnType } from "~~/utils/scaffold-eth/contract";
 

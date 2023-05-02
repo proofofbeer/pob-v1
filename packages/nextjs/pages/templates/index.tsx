@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import { ProductFactoryContract } from "../../contracts/ERC721Contract";
+import { ERC721Contract } from "../../contracts/index";
 import { ContractFactory } from "ethers";
 import toast from "react-hot-toast";
 import { useSigner } from "wagmi";
@@ -43,11 +43,7 @@ const Templates = () => {
 
     try {
       event?.preventDefault();
-      const ProductFactory = new ContractFactory(
-        ProductFactoryContract.abi,
-        ProductFactoryContract.bytecode,
-        signer as any,
-      );
+      const ProductFactory = new ContractFactory(ERC721Contract.abi, ERC721Contract.bytecode, signer as any);
 
       const productFactory = await ProductFactory.deploy(product_name_string_0, product_symbol_string_1);
 

@@ -8,6 +8,7 @@ const CreatePOEPProfile = () => {
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
+    setIsLoading(false);
   };
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center">

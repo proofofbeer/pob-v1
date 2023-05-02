@@ -215,7 +215,7 @@ const Dashboard = () => {
             },
           },
         );
-        const tx = await poepProfileContract.setGlobalTokenURI(res.data.nftUrl);
+        const tx = await poepProfileContract.changeGlobalTokenURI(res.data.nftUrl);
         toast.success("Successfully set your Profile", {
           position: "top-center",
         });
@@ -320,11 +320,7 @@ const Dashboard = () => {
                     <div className="text-center text-lg font-medium w-full">
                       <div className="w-full flex justify-center gap-4 mt-8">
                         <div className="w-1/4 lg:w-1/5">
-                          <label
-                            htmlFor="mint-profile-pob-modal"
-                            className="btn btn-primary normal-case w-full"
-                            // disabled={currentGlobalTokenURI ? false : true}
-                          >
+                          <label htmlFor="mint-profile-pob-modal" className="btn btn-primary normal-case w-full">
                             Mint
                           </label>
                           <input type="checkbox" id="mint-profile-pob-modal" className="modal-toggle" />
@@ -386,26 +382,28 @@ const Dashboard = () => {
                           </div>
                         </div>
                         <div className="w-1/4 lg:w-1/5">
-                          <label htmlFor="change-profile-pob-modal" className="btn btn-disabled normal-case w-full">
+                          <label htmlFor="change-profile-pob-modal" className="btn btn-primary normal-case w-full">
                             Change
                           </label>
-                          <input disabled type="checkbox" id="change-profile-pob-modal" className="modal-toggle" />
+                          <input type="checkbox" id="change-profile-pob-modal" className="modal-toggle" />
                           <div className="modal">
                             <div className="modal-box relative">
                               <label
                                 htmlFor="change-profile-pob-modal"
                                 className="btn btn-sm btn-circle absolute right-2 top-2"
+                                onClick={() => setImgObj(undefined)}
                               >
                                 ✕
                               </label>
                               <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Change your POB image:</h2>
                               <div className="mb-8 px-4">
-                                <AddressInput
-                                  name="mintRecipientAddress"
-                                  onChange={(value: any) => setMintProfilePobAddress(value)}
-                                  placeholder="Enter address or ENS"
-                                  value={mintProfilePobAddress}
-                                />
+                                <div className="m-2 px-6 lg:px-16 xl:px-24">
+                                  <FilePreview
+                                    fileFormKey={fileFormKey}
+                                    previewImage={previewImage}
+                                    setImgObj={setImgObj}
+                                  />
+                                </div>
                               </div>
                             </div>
                           </div>

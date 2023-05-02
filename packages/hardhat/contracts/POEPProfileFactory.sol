@@ -11,6 +11,7 @@ contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
   uint256 private _changeGlobalTokenPrice;
   uint256 private _changePeriod;
 
+  uint256 public poepProfileTotalSupply;
   POEPProfile[] public poepProfilesArray;
 
   mapping(string => address) public profileHandleToProfile;
@@ -21,6 +22,7 @@ contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
     _poepVersion = deployedPoepVersion_;
     _changeGlobalTokenPrice = changeGlobalTokenPrice_ * 10 ** 18;
     _changePeriod = changePeriod_;
+    poepProfileTotalSupply = 0;
   }
 
   function createNewPoepProfile(string memory name_, string memory symbol_) public {
@@ -31,6 +33,7 @@ contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
 
     POEPProfile newPoepProfile = new POEPProfile(name_, symbol_, _changePeriod, _changeGlobalTokenPrice, address(this));
     newPoepProfile.transferOwnership(msgSender);
+    ++poepProfileTotalSupply;
     poepProfilesArray.push(newPoepProfile);
     profileHandleToProfile[name_] = address(newPoepProfile);
     profileHandleToUserAddress[name_] = msgSender;
