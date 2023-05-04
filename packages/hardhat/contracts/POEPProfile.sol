@@ -30,7 +30,7 @@ contract POEPProfile is IPOEPProfile, ERC721, ERC721Enumerable, ERC721URIStorage
     address paymentAddress_
   ) ERC721(name_, symbol_) {
     _changePeriod = changePeriod_;
-    timeUntilNextChange = block.timestamp + _changePeriod;
+    timeUntilNextChange = 0;
     requestChangeGlobalTokenURIPrice = requestChangeGlobalTokenURIPrice_;
     paymentAddress = payable(paymentAddress_);
   }

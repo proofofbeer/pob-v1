@@ -8,8 +8,8 @@ import "./interfaces/IPOEPProfileFactory.sol";
 
 contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
   string private _poepVersion;
-  uint256 private _changeGlobalTokenPrice;
-  uint256 private _changePeriod;
+  uint256 private changeGlobalTokenPrice;
+  uint256 public changePeriod;
 
   uint256 public poepProfileTotalSupply;
   POEPProfile[] public poepProfilesArray;
@@ -20,8 +20,8 @@ contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
 
   constructor(string memory deployedPoepVersion_, uint256 changePeriod_, uint256 changeGlobalTokenPrice_) {
     _poepVersion = deployedPoepVersion_;
-    _changeGlobalTokenPrice = changeGlobalTokenPrice_ * 10 ** 18;
-    _changePeriod = changePeriod_;
+    changeGlobalTokenPrice = changeGlobalTokenPrice_ * 10 ** 18;
+    changePeriod = changePeriod_;
     poepProfileTotalSupply = 0;
   }
 
@@ -31,13 +31,17 @@ contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
     require(userAddressToProfile[msgSender] == address(0), "POEPProfileFactory: Only one Profile per address");
     require(profileHandleToProfile[name_] == address(0), "POEPProfileFactory: Profile handle has been taken");
 
-    POEPProfile newPoepProfile = new POEPProfile(name_, symbol_, _changePeriod, _changeGlobalTokenPrice, address(this));
+    POEPProfile newPoepProfile = new POEPProfile(name_, symbol_, changePeriod, changeGlobalTokenPrice, address(this));
     newPoepProfile.transferOwnership(msgSender);
     ++poepProfileTotalSupply;
     poepProfilesArray.push(newPoepProfile);
     profileHandleToProfile[name_] = address(newPoepProfile);
     profileHandleToUserAddress[name_] = msgSender;
     userAddressToProfile[msgSender] = address(newPoepProfile);
+  }
+
+  function setChangePeriod(uint256 changePeriod_) external onlyOwner {
+    changePeriod = changePeriod_;
   }
 
   function getUserAddressToProfile(address userAddress_) external view returns (address) {

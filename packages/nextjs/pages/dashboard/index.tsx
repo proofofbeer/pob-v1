@@ -40,15 +40,10 @@ const Dashboard = () => {
   const [timeUntilNextChange, setTimeUntilNextChange] = useState<number | undefined>(undefined);
   const [isChangeModalOpen, setIsChangeModalOpen] = useState<boolean>(false);
 
-  const pobContractAddress = BigNumber.from("0x0"); // adding this to remove lint errors, check later!
+  const pobContractAddress = BigNumber.from("0x01"); // adding this to remove lint errors, check later!
 
   const { address: userAddress } = useAccount();
-  const {
-    color: networkColor,
-    id: networkId,
-    name: networkName,
-    nativeCurrency: networkNativeCurrency,
-  } = getTargetNetwork();
+  const { name: networkName } = getTargetNetwork();
   const router = useRouter();
 
   const { data: userProfileAddress, isLoading: isLoadingUserProfileAddress } = useScaffoldContractRead({
@@ -74,11 +69,7 @@ const Dashboard = () => {
     args: [userAddress, pobContractAddress],
   });
 
-  const {
-    data: currentGlobalTokenURI,
-    refetch: refetchCurrentGlobalTokenURI,
-    isRefetching: isRefetchingCurrentGlobalTokenURI,
-  }: any = useDeployedContractRead({
+  const { data: currentGlobalTokenURI, refetch: refetchCurrentGlobalTokenURI }: any = useDeployedContractRead({
     contractAddress: userProfileAddress,
     contractName: poepProfileName,
     functionName: "globalTokenURI",
@@ -176,8 +167,7 @@ const Dashboard = () => {
       if (res !== undefined) console.log(res);
       setTimeout(() => {
         setIsLoading(false);
-        if (res !== undefined) router.reload();
-      }, 2500);
+      }, 500);
     } catch (error) {
       console.log(error);
       setIsLoading(false);
@@ -241,19 +231,22 @@ const Dashboard = () => {
           },
         );
         const tx = await poepProfileContract.changeGlobalTokenURI(res.data.nftUrl);
-        refetchCurrentGlobalTokenURI();
+        await refetchCurrentGlobalTokenURI();
+        await refetchProfilePobTimeUntilNextChange();
+        console.log(tx);
         toast.success("Successfully set your Profile", {
           position: "top-center",
         });
-        console.log(tx);
-      } catch (error) {
+      } catch (error: any) {
         console.log(error);
+        toast.error(error.reason || "Please try again later 🫣", {
+          position: "top-center",
+        });
       } finally {
         setIsLoading(false);
-        router.reload();
       }
     },
-    [getFilesCid, refetchCurrentGlobalTokenURI, router, userProfileAddress, username],
+    [getFilesCid, refetchCurrentGlobalTokenURI, refetchProfilePobTimeUntilNextChange, userProfileAddress, username],
   );
 
   const getGatewayImageUrl = useCallback(async (nftUrl: string) => {
@@ -277,13 +270,6 @@ const Dashboard = () => {
           position: "top-center",
         });
       }
-      // if (timeUntilNextChange && Date.now() < timeUntilNextChange) {
-      //   setErrorMsg("You used your free change per month, you can make additional changes for 1 MATIC");
-      //   setIsLoading(false);
-      //   return toast.error("You used your free change per month, you can make additional changes for 1 MATIC", {
-      //     position: "top-center",
-      //   });
-      // }
 
       const signer = await fetchSigner();
       const poepProfileContract = new ethers.Contract(userProfileAddress, POEPProfileContract.abi, signer as any);
@@ -312,24 +298,34 @@ const Dashboard = () => {
             value: ethers.utils.parseEther("1.0"),
           });
         }
-        console.log(res.data);
         await refetchCurrentGlobalTokenURI();
+        await refetchProfilePobTimeUntilNextChange();
         setNftImageURI(undefined);
         console.log(tx);
         setTimeout(() => {
           setIsChangeModalOpen(false);
           setImgObj(undefined);
           setIsLoading(false);
-          toast.success("Successfully set your Profile", {
+          toast.success("Successfully changed your Profile", {
             position: "top-center",
           });
         }, 500);
-      } catch (error) {
+      } catch (error: any) {
         console.log(error);
+        toast.error(error.error.data.message || "Please try again later 🫣", {
+          position: "top-center",
+        });
         setIsLoading(false);
       }
     },
-    [getFilesCid, refetchCurrentGlobalTokenURI, timeUntilNextChange, userProfileAddress, username],
+    [
+      getFilesCid,
+      refetchCurrentGlobalTokenURI,
+      refetchProfilePobTimeUntilNextChange,
+      timeUntilNextChange,
+      userProfileAddress,
+      username,
+    ],
   );
 
   useEffect(() => {
@@ -337,10 +333,12 @@ const Dashboard = () => {
       let formattedImageURI = "";
       if (currentGlobalTokenURI && username && pobNameImage === "profileImage") {
         formattedImageURI = await getGatewayImageUrl(tokenURI);
+        console.log("1", formattedImageURI);
         setNftImageURI(formattedImageURI);
       }
       if (personalPobTokenURI && username && pobNameImage === "pobImage") {
         formattedImageURI = await getGatewayImageUrl(tokenURI);
+        console.log("2", formattedImageURI);
         setPersonalPobImageURI(formattedImageURI);
       }
       return formattedImageURI;
@@ -502,7 +500,6 @@ const Dashboard = () => {
                                 className="btn btn-sm btn-circle absolute right-2 top-2"
                                 onClick={() => {
                                   setIsChangeModalOpen(false);
-                                  console.log("changinnnnng");
                                   setImgObj(undefined);
                                 }}
                               >
@@ -510,7 +507,7 @@ const Dashboard = () => {
                               </label>
                               <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Change your POB image:</h2>
                               <div className="mb-8 px-4">
-                                <div className="m-2 px-6 lg:px-16 xl:px-24">
+                                <div className="m-2 px-6 md:px-12 lg:px-16 xl:px-24">
                                   <FilePreview
                                     chain={networkName}
                                     fileFormKey={fileFormKey}
@@ -555,7 +552,7 @@ const Dashboard = () => {
                           View on Explorer
                           <ArrowTopRightOnSquareIcon className="w-4 ml-2" />
                         </Link>
-                        <p>Sharing and changing coming soon!</p>
+                        <p>Sharing coming soon!</p>
                       </div>
                     </div>
                   </div>
@@ -575,7 +572,7 @@ const Dashboard = () => {
                     <div className="w-full mt-0">
                       <PrimaryButton
                         buttonText="Set Profile POB"
-                        classModifier="text-lg w-3/5"
+                        classModifier="text-lg w-2/3 px-0"
                         isDisabled={!previewImage || isLoading}
                         isLoading={isLoading}
                         onClick={writeSetGlobalTokenURI}
@@ -610,7 +607,7 @@ const Dashboard = () => {
               <div className="w-full">
                 <PrimaryButton
                   buttonText="Create Profile"
-                  classModifier="text-lg w-3/5 md:w-1/2"
+                  classModifier="text-lg w-2/3 px-0"
                   isDisabled={profileHandle.length < 5 || ishandleAssignedAddressRefetching || isLoading}
                   isLoading={isLoading}
                   showLoader={true}
