@@ -26,18 +26,16 @@ contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
   }
 
   function createNewPoepProfile(string memory name_, string memory symbol_) public {
-    address msgSender = _msgSender();
-
-    require(userAddressToProfile[msgSender] == address(0), "POEPProfileFactory: Only one Profile per address");
+    require(userAddressToProfile[_msgSender()] == address(0), "POEPProfileFactory: Only one Profile per address");
     require(profileHandleToProfile[name_] == address(0), "POEPProfileFactory: Profile handle has been taken");
 
     POEPProfile newPoepProfile = new POEPProfile(name_, symbol_, changePeriod, changeGlobalTokenPrice, address(this));
-    newPoepProfile.transferOwnership(msgSender);
-    ++poepProfileTotalSupply;
+    newPoepProfile.transferOwnership(_msgSender());
     poepProfilesArray.push(newPoepProfile);
     profileHandleToProfile[name_] = address(newPoepProfile);
-    profileHandleToUserAddress[name_] = msgSender;
-    userAddressToProfile[msgSender] = address(newPoepProfile);
+    profileHandleToUserAddress[name_] = _msgSender();
+    userAddressToProfile[_msgSender()] = address(newPoepProfile);
+    ++poepProfileTotalSupply;
   }
 
   function setChangePeriod(uint256 changePeriod_) external onlyOwner {

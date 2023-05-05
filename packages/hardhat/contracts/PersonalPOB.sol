@@ -17,17 +17,24 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
   Counters.Counter private _tokenIdCounter;
   address private _pobAdmin;
   string public globalTokenURI;
-  uint256 public maxSupply = 25;
+  uint256 public collectionId;
+  uint256 public maxSupply;
   uint256 public mintExpirationDate;
+  mapping(address => uint256) profileAddressToTokenId;
 
   constructor(
     string memory name_,
+    string memory symbol_,
     string memory globalTokenURI_,
     address pobAdmin_,
+    uint256 collectionId_,
+    uint256 maxSupply_,
     uint256 mintExpirationPeriod_
-  ) ERC721(name_, "POB") {
-    globalTokenURI = globalTokenURI_;
+  ) ERC721(name_, symbol_) {
     _pobAdmin = pobAdmin_;
+    globalTokenURI = globalTokenURI_;
+    collectionId = collectionId_;
+    maxSupply = maxSupply_;
     mintExpirationDate = block.timestamp + mintExpirationPeriod_;
   }
 
@@ -37,8 +44,20 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
     require(this.balanceOf(to_) == 0, "PersonalPOB: Only one POB per address");
     _safeMint(to_, tokenId);
     _setTokenURI(tokenId, globalTokenURI);
+    profileAddressToTokenId[profileAddress_] = tokenId;
+    PobCollectionContract memory newPobCollectionContract = PobCollectionContract({
+      pobAddress: address(this),
+      name: name(),
+      symbol: symbol(),
+      globalTokenUri: globalTokenURI,
+      maxSupply: maxSupply,
+      mintExpirationDate: mintExpirationDate,
+      pobCollectionId: collectionId,
+      tokenId: tokenId,
+      isApprovedByProfile: false
+    });
+    IPOEPProfile(profileAddress_).addMintedPob(newPobCollectionContract);
     _tokenIdCounter.increment();
-    IPOEPProfile(profileAddress_).addMintedPobAddress(address(this), _msgSender());
   }
 
   function setGlobalTokenURI(string memory newGlobalTokenURI_) external onlyAdmin {

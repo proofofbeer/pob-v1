@@ -20,7 +20,7 @@ contract POEPProfile is IPOEPProfile, ERC721, ERC721Enumerable, ERC721URIStorage
   uint256 public timeUntilNextChange;
   uint256 public requestChangeGlobalTokenURIPrice;
   address payable public paymentAddress;
-  address[] public mintedPobAddresses;
+  PobCollectionContract[] public mintedPobCollections;
 
   constructor(
     string memory name_,
@@ -54,9 +54,13 @@ contract POEPProfile is IPOEPProfile, ERC721, ERC721Enumerable, ERC721URIStorage
     _setGlobalTokenURI(newGlobalTokenURI_);
   }
 
-  function addMintedPobAddress(address pobAddress_, address msgSender_) external {
+  function addMintedPob(PobCollectionContract memory newMintedPobCollection_) external {
+    mintedPobCollections.push(newMintedPobCollection_);
+  }
+
+  function addMintedPobOnlyOwner(PobCollectionContract memory newMintedPobCollection_, address msgSender_) external {
     require(msgSender_ == owner(), "POEPProfile: Only Profile owner can trigger this function");
-    mintedPobAddresses.push(pobAddress_);
+    mintedPobCollections.push(newMintedPobCollection_);
   }
 
   function _setGlobalTokenURI(string memory newGlobalTokenURI_) private {

@@ -2,9 +2,10 @@ import React, { useCallback, useMemo, useState } from "react";
 import router from "next/router";
 import { fetchSigner } from "@wagmi/core";
 import axios from "axios";
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
+import Loader from "~~/components/common/Loader";
 import BackButton from "~~/components/common/buttons/BackButton";
 import PrimaryButton from "~~/components/common/buttons/PrimaryButton";
 import FilePreview from "~~/components/image-handling/FilePreview";
@@ -12,7 +13,7 @@ import { InputBase } from "~~/components/inputs/InputBase";
 import ToggleInput from "~~/components/inputs/ToggleInput";
 import { createPobInputsArray, getInitialPobFormState } from "~~/components/pob/pob-form-input";
 import { PersonalPOBFactoryContract } from "~~/contracts";
-import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
+import { useAccountBalance, useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 
 const CreatePOB = () => {
   const deployedPersonalPOBFactory = process.env.NEXT_PUBLIC_PERSONAL_POB_FACTORY_ADDRESS || "0x0";
@@ -23,9 +24,9 @@ const CreatePOB = () => {
   const [form, setForm] = useState<Record<string, any>>(() => getInitialPobFormState(createPobInputsArray));
   const [imgObj, setImgObj] = useState<any>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const pobContractAddress = BigNumber.from("0x0"); // adding this to remove lint errors, check later!
 
   const { address: userAddress } = useAccount();
+  const { balance, isLoading: isLoadingBalance } = useAccountBalance(userAddress);
 
   // const { data: currentPobAddress, isLoading: isLoadingCurrentPobAddress } = useScaffoldContractRead({
   //   contractName,
@@ -39,11 +40,11 @@ const CreatePOB = () => {
     args: [userAddress],
   });
 
-  const { data: currentUserPobAddress } = useScaffoldContractRead({
-    contractName: "PersonalPOBFactory",
-    functionName: "userAddressToPobAddresses",
-    args: [userAddress, pobContractAddress],
-  });
+  // const { data: currentUserPobAddress } = useScaffoldContractRead({
+  //   contractName: "PersonalPOBFactory",
+  //   functionName: "userAddressToPobAddresses",
+  //   args: [userAddress, pobContractAddress],
+  // });
 
   // TODO: Implement fetch POB contract address (call profileAddressToPobAddress with Profile address from zustand store)
   // TODO: Implement fetch POB contract expiration (call profileAddressToPobExpiration)
@@ -114,6 +115,14 @@ const CreatePOB = () => {
         PersonalPOBFactoryContract.abi,
         signer as any,
       );
+
+      if (balance && balance < 1.1) {
+        toast.error("You don't have enough balance :(", {
+          position: "top-center",
+        });
+        setIsLoading(false);
+        return;
+      }
       try {
         const formData = new FormData();
         formData.append("files", new Blob([imgObj]));
@@ -133,6 +142,7 @@ const CreatePOB = () => {
 
         const tx = await personalPobFactoryContract.createNewPersonalPob(
           form.name,
+          "POB",
           userAddress,
           userPobProfileAddress,
           res.data.nftUrl,
@@ -144,22 +154,32 @@ const CreatePOB = () => {
         toast.success("Successfully created your POB!!!", {
           position: "top-center",
         });
-        router.push("/dashboard");
+        router.push("/pob/my-pobs");
       } catch (error: any) {
-        if (error.body) {
-          const parsedBody = JSON.parse(error.body);
-          const { message } = parsedBody.error;
-          toast.error(message, {
-            position: "bottom-right",
+        console.log(error);
+        if (error.error) {
+          toast.error(error.error.data.message || "Please try again later 🫣", {
+            position: "top-center",
           });
         } else {
-          console.error(error);
+          toast.error("An error occurred, please try again later 🫣", {
+            position: "top-center",
+          });
         }
+        // if (error.body) {
+        //   const parsedBody = JSON.parse(error.body);
+        //   const { message } = parsedBody.error;
+        //   toast.error(message, {
+        //     position: "top-center",
+        //   });
+        // } else {
+        //   console.error(error);
+        // }
       } finally {
         setIsLoading(false);
       }
     },
-    [deployedPersonalPOBFactory, form, imgObj, userAddress, userPobProfileAddress],
+    [balance, deployedPersonalPOBFactory, form, imgObj, userAddress, userPobProfileAddress],
   );
 
   return (
@@ -170,24 +190,15 @@ const CreatePOB = () => {
         id="personal-pob-container"
         className="w-full md:w-11/12 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
       >
-        {currentUserPobAddress && parseInt(currentUserPobAddress) != 0 ? (
-          <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
-            <p className="text-center text-lg font-medium px-4">
-              Currently only one active POB supported.
-              <br /> We will update when more active POBs are supported.
-            </p>
-
-            <p className="text-4xl mt-4 w-full flex justify-center">🤓</p>
-          </div>
-        ) : (
-          <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
-            <p className="text-center text-lg font-medium w-full">Please fill the details:</p>
-            <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4">
-              <div className="m-2 px-4 lg:px-4 xl:px-24 2xl:px-32">
-                <FilePreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
+        <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
+          {userPobProfileAddress && parseInt(userPobProfileAddress) ? (
+            <>
+              <p className="text-center text-lg font-medium w-full">Please fill the details:</p>
+              <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4">
+                <div className="m-2 px-4 lg:px-4 xl:px-24 2xl:px-32">
+                  <FilePreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
+                </div>
               </div>
-            </div>
-            {userPobProfileAddress && parseInt(userPobProfileAddress) ? (
               <form
                 className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:pt-4 lg:pr-12 xl:pr-20"
                 onSubmit={handleCreatePersonalPob}
@@ -197,21 +208,27 @@ const CreatePOB = () => {
                   <div className="flex justify-center">
                     <p className="font-medium border-orange-700 border-2 rounded-xl w-3/5 py-2">Cost: 1 MATIC</p>
                   </div>
-                  <PrimaryButton
-                    buttonText="Create POB"
-                    classModifier="text-lg w-3/5"
-                    isDisabled={!previewImage || isLoading}
-                  />
+                  {isLoadingBalance ? (
+                    <Loader />
+                  ) : (
+                    <PrimaryButton
+                      buttonText="Create POB"
+                      classModifier="text-lg w-3/5"
+                      isDisabled={!previewImage || isLoading}
+                      isLoading={isLoading}
+                      showLoader={true}
+                    />
+                  )}
                 </div>
               </form>
-            ) : (
-              <div className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:mt-12 xl:pr-20">
-                <h4 className="text-xl">You need a POB Profile</h4>
-                <PrimaryButton buttonText="I want my Profile" classModifier="text-lg py-2 px-8" path="/dashboard" />
-              </div>
-            )}
-          </div>
-        )}
+            </>
+          ) : (
+            <div className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:mt-12 xl:pr-20">
+              <h4 className="text-xl">You need a POB Profile</h4>
+              <PrimaryButton buttonText="I want my Profile" classModifier="text-lg py-2 px-8 mt-4" path="/dashboard" />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

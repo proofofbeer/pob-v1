@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { fetchSigner } from "@wagmi/core";
 import axios from "axios";
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
@@ -14,7 +13,7 @@ import FilePreview from "~~/components/image-handling/FilePreview";
 import NFTImage from "~~/components/image-handling/NFTImage";
 import { AddressInput } from "~~/components/scaffold-eth";
 import { POEPProfileContract } from "~~/contracts";
-import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { useAccountBalance, useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { useDeployedContractRead } from "~~/hooks/scaffold-eth/useDeployedContractRead";
 import { useDeployedContractWrite } from "~~/hooks/scaffold-eth/useDeployedContractWrite";
 import { INFTMetadata } from "~~/types/nft-metadata/nft-metadata";
@@ -23,28 +22,28 @@ import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 const Dashboard = () => {
   const poepProfileFactoryName = "POEPProfileFactory";
-  const personalPobFactoryName = "PersonalPOBFactory";
+  // const personalPobFactoryName = "PersonalPOBFactory";
   const poepProfileName = "POEPProfile";
-  const personalPobName = "PersonalPOB";
+  // const personalPobName = "PersonalPOB";
   // const personalPobContractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
   const fileFormKey = "poep_image";
 
   const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined);
   const [imgObj, setImgObj] = useState<any>(undefined);
   const [nftImageURI, setNftImageURI] = useState<string | undefined>(undefined);
-  const [personalPobImageURI, setPersonalPobImageURI] = useState<string | undefined>(undefined);
+  // const [personalPobImageURI, setPersonalPobImageURI] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [profileHandle, setProfileHandle] = useState<string>("");
   const [mintProfilePobAddress, setMintProfilePobAddress] = useState<string>("");
-  const [mintPersonalPobAddress, setMintPersonalPobAddress] = useState<string>("");
+  // const [mintPersonalPobAddress, setMintPersonalPobAddress] = useState<string>("");
   const [timeUntilNextChange, setTimeUntilNextChange] = useState<number | undefined>(undefined);
   const [isChangeModalOpen, setIsChangeModalOpen] = useState<boolean>(false);
 
-  const pobContractAddress = BigNumber.from("0x01"); // adding this to remove lint errors, check later!
+  // const pobContractAddress = BigNumber.from("0x01"); // adding this to remove lint errors, check later!
 
   const { address: userAddress } = useAccount();
+  const { balance } = useAccountBalance(userAddress);
   const { name: networkName } = getTargetNetwork();
-  const router = useRouter();
 
   const { data: userProfileAddress, isLoading: isLoadingUserProfileAddress } = useScaffoldContractRead({
     contractName: poepProfileFactoryName,
@@ -63,11 +62,11 @@ const Dashboard = () => {
     enabled: false,
   });
 
-  const { data: personalPobAddress } = useScaffoldContractRead({
-    contractName: personalPobFactoryName,
-    functionName: "userAddressToPobAddresses",
-    args: [userAddress, pobContractAddress],
-  });
+  // const { data: personalPobAddress } = useScaffoldContractRead({
+  //   contractName: personalPobFactoryName,
+  //   functionName: "userAddressToPobAddresses",
+  //   args: [userAddress, pobContractAddress],
+  // });
 
   const { data: currentGlobalTokenURI, refetch: refetchCurrentGlobalTokenURI }: any = useDeployedContractRead({
     contractAddress: userProfileAddress,
@@ -102,21 +101,21 @@ const Dashboard = () => {
       enabled: true,
     });
 
-  const { data: personalPobTokenURI, refetch: refetchPersonalPobTokenURI }: any = useDeployedContractRead({
-    contractAddress: personalPobAddress,
-    contractName: personalPobName,
-    functionName: "globalTokenURI",
-    args: [],
-    enabled: false,
-  });
+  // const { data: personalPobTokenURI, refetch: refetchPersonalPobTokenURI }: any = useDeployedContractRead({
+  //   contractAddress: personalPobAddress,
+  //   contractName: personalPobName,
+  //   functionName: "globalTokenURI",
+  //   args: [],
+  //   enabled: false,
+  // });
 
-  const { data: personalPobTotalSupply, refetch: refetchPersonalPobTotalSupply }: any = useDeployedContractRead({
-    contractAddress: personalPobAddress,
-    contractName: personalPobName,
-    functionName: "totalSupply",
-    args: [],
-    enabled: false,
-  });
+  // const { data: personalPobTotalSupply, refetch: refetchPersonalPobTotalSupply }: any = useDeployedContractRead({
+  //   contractAddress: personalPobAddress,
+  //   contractName: personalPobName,
+  //   functionName: "totalSupply",
+  //   args: [],
+  //   enabled: false,
+  // });
 
   const { writeAsync: createProfile } = useScaffoldContractWrite({
     contractName: poepProfileFactoryName,
@@ -135,16 +134,16 @@ const Dashboard = () => {
     args: [mintProfilePobAddress],
   });
 
-  const {
-    writeAsync: writeMintPersonalPob,
-    isLoading: isLoadingMintPersonalPob,
-    isMining: isMiningMintPersonalPob,
-  } = useDeployedContractWrite({
-    contractAddress: personalPobAddress,
-    contractName: personalPobName,
-    functionName: "safeMint",
-    args: [mintPersonalPobAddress],
-  });
+  // const {
+  //   writeAsync: writeMintPersonalPob,
+  //   isLoading: isLoadingMintPersonalPob,
+  //   isMining: isMiningMintPersonalPob,
+  // } = useDeployedContractWrite({
+  //   contractAddress: personalPobAddress,
+  //   contractName: personalPobName,
+  //   functionName: "safeMint",
+  //   args: [mintPersonalPobAddress],
+  // });
 
   const checkHandleAvailability = async () => {
     try {
@@ -234,14 +233,21 @@ const Dashboard = () => {
         await refetchCurrentGlobalTokenURI();
         await refetchProfilePobTimeUntilNextChange();
         console.log(tx);
+        setImgObj(undefined);
         toast.success("Successfully set your Profile", {
           position: "top-center",
         });
       } catch (error: any) {
         console.log(error);
-        toast.error(error.reason || "Please try again later 🫣", {
-          position: "top-center",
-        });
+        if (error.error) {
+          toast.error(error.error.data.message || "Please try again later 🫣", {
+            position: "top-center",
+          });
+        } else {
+          toast.error("An error occurred, please try again later 🫣", {
+            position: "top-center",
+          });
+        }
       } finally {
         setIsLoading(false);
       }
@@ -269,6 +275,22 @@ const Dashboard = () => {
         return toast.error("No Profile Contract or Username connected", {
           position: "top-center",
         });
+      }
+
+      if (!balance) {
+        toast.error("No balance read from account, please try again", {
+          position: "top-center",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (timeUntilNextChange && Date.now() < timeUntilNextChange && balance && balance < 1.1) {
+        toast.error("You don't have enough balance :(", {
+          position: "top-center",
+        });
+        setIsLoading(false);
+        return;
       }
 
       const signer = await fetchSigner();
@@ -319,6 +341,7 @@ const Dashboard = () => {
       }
     },
     [
+      balance,
       getFilesCid,
       refetchCurrentGlobalTokenURI,
       refetchProfilePobTimeUntilNextChange,
@@ -336,11 +359,11 @@ const Dashboard = () => {
         console.log("1", formattedImageURI);
         setNftImageURI(formattedImageURI);
       }
-      if (personalPobTokenURI && username && pobNameImage === "pobImage") {
-        formattedImageURI = await getGatewayImageUrl(tokenURI);
-        console.log("2", formattedImageURI);
-        setPersonalPobImageURI(formattedImageURI);
-      }
+      // if (personalPobTokenURI && username && pobNameImage === "pobImage") {
+      //   formattedImageURI = await getGatewayImageUrl(tokenURI);
+      //   console.log("2", formattedImageURI);
+      //   setPersonalPobImageURI(formattedImageURI);
+      // }
       return formattedImageURI;
     };
     if (currentGlobalTokenURI && !nftImageURI) {
@@ -354,23 +377,23 @@ const Dashboard = () => {
         console.log(Date.now() > timeUntilNextChange);
       }
     }
-    if (personalPobAddress) {
-      refetchPersonalPobTokenURI();
-      refetchPersonalPobTotalSupply();
-    }
-    if (personalPobTokenURI) {
-      fetchImageURI(personalPobTokenURI, "pobImage");
-    }
+    // if (personalPobAddress) {
+    //   refetchPersonalPobTokenURI();
+    //   refetchPersonalPobTotalSupply();
+    // }
+    // if (personalPobTokenURI) {
+    //   fetchImageURI(personalPobTokenURI, "pobImage");
+    // }
   }, [
     currentGlobalTokenURI,
     nftImageURI,
-    personalPobTokenURI,
-    personalPobAddress,
-    personalPobImageURI,
-    refetchPersonalPobTokenURI,
+    // personalPobTokenURI,
+    // personalPobAddress,
+    // personalPobImageURI,
+    // refetchPersonalPobTokenURI,
     userProfileAddress,
     username,
-    refetchPersonalPobTotalSupply,
+    // refetchPersonalPobTotalSupply,
     getGatewayImageUrl,
     profilePobTimeUntilNextChange,
     timeUntilNextChange,
@@ -619,7 +642,7 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-      {personalPobAddress && parseInt(personalPobAddress) ? (
+      {/* {personalPobAddress && parseInt(personalPobAddress) ? (
         <div
           id="personal-pobs-container"
           className="w-full md:w-11/12 lg:w-2/5 lg:ml-8 xl:ml-16 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
@@ -724,7 +747,7 @@ const Dashboard = () => {
             )}
           </div>
         </div>
-      ) : null}
+      ) : null} */}
     </div>
   );
 };
