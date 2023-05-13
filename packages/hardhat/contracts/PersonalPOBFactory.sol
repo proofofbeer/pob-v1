@@ -65,10 +65,11 @@ contract PersonalPOBFactory is Ownable {
       owner(),
       pobTotalSupply,
       pobContractMaxSupply,
-      mintExpirationPeriod
+      mintExpirationPeriod,
+      _POBProfileFactoryAddress
     );
     newPersonalPob.transferOwnership(_msgSender());
-    newPersonalPob.safeMint(_msgSender(), profileAddress_);
+    newPersonalPob.safeMint(_msgSender());
     PobCollectionContract memory newPobCollectionContract = PobCollectionContract({
       pobAddress: address(newPersonalPob),
       name: pobCollectionName_,

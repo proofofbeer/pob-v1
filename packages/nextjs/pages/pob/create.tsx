@@ -154,7 +154,7 @@ const CreatePOB = () => {
         toast.success("Successfully created your POB!!!", {
           position: "top-center",
         });
-        router.push("/pob/my-pobs");
+        router.push("/collections");
       } catch (error: any) {
         console.log(error);
         if (error.error) {
@@ -223,7 +223,7 @@ const CreatePOB = () => {
               </form>
             </>
           ) : (
-            <div className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:mt-12 xl:pr-20">
+            <div className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col md:items-center lg:w-1/2">
               <h4 className="text-xl">You need a POB Profile</h4>
               <PrimaryButton buttonText="I want my Profile" classModifier="text-lg py-2 px-8 mt-4" path="/dashboard" />
             </div>

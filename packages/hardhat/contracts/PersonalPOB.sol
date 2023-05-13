@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./interfaces/IPersonalPOB.sol";
+import "./interfaces/IPOEPProfileFactory.sol";
 import "./interfaces/IPOEPProfile.sol";
 
 contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
@@ -16,10 +17,12 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
 
   Counters.Counter private _tokenIdCounter;
   address private _pobAdmin;
+  address private _POBProfileFactoryAddress;
   string public globalTokenURI;
   uint256 public collectionId;
   uint256 public maxSupply;
   uint256 public mintExpirationDate;
+  mapping(address => uint256) userAddressToTokenId;
   mapping(address => uint256) profileAddressToTokenId;
 
   constructor(
@@ -29,22 +32,26 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
     address pobAdmin_,
     uint256 collectionId_,
     uint256 maxSupply_,
-    uint256 mintExpirationPeriod_
+    uint256 mintExpirationPeriod_,
+    address POBProfileFactoryAddress_
   ) ERC721(name_, symbol_) {
     _pobAdmin = pobAdmin_;
+    _POBProfileFactoryAddress = POBProfileFactoryAddress_;
     globalTokenURI = globalTokenURI_;
     collectionId = collectionId_;
     maxSupply = maxSupply_;
     mintExpirationDate = block.timestamp + mintExpirationPeriod_;
   }
 
-  function safeMint(address to_, address profileAddress_) external {
+  function safeMint(address to_) external {
     uint256 tokenId = _tokenIdCounter.current();
     require(tokenId < maxSupply - 1, "PersonalPOB: Maximum supply reached");
     require(this.balanceOf(to_) == 0, "PersonalPOB: Only one POB per address");
+
+    address toProfileAddress = IPOEPProfileFactory(_POBProfileFactoryAddress).getUserAddressToProfile(to_);
     _safeMint(to_, tokenId);
     _setTokenURI(tokenId, globalTokenURI);
-    profileAddressToTokenId[profileAddress_] = tokenId;
+
     PobCollectionContract memory newPobCollectionContract = PobCollectionContract({
       pobAddress: address(this),
       name: name(),
@@ -56,7 +63,14 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
       tokenId: tokenId,
       isApprovedByProfile: false
     });
-    IPOEPProfile(profileAddress_).addMintedPob(newPobCollectionContract);
+
+    if (toProfileAddress != address(0)) {
+      profileAddressToTokenId[toProfileAddress] = tokenId;
+      IPOEPProfile(toProfileAddress).addMintedPob(newPobCollectionContract);
+    }
+
+    userAddressToTokenId[toProfileAddress] = tokenId;
+
     _tokenIdCounter.increment();
   }
 

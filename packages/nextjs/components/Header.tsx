@@ -41,6 +41,12 @@ export const Header = () => {
           App
         </NavLink>
       </li>
+      <li>
+        <NavLink href="/collections">
+          <RectangleGroupIcon className="h-4 w-4" />
+          My Collections
+        </NavLink>
+      </li>
     </>
   );
 

@@ -1,0 +1,107 @@
+.starburst {
+  font: 4em/1.4 "Lobster", georgia, serif;
+  background: #202020;
+  width: 2.5em;
+  height: 2.5em;
+  text-align: center;
+  color: #fff;
+}
+
+.starburst,
+.starburst span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.starburst span {
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  transform: rotate(45deg);
+}
+
+.starburst:before,
+.starburst:after,
+.starburst span:before,
+.starburst span:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  z-index: -1;
+  transform: rotate(30deg);
+}
+
+.starburst:after {
+  transform: rotate(-30deg);
+}
+
+.starburst span:after {
+  transform: rotate(30deg);
+}
+.starburst span:before {
+  transform: rotate(-30deg);
+}
+
+.bottlecap {
+  position: absolute;
+  top: 50%;
+  margin-top: -1.25em;
+  margin-left: -1.25em;
+}
+
+#example-1 {
+  left: 25%;
+}
+
+.multiple {
+  left: 75%;
+  transform: rotate(-45deg);
+}
+
+.zigzag {
+  width: 256px;
+  height: 256px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 256 256' fill='black' width='256'> <path d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 256 256' fill='black' width='256' style='transform:rotate(16.36deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 256 256' fill='black' width='256' style='transform:rotate(32.73deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 256 256' fill='black' width='256' style='transform:rotate(49.09deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 256 256' fill='black' width='256' style='transform:rotate(65.45deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 256 256' fill='black' width='256' style='transform:rotate(81.81deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 256 256' fill='black' width='256' style='transform:rotate(98.18deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 256 256' fill='black' width='256' style='transform:rotate(114.54deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 256 256' fill='black' width='256' style='transform:rotate(130.90deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 256 256' fill='black' width='256' style='transform:rotate(147.27deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 256 256' fill='black' width='256' style='transform:rotate(164.2deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>");
+  background-size: 100% 100%;
+
+  font-size: 28px;
+  line-height: 256px;
+  color: #fff;
+  text-align: center;
+}
+.innerZigzag {
+  width: 248px;
+  height: 248px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 248 248' fill='black' width='248'> <path d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 248 248' fill='black' width='248' style='transform:rotate(16.36deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 248 248' fill='black' width='248' style='transform:rotate(32.73deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 248 248' fill='black' width='248' style='transform:rotate(49.09deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 248 248' fill='black' width='248' style='transform:rotate(65.45deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 248 248' fill='black' width='248' style='transform:rotate(81.81deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 248 248' fill='black' width='248' style='transform:rotate(98.18deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 248 248' fill='black' width='248' style='transform:rotate(114.54deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 248 248' fill='black' width='248' style='transform:rotate(130.90deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 248 248' fill='black' width='248' style='transform:rotate(147.27deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-97 0 248 248' fill='black' width='248' style='transform:rotate(164.2deg);'> <path  d='M48 240 L48 16 L32 0 L16 16 L16 240 L32 256 Z' /></svg>");
+  background-size: 100% 100%;
+
+  font-size: 28px;
+  line-height: 256px;
+  color: #fff;
+  text-align: center;
+}
