@@ -3,7 +3,7 @@ import axios from "axios";
 import { useAccount } from "wagmi";
 import NavButton from "~~/components/common/buttons/NavButton";
 import ToggleInput from "~~/components/inputs/ToggleInput";
-import PobCard from "~~/components/pob/pobCard";
+import PobCard from "~~/components/pob/PobCard";
 import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 
 const MyPobs = () => {
