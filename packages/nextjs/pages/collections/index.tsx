@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import axios from "axios";
 import { useAccount } from "wagmi";
 import PobCollectionCard from "~~/components/collections/PobCollectionCard";
+import Loader from "~~/components/common/Loader";
 import NavButton from "~~/components/common/buttons/NavButton";
 import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 
 const MyPobs = () => {
   const [pobImages, setPobImages] = useState<string[]>([]);
   const { address: userAddress } = useAccount();
+  const router = useRouter();
 
   const { data: userPobCollections } = useScaffoldContractRead({
     contractName: "PersonalPOBFactory",
@@ -45,6 +48,7 @@ const MyPobs = () => {
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
       <h1 className="text-4xl font-semibold text-center mb-4">My POB Collections</h1>
       <NavButton buttonText="Create POB" path="/pob/create" />
+      {!userPobCollections && <Loader showText={true} />}
       <div
         id="user-pobs-container"
         className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-4 lg:grid-cols-3 lg:gap-8 w-full px-2 md:px-16 lg:px-8 xl:px-24 mt-4 mx-0"
@@ -65,6 +69,14 @@ const MyPobs = () => {
             />
           ))}
       </div>
+      {userPobCollections && (
+        <div className="w-full flex justify-center items-center m-8">
+          New collection not showing?
+          <button className="btn btn-sm ml-4" onClick={router.reload}>
+            Refresh
+          </button>
+        </div>
+      )}
     </div>
   );
 };

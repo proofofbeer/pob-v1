@@ -1,13 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import PrimaryButton from "../common/buttons/PrimaryButton";
 import POBImage from "../image-handling/POBImage";
 import { AddressInput } from "../scaffold-eth";
-import { fetchSigner } from "@wagmi/core";
-import { ethers } from "ethers";
-import toast from "react-hot-toast";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
-import { PersonalPOBContract } from "~~/contracts";
 import { useDeployedContractRead } from "~~/hooks/scaffold-eth/useDeployedContractRead";
 import { useDeployedContractWrite } from "~~/hooks/scaffold-eth/useDeployedContractWrite";
 
@@ -33,7 +29,6 @@ const PobCollectionCard = ({
   symbol,
 }: TPobCard) => {
   const personalPobName = "PersonalPOB";
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [mintToAddress, setMintToAddress] = useState<string>("");
 
   const {
@@ -56,43 +51,10 @@ const PobCollectionCard = ({
   });
 
   useEffect(() => {
-    console.log(personalPobTotalSupply);
     if (pobAddress && !personalPobTotalSupply) {
       refetchPersonalPobTotalSupply();
     }
   }, [personalPobTotalSupply, pobAddress, refetchPersonalPobTotalSupply]);
-
-  const writeMintPob: any = useCallback(
-    async (event: any) => {
-      event.preventDefault();
-      setIsLoading(true);
-
-      const signer = await fetchSigner();
-      const personalPobContract = new ethers.Contract(pobAddress, PersonalPOBContract.abi, signer as any);
-
-      try {
-        const tx = await personalPobContract.safeMint(mintToAddress);
-        console.log(tx);
-        toast.success("Successfully set your Profile", {
-          position: "top-center",
-        });
-      } catch (error: any) {
-        console.log(error);
-        if (error.error) {
-          toast.error(error.error.data.message || "Please try again later 🫣", {
-            position: "top-center",
-          });
-        } else {
-          toast.error("An error occurred, please try again later 🫣", {
-            position: "top-center",
-          });
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [mintToAddress, pobAddress],
-  );
 
   return (
     <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full px-4 py-4">
@@ -141,8 +103,6 @@ const PobCollectionCard = ({
                         isDisabled={isLoadingMintPersonalPob || isMiningMintPersonalPob}
                         isLoading={isLoadingMintPersonalPob || isMiningMintPersonalPob}
                         onClick={async () => {
-                          console.log(mintToAddress);
-                          console.log(pobAddress);
                           await writeMintPersonalPob();
                           setMintToAddress("");
                           refetchPersonalPobTotalSupply();
@@ -190,7 +150,7 @@ const PobCollectionCard = ({
           )}
           <Link
             className="flex justify-center items-center hover:cursor-pointer hover:underline hover:underline-offset-2 w-full mb-2"
-            href={`https://mumbai.polygonscan.com/address/${pobAddress}`}
+            href={`https://opensea.io/assets?search[query]=${pobAddress}`}
             target="_blank"
             rel="noopener noreferrer"
           >

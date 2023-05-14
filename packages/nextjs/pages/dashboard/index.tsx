@@ -395,7 +395,7 @@ const Dashboard = () => {
                 <>
                   <h2 className="text-center text-2xl font-medium w-full">{username}&apos;s Profile POB</h2>
                   <div className="text-center text-lg font-medium w-full md:w-3/5 lg:w-full p-4">
-                    <div className="m-2 px-8 lg:px-16 xl:px-24">
+                    <div className="m-2 px-8 lg:px-24 xl:px-32">
                       <POBImage imageURI={nftImageURI} />
                     </div>
                     <div className="text-center text-lg font-medium w-full">

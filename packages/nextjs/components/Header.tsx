@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Bars3Icon } from "@heroicons/react/24/outline";
-import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
+import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
@@ -56,7 +56,7 @@ export const Header = () => {
   return (
     <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 flex-shrink-0 justify-between z-20 shadow-md shadow-secondary">
       <div className="navbar-start w-auto lg:w-1/2">
-        <div className="lg:hidden dropdown" ref={burgerMenuRef}>
+        <div className="md:hidden dropdown" ref={burgerMenuRef}>
           <button
             className={`ml-1 btn btn-ghost ${isDrawerOpen ? "hover:bg-secondary" : "hover:bg-transparent"}`}
             onClick={() => {
@@ -77,16 +77,20 @@ export const Header = () => {
             </ul>
           )}
         </div>
-        <div className="hidden lg:flex items-center gap-2 ml-4 mr-6">
+        <div className="hidden md:flex lg:hidden items-center gap-2 ml-4 mr-6">
           <Link href="/" passHref className="flex items-center relative text-4xl">
-            🍻 <span className="font-semibold leading-tight text-lg ml-1">Proof of BEER</span>
+            🍻 <span className="font-semibold leading-tight text-lg ml-1">POB</span>
           </Link>
         </div>
-        <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">{navLinks}</ul>
+        <div className="hidden lg:flex items-center gap-2 ml-4 mr-6">
+          <Link href="/" passHref className="flex items-center relative text-4xl">
+            🍻 <span className="font-semibold leading-tight text-lg ml-1">Proof of Beer</span>
+          </Link>
+        </div>
+        <ul className="hidden md:flex md:flex-nowrap menu menu-horizontal px-1 gap-2">{navLinks}</ul>
       </div>
       <div className="navbar-end flex-grow mr-4">
         <RainbowKitCustomConnectButton />
-        <FaucetButton />
       </div>
     </div>
   );
