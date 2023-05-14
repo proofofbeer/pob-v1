@@ -17,6 +17,7 @@ contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
   mapping(string => address) public profileHandleToProfile;
   mapping(string => address) public profileHandleToUserAddress;
   mapping(address => address) public userAddressToProfile;
+  mapping(address => PobCollectionContract[]) public userAddressToMintedPobs;
 
   constructor(string memory deployedPoepVersion_, uint256 changePeriod_, uint256 changeGlobalTokenPrice_) {
     _poepVersion = deployedPoepVersion_;
@@ -44,6 +45,21 @@ contract POEPProfileFactory is Ownable, IPOEPProfileFactory {
 
   function getUserAddressToProfile(address userAddress_) external view returns (address) {
     return userAddressToProfile[userAddress_];
+  }
+
+  function addMintedPob(address userAddress_, PobCollectionContract memory newMintedPobCollection_) external {
+    userAddressToMintedPobs[userAddress_].push(newMintedPobCollection_);
+  }
+
+  function getUserMintedPobs(address userAddress_) public view returns (PobCollectionContract[] memory) {
+    uint256 arrayLength = userAddressToMintedPobs[userAddress_].length;
+    PobCollectionContract[] memory userMintedPobs = new PobCollectionContract[](arrayLength);
+
+    for (uint256 i = 0; i < arrayLength; i++) {
+      userMintedPobs[i] = userAddressToMintedPobs[userAddress_][i];
+    }
+
+    return userMintedPobs;
   }
 
   receive() external payable {}

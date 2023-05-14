@@ -68,6 +68,7 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
       profileAddressToTokenId[toProfileAddress] = tokenId;
       IPOEPProfile(toProfileAddress).addMintedPob(newPobCollectionContract);
     }
+    IPOEPProfileFactory(_POBProfileFactoryAddress).addMintedPob(to_, newPobCollectionContract);
 
     userAddressToTokenId[toProfileAddress] = tokenId;
 

@@ -10,7 +10,7 @@ import { Spinner } from "~~/components/Spinner";
 import NavButton from "~~/components/common/buttons/NavButton";
 import PrimaryButton from "~~/components/common/buttons/PrimaryButton";
 import FilePreview from "~~/components/image-handling/FilePreview";
-import NFTImage from "~~/components/image-handling/NFTImage";
+import POBImage from "~~/components/image-handling/POBImage";
 import { AddressInput } from "~~/components/scaffold-eth";
 import { POEPProfileContract } from "~~/contracts";
 import { useAccountBalance, useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
@@ -134,17 +134,6 @@ const Dashboard = () => {
     args: [mintProfilePobAddress],
   });
 
-  // const {
-  //   writeAsync: writeMintPersonalPob,
-  //   isLoading: isLoadingMintPersonalPob,
-  //   isMining: isMiningMintPersonalPob,
-  // } = useDeployedContractWrite({
-  //   contractAddress: personalPobAddress,
-  //   contractName: personalPobName,
-  //   functionName: "safeMint",
-  //   args: [mintPersonalPobAddress],
-  // });
-
   const checkHandleAvailability = async () => {
     try {
       await refetchHandleAssignedAddress();
@@ -257,7 +246,6 @@ const Dashboard = () => {
 
   const getGatewayImageUrl = useCallback(async (nftUrl: string) => {
     const nftCid = nftUrl.substring(7);
-    console.log(`https://apefomo-ipfs-gateway.mypinata.cloud/ipfs/${nftCid}`);
     const res = await axios.get(`https://apefomo-ipfs-gateway.mypinata.cloud/ipfs/${nftCid}`);
     const { image: imageUri } = res.data;
     const imageCid = imageUri.substring(7);
@@ -356,44 +344,19 @@ const Dashboard = () => {
       let formattedImageURI = "";
       if (currentGlobalTokenURI && username && pobNameImage === "profileImage") {
         formattedImageURI = await getGatewayImageUrl(tokenURI);
-        console.log("1", formattedImageURI);
         setNftImageURI(formattedImageURI);
       }
-      // if (personalPobTokenURI && username && pobNameImage === "pobImage") {
-      //   formattedImageURI = await getGatewayImageUrl(tokenURI);
-      //   console.log("2", formattedImageURI);
-      //   setPersonalPobImageURI(formattedImageURI);
-      // }
       return formattedImageURI;
     };
     if (currentGlobalTokenURI && !nftImageURI) {
       fetchImageURI(currentGlobalTokenURI, "profileImage");
       setTimeUntilNextChange(parseInt(profilePobTimeUntilNextChange) * 1000);
-      console.log(parseInt(profilePobTimeUntilNextChange) * 1000);
-      console.log(new Date(parseInt(profilePobTimeUntilNextChange) * 1000));
-      if (timeUntilNextChange) {
-        console.log(Date.now());
-        console.log(timeUntilNextChange);
-        console.log(Date.now() > timeUntilNextChange);
-      }
     }
-    // if (personalPobAddress) {
-    //   refetchPersonalPobTokenURI();
-    //   refetchPersonalPobTotalSupply();
-    // }
-    // if (personalPobTokenURI) {
-    //   fetchImageURI(personalPobTokenURI, "pobImage");
-    // }
   }, [
     currentGlobalTokenURI,
     nftImageURI,
-    // personalPobTokenURI,
-    // personalPobAddress,
-    // personalPobImageURI,
-    // refetchPersonalPobTokenURI,
     userProfileAddress,
     username,
-    // refetchPersonalPobTotalSupply,
     getGatewayImageUrl,
     profilePobTimeUntilNextChange,
     timeUntilNextChange,
@@ -408,7 +371,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 lg:flex-row lg:flex-wrap justify-center items-center min-h-full">
-      <h1 className="w-full text-4xl font-semibold text-center mb-4">Welcome</h1>
+      <h1 className="w-full text-4xl font-semibold text-center mb-4">Welcome {username}</h1>
       <NavButton
         buttonText="Create POB"
         isDisabled={
@@ -430,10 +393,10 @@ const Dashboard = () => {
             <>
               {currentGlobalTokenURI && nftImageURI ? (
                 <>
-                  <h2 className="text-center text-2xl font-medium w-full">Your Profile</h2>
+                  <h2 className="text-center text-2xl font-medium w-full">{username}&apos;s Profile POB</h2>
                   <div className="text-center text-lg font-medium w-full md:w-3/5 lg:w-full p-4">
                     <div className="m-2 px-8 lg:px-16 xl:px-24">
-                      <NFTImage chain={networkName} imageURI={nftImageURI} />
+                      <POBImage imageURI={nftImageURI} />
                     </div>
                     <div className="text-center text-lg font-medium w-full">
                       <div className="w-full flex justify-center gap-4 mt-8">

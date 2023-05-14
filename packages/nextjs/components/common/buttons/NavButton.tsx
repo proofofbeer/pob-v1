@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 
 type TNavButtonProps = {
   buttonText: string;
-  isDisabled: boolean;
+  isDisabled?: boolean;
   path: string;
 };
 

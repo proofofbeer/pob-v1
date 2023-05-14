@@ -1,13 +1,13 @@
 import React from "react";
 
 type TLoaderProps = {
-  borderSize?: number;
+  borderSize?: string;
   classModifier?: string;
-  loaderWidth?: number;
+  loaderWidth?: string;
   showText?: boolean;
 };
 
-const Loader = ({ borderSize = 2, classModifier = "", loaderWidth = 6, showText = false }: TLoaderProps) => {
+const Loader = ({ borderSize = "2", classModifier = "", loaderWidth = "6", showText = false }: TLoaderProps) => {
   return (
     <div
       className={`inline-block h-${loaderWidth} w-${loaderWidth} animate-spin rounded-full border-${borderSize} border-solid border-current border-r-transparent align-[-0.125em] text-white motion-reduce:animate-[spin_1.5s_linear_infinite] ${classModifier}`}

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { useAccount } from "wagmi";
 import PobCollectionCard from "~~/components/collections/PobCollectionCard";
-import BackButton from "~~/components/common/buttons/BackButton";
+import NavButton from "~~/components/common/buttons/NavButton";
 import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 
 const MyPobs = () => {
@@ -17,7 +17,6 @@ const MyPobs = () => {
 
   const getGatewayImageUrl = useCallback(async (nftUrl: string) => {
     const nftCid = nftUrl.substring(7);
-    console.log(`https://apefomo-ipfs-gateway.mypinata.cloud/ipfs/${nftCid}`);
     const res = await axios.get(`https://apefomo-ipfs-gateway.mypinata.cloud/ipfs/${nftCid}`);
     const { image: imageUri } = res.data;
     const imageCid = imageUri.substring(7);
@@ -29,7 +28,6 @@ const MyPobs = () => {
     async (userPobCollections: any) => {
       const imageUris = [];
       for (let i = 0; i < userPobCollections.length; i++) {
-        console.log(userPobCollections[i][4]);
         imageUris.push(await getGatewayImageUrl(userPobCollections[i][3]));
       }
       setPobImages(imageUris);
@@ -38,9 +36,6 @@ const MyPobs = () => {
   );
 
   useEffect(() => {
-    console.log(typeof userPobCollections);
-    console.log(Array.isArray(userPobCollections));
-    console.log(userPobCollections);
     if (userPobCollections) {
       getPobCollectionsImageURI(userPobCollections);
     }
@@ -49,7 +44,7 @@ const MyPobs = () => {
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
       <h1 className="text-4xl font-semibold text-center mb-4">My POB Collections</h1>
-      <BackButton />
+      <NavButton buttonText="Create POB" path="/pob/create" />
       <div
         id="user-pobs-container"
         className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-4 lg:grid-cols-3 lg:gap-8 w-full px-2 md:px-16 lg:px-8 xl:px-24 mt-4 mx-0"

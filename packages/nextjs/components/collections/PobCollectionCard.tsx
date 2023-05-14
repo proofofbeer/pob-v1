@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import PrimaryButton from "../common/buttons/PrimaryButton";
 import POBImage from "../image-handling/POBImage";
 import { AddressInput } from "../scaffold-eth";
+import { fetchSigner } from "@wagmi/core";
+import { ethers } from "ethers";
+import toast from "react-hot-toast";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import { PersonalPOBContract } from "~~/contracts";
 import { useDeployedContractRead } from "~~/hooks/scaffold-eth/useDeployedContractRead";
 import { useDeployedContractWrite } from "~~/hooks/scaffold-eth/useDeployedContractWrite";
 
@@ -29,6 +33,7 @@ const PobCollectionCard = ({
   symbol,
 }: TPobCard) => {
   const personalPobName = "PersonalPOB";
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [mintToAddress, setMintToAddress] = useState<string>("");
 
   const {
@@ -57,6 +62,38 @@ const PobCollectionCard = ({
     }
   }, [personalPobTotalSupply, pobAddress, refetchPersonalPobTotalSupply]);
 
+  const writeMintPob: any = useCallback(
+    async (event: any) => {
+      event.preventDefault();
+      setIsLoading(true);
+
+      const signer = await fetchSigner();
+      const personalPobContract = new ethers.Contract(pobAddress, PersonalPOBContract.abi, signer as any);
+
+      try {
+        const tx = await personalPobContract.safeMint(mintToAddress);
+        console.log(tx);
+        toast.success("Successfully set your Profile", {
+          position: "top-center",
+        });
+      } catch (error: any) {
+        console.log(error);
+        if (error.error) {
+          toast.error(error.error.data.message || "Please try again later 🫣", {
+            position: "top-center",
+          });
+        } else {
+          toast.error("An error occurred, please try again later 🫣", {
+            position: "top-center",
+          });
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [mintToAddress, pobAddress],
+  );
+
   return (
     <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl w-full px-4 py-4">
       <div className="w-full flex justify-center py-4 px-16">
@@ -72,17 +109,20 @@ const PobCollectionCard = ({
             {mintExpirationDateJS && (
               <>
                 <label
-                  htmlFor="mint-personal-pob-modal"
+                  htmlFor={`mint-pob-modal-${pobAddress}`}
                   className={`btn btn-primary normal-case w-full ${
                     Date.now() >= mintExpirationDateJS || personalPobTotalSupply >= maxSupply ? "btn-disabled" : ""
                   }`}
                 >
                   Mint
                 </label>
-                <input className="modal-toggle" id="mint-personal-pob-modal" type="checkbox" />
+                <input className="modal-toggle" id={`mint-pob-modal-${pobAddress}`} type="checkbox" />
                 <div className="modal">
                   <div className="modal-box relative">
-                    <label htmlFor="mint-personal-pob-modal" className="btn btn-sm btn-circle absolute right-2 top-2">
+                    <label
+                      htmlFor={`mint-pob-modal-${pobAddress}`}
+                      className="btn btn-sm btn-circle absolute right-2 top-2"
+                    >
                       ✕
                     </label>
                     <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Mint NFT and transfer to:</h2>
@@ -154,7 +194,7 @@ const PobCollectionCard = ({
             target="_blank"
             rel="noopener noreferrer"
           >
-            Expand
+            OpenSea
             <ArrowTopRightOnSquareIcon className="w-4 ml-2" />
           </Link>
         </div>

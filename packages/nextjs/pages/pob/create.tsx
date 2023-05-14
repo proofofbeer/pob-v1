@@ -11,7 +11,7 @@ import PrimaryButton from "~~/components/common/buttons/PrimaryButton";
 import FilePreview from "~~/components/image-handling/FilePreview";
 import { InputBase } from "~~/components/inputs/InputBase";
 import ToggleInput from "~~/components/inputs/ToggleInput";
-import { createPobInputsArray, getInitialPobFormState } from "~~/components/pob/pob-form-input";
+import { createOneTimePobInputsArray, getInitialPobFormState } from "~~/components/pob/pob-form-input";
 import { PersonalPOBFactoryContract } from "~~/contracts";
 import { useAccountBalance, useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 
@@ -19,20 +19,12 @@ const CreatePOB = () => {
   const deployedPersonalPOBFactory = process.env.NEXT_PUBLIC_PERSONAL_POB_FACTORY_ADDRESS || "0x0";
   const contractName = "POEPProfileFactory";
   const fileFormKey = "pob_image";
-
-  // const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined);
-  const [form, setForm] = useState<Record<string, any>>(() => getInitialPobFormState(createPobInputsArray));
+  const [form, setForm] = useState<Record<string, any>>(() => getInitialPobFormState(createOneTimePobInputsArray));
   const [imgObj, setImgObj] = useState<any>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { address: userAddress } = useAccount();
   const { balance, isLoading: isLoadingBalance } = useAccountBalance(userAddress);
-
-  // const { data: currentPobAddress, isLoading: isLoadingCurrentPobAddress } = useScaffoldContractRead({
-  //   contractName,
-  //   functionName: "userAddressToPobAddress",
-  //   args: [userAddress],
-  // });
 
   const { data: userPobProfileAddress } = useScaffoldContractRead({
     contractName,
@@ -40,24 +32,10 @@ const CreatePOB = () => {
     args: [userAddress],
   });
 
-  // const { data: currentUserPobAddress } = useScaffoldContractRead({
-  //   contractName: "PersonalPOBFactory",
-  //   functionName: "userAddressToPobAddresses",
-  //   args: [userAddress, pobContractAddress],
-  // });
-
-  // TODO: Implement fetch POB contract address (call profileAddressToPobAddress with Profile address from zustand store)
-  // TODO: Implement fetch POB contract expiration (call profileAddressToPobExpiration)
-
-  // const { writeAsync: createPersonalPob } = useScaffoldContractWrite({
-  //   contractName,
-  //   functionName: "createNewPersonalPob",
-  //   args: [form["name"], userAddress, profileAddress],
-  // });
-
   const poepFormInputs = useMemo(
     () =>
-      createPobInputsArray.map((input: any, inputIndex: number) => {
+      createOneTimePobInputsArray.map((input: any, inputIndex: number) => {
+        const today = new Date();
         if (input.showWithToggleName?.length > 1 && form[input.showWithToggleName[0]] !== input.showWithToggleName[1]) {
           return;
         }
@@ -70,13 +48,18 @@ const CreatePOB = () => {
               <InputBase
                 name={input.name}
                 type={input.type}
-                value={form[input.name] || ""}
+                value={
+                  input.name !== "event_start_date" && input.name !== "date"
+                    ? form[input.name] || ""
+                    : today.toLocaleDateString("en-CA")
+                }
                 onChange={(value: any) => {
                   setForm(form => ({ ...form, [input.name]: value }));
                 }}
                 placeholder={input.placeholder}
                 error={input.isError || false}
-                disabled={input.isDisabled || false}
+                disabled={input.isDisabled || input.name === "event_start_date" || input.name === "date" || false}
+                isRequired={true}
               />
             ) : (
               <div className="w-full flex justify-center">
@@ -125,8 +108,11 @@ const CreatePOB = () => {
       }
       try {
         const formData = new FormData();
+        const today = new Date();
         formData.append("files", new Blob([imgObj]));
+        formData.append("external_url", `https://proofofbeer.vercel.app/profile/${userPobProfileAddress}`);
         formData.append("profileAddress", userPobProfileAddress);
+        formData.append("date", today.toLocaleDateString("en-CA"));
         if (Object.keys(form).length > 0) {
           for (const key in form) {
             if (form[key]) {
@@ -166,15 +152,6 @@ const CreatePOB = () => {
             position: "top-center",
           });
         }
-        // if (error.body) {
-        //   const parsedBody = JSON.parse(error.body);
-        //   const { message } = parsedBody.error;
-        //   toast.error(message, {
-        //     position: "top-center",
-        //   });
-        // } else {
-        //   console.error(error);
-        // }
       } finally {
         setIsLoading(false);
       }

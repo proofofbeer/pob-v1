@@ -4,6 +4,7 @@ import { CommonInputProps } from "~~/components/scaffold-eth";
 type InputBaseProps<T> = CommonInputProps<T> & {
   error?: boolean;
   disabled?: boolean;
+  isRequired?: boolean;
 };
 
 export const InputBase = <T extends { toString: () => string } = string>({
@@ -14,6 +15,7 @@ export const InputBase = <T extends { toString: () => string } = string>({
   placeholder,
   error,
   disabled,
+  isRequired = false,
 }: InputBaseProps<T>) => {
   let modifier = "";
   if (error) {
@@ -39,6 +41,7 @@ export const InputBase = <T extends { toString: () => string } = string>({
         onChange={handleChange}
         disabled={disabled}
         autoComplete="off"
+        required={isRequired}
       />
     </div>
   );
