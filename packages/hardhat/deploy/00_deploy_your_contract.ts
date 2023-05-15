@@ -26,7 +26,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   // await deploy("POEPProfileFactory", {
   //   from: deployer,
   //   // Contract constructor arguments
-  //   args: ["POBProfile-v1.1", 604800, etherPrice],
+  //   args: ["POBProfile-v1.1", 120, etherPrice],
   //   log: true,
   //   // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
   //   // automatically mining the contract deployment transaction. There is no effect on live networks.
@@ -36,7 +36,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   await deploy("PersonalPOBFactory", {
     from: deployer,
     // Contract constructor arguments
-    args: ["PersonalPOB-v1.1", "0x762b1fcE1FE406D3b05c111D5b57B9CB37317D91", etherPrice, 25, 604800],
+    args: ["PersonalPOB-v1.1", "0x5FbDB2315678afecb367f032d93F642f64180aa3", etherPrice, 25, 604800],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the contract deployment transaction. There is no effect on live networks.
