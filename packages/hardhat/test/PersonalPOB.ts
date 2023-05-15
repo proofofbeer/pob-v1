@@ -83,7 +83,7 @@ describe("Personal POB Contract", () => {
       // 1. Create 25 ephemeral wallets. The private keys will be encoded in QR codes.
       const qrWallets = Array(25)
         .fill(0)
-        .map(_ => ethers.Wallet.createRandom());
+        .map(() => ethers.Wallet.createRandom());
       const qrPubKeys = qrWallets.map(wallet => wallet.address);
 
       // 2. Create Merkle tree from pubkeys (addresses)
