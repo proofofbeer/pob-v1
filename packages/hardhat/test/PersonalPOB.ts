@@ -10,23 +10,22 @@ describe("Personal POB Contract", () => {
 
   let pob: PersonalPOB;
   let poepFactory: POEPProfileFactory;
+  const collectionId = 1;
   const collectionName = "Test POB Collection";
   const collectionSymbol = "POB";
+  const changePeriod = 0; // Time period required before next metadata change is free
+  const changeGlobalTokenPrice = 0; // Price to change metadata before changePeriod limit
   const maxSupply = 25;
   let deployer: SignerWithAddress;
   before(async () => {
     const [deployer] = await ethers.getSigners();
-    poepFactory = await new POEPProfileFactory__factory(deployer).deploy(
-      "1",
-      0 /** what is this? */,
-      0 /** what is this? */,
-    );
+    poepFactory = await new POEPProfileFactory__factory(deployer).deploy("1", changePeriod, changeGlobalTokenPrice);
     pob = await new PersonalPOB__factory(deployer).deploy(
       collectionName,
       collectionSymbol,
       "ipfs://blabla",
       deployer.address,
-      1 /** how is this determined? */,
+      collectionId,
       maxSupply,
       Math.floor(Date.now() / 1000) + 86400 /** 1 day */,
       poepFactory.address,
