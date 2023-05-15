@@ -1,13 +1,13 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-// Useful for debugging. Remove when deploying to a live network.
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./interfaces/IPersonalPOB.sol";
 import "./interfaces/IPOEPProfileFactory.sol";
 import "./interfaces/IPOEPProfile.sol";
@@ -24,6 +24,7 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
   uint256 public mintExpirationDate;
   mapping(address => uint256) userAddressToTokenId;
   mapping(address => uint256) profileAddressToTokenId;
+  bytes32 immutable qrMerkleRoot;
 
   constructor(
     string memory name_,
@@ -33,7 +34,8 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
     uint256 collectionId_,
     uint256 maxSupply_,
     uint256 mintExpirationPeriod_,
-    address POBProfileFactoryAddress_
+    address POBProfileFactoryAddress_,
+    bytes32 qrMerkleRoot_
   ) ERC721(name_, symbol_) {
     _pobAdmin = pobAdmin_;
     _POBProfileFactoryAddress = POBProfileFactoryAddress_;
@@ -41,11 +43,32 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
     collectionId = collectionId_;
     maxSupply = maxSupply_;
     mintExpirationDate = block.timestamp + mintExpirationPeriod_;
+    qrMerkleRoot = qrMerkleRoot_; // NB: Also fine to omit
   }
 
-  function safeMint(address to_) external {
-    uint256 tokenId = _tokenIdCounter.current();
-    require(tokenId < maxSupply - 1, "PersonalPOB: Maximum supply reached");
+  function safeMint(address to) external {
+    require(qrMerkleRoot == 0, "POB requires key to mint");
+    mintInternal(to);
+  }
+
+  function safeMintWithMerkleProof(address to, bytes calldata signature, bytes32[] calldata merkleProof) external {
+    require(qrMerkleRoot != 0, "POB does not require key to mint");
+    bytes32 hash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n20", to));
+    address qrPubKey = ECDSA.recover(
+      hash,
+      uint8(bytes1(signature[64:65])),
+      bytes32(signature[0:32]),
+      bytes32(signature[32:64])
+    );
+    bytes32 leaf = keccak256(abi.encodePacked(qrPubKey));
+    require(MerkleProof.verify(merkleProof, qrMerkleRoot, leaf), "Invalid proof(s)");
+    mintInternal(to);
+  }
+
+  function mintInternal(address to_) internal {
+    uint256 tokenId = _tokenIdCounter.current() + 1;
+    _tokenIdCounter.increment();
+    require(tokenId <= maxSupply, "PersonalPOB: Maximum supply reached");
     require(this.balanceOf(to_) == 0, "PersonalPOB: Only one POB per address");
 
     address toProfileAddress = IPOEPProfileFactory(_POBProfileFactoryAddress).getUserAddressToProfile(to_);
@@ -71,8 +94,6 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
     IPOEPProfileFactory(_POBProfileFactoryAddress).addMintedPob(to_, newPobCollectionContract);
 
     userAddressToTokenId[toProfileAddress] = tokenId;
-
-    _tokenIdCounter.increment();
   }
 
   function setGlobalTokenURI(string memory newGlobalTokenURI_) external onlyAdmin {

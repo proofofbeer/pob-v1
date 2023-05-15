@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { PersonalPOB } from "../typechain-types";
 
-describe("Personal POB Contract", function () {
+describe("PersonalPOBFactory", function () {
   // We define a fixture to reuse the same setup in every test.
 
   let pobContract: PersonalPOB;

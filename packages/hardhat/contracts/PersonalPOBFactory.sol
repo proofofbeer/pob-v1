@@ -51,7 +51,8 @@ contract PersonalPOBFactory is Ownable {
     string memory pobCollectionSymbol_,
     address userAddress_,
     address profileAddress_,
-    string memory globalTokenURI_
+    string memory globalTokenURI_,
+    bytes32 qrMerkleRoot_
   ) public payable {
     require(msg.value >= pobContractPrice, "POBFactory: Not enough MATIC to purchase POB Contract");
     require(
@@ -66,7 +67,8 @@ contract PersonalPOBFactory is Ownable {
       pobTotalSupply,
       pobContractMaxSupply,
       mintExpirationPeriod,
-      _POBProfileFactoryAddress
+      _POBProfileFactoryAddress,
+      qrMerkleRoot_
     );
     newPersonalPob.transferOwnership(_msgSender());
     newPersonalPob.safeMint(_msgSender());
