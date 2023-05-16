@@ -14,3 +14,23 @@ export const getJsDateFromUnixTimestamp = (unixTimestamp: number) => {
 
   console.log(formattedTime);
 };
+
+export const formatDateLocale = (dateToFormat: string, format: string) => {
+  let jsDateFormat;
+  if (format === "yyyy-mm-dd") {
+    jsDateFormat = toDate(dateToFormat);
+  } else jsDateFormat = "01-01-2000";
+  console.log(jsDateFormat);
+  const formattedDate = new Date(jsDateFormat);
+  switch (format) {
+    case "yyyy-mm-dd":
+      console.log(formattedDate?.toLocaleDateString("en-CA"));
+      return formattedDate?.toDateString();
+  }
+};
+
+const toDate = (dateStr: string) => {
+  const parts = dateStr.split("-");
+  console.log(parts);
+  return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+};

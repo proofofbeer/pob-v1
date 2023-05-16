@@ -80,7 +80,7 @@ contract PersonalPOBFactory is Ownable {
       maxSupply: pobContractMaxSupply,
       mintExpirationDate: block.timestamp + mintExpirationPeriod,
       pobCollectionId: pobTotalSupply,
-      tokenId: 0
+      tokenId: 1
     });
     pobCollectionContractList.push(newPobCollectionContract);
     ++pobTotalSupply;

@@ -33,6 +33,14 @@ export const createOneTimePobInputsArray: TInputsArrayElement[] = [
   },
 ];
 
+export const createPobBatchInputsArray: TInputsArrayElement[] = [
+  { label: "Event Name", name: "name", type: "string" },
+  { label: "Event Description", name: "description", type: "string" },
+  { label: "POB Quantity", name: "pob_quantity", type: "number" },
+  { label: "Event start date", name: "event_start_date", type: "date" },
+  { label: "Event end date", name: "event_end_date", type: "date" },
+];
+
 export const createPobInputsArray: TInputsArrayElement[] = [
   { label: "POB Title", name: "name", type: "string" },
   { label: "POB Description", name: "description", type: "string" },

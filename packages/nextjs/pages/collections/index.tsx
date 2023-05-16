@@ -39,6 +39,7 @@ const MyPobs = () => {
   );
 
   useEffect(() => {
+    console.log(userPobCollections);
     if (userPobCollections) {
       getPobCollectionsImageURI(userPobCollections);
     }

@@ -6,23 +6,27 @@ import axios from "axios";
 import { ethers } from "ethers";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
+import { PencilIcon } from "@heroicons/react/24/outline";
 import Loader from "~~/components/common/Loader";
 import BackButton from "~~/components/common/buttons/BackButton";
 import PrimaryButton from "~~/components/common/buttons/PrimaryButton";
-import FilePreview from "~~/components/image-handling/FilePreview";
+import POBImage from "~~/components/image-handling/POBImage";
+import POBPreview from "~~/components/image-handling/POBPreview";
 import { InputBase } from "~~/components/inputs/InputBase";
 import ToggleInput from "~~/components/inputs/ToggleInput";
-import { createOneTimePobInputsArray, getInitialPobFormState } from "~~/components/pob/pob-form-input";
+import { createPobBatchInputsArray, getInitialPobFormState } from "~~/components/pob/pob-form-input";
 import { PersonalPOBFactoryContract } from "~~/contracts";
 import { useAccountBalance, useScaffoldContractRead } from "~~/hooks/scaffold-eth";
+import { formatDateLocale } from "~~/utils/date/get-formatted-dates";
 
-const CreatePOB = () => {
+const CreatePOBBatch = () => {
   const deployedPersonalPOBFactory = process.env.NEXT_PUBLIC_PERSONAL_POB_FACTORY_ADDRESS || "0x0";
   const contractName = "POEPProfileFactory";
   const fileFormKey = "pob_image";
-  const [form, setForm] = useState<Record<string, any>>(() => getInitialPobFormState(createOneTimePobInputsArray));
+  const [form, setForm] = useState<Record<string, any>>(() => getInitialPobFormState(createPobBatchInputsArray));
   const [imgObj, setImgObj] = useState<any>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [step, setStep] = useState<string>("form");
 
   const { address: userAddress } = useAccount();
   const { balance, isLoading: isLoadingBalance } = useAccountBalance(userAddress);
@@ -35,8 +39,7 @@ const CreatePOB = () => {
 
   const poepFormInputs = useMemo(
     () =>
-      createOneTimePobInputsArray.map((input: any, inputIndex: number) => {
-        const today = new Date();
+      createPobBatchInputsArray.map((input: any, inputIndex: number) => {
         if (input.showWithToggleName?.length > 1 && form[input.showWithToggleName[0]] !== input.showWithToggleName[1]) {
           return;
         }
@@ -49,17 +52,13 @@ const CreatePOB = () => {
               <InputBase
                 name={input.name}
                 type={input.type}
-                value={
-                  input.name !== "event_start_date" && input.name !== "date"
-                    ? form[input.name] || ""
-                    : today.toLocaleDateString("en-CA")
-                }
+                value={form[input.name] || ""}
                 onChange={(value: any) => {
                   setForm(form => ({ ...form, [input.name]: value }));
                 }}
                 placeholder={input.placeholder}
                 error={input.isError || false}
-                disabled={input.isDisabled || input.name === "event_start_date" || input.name === "date" || false}
+                disabled={input.isDisabled || input.name === "date" || false}
                 isRequired={true}
               />
             ) : (
@@ -88,7 +87,7 @@ const CreatePOB = () => {
     return null;
   }, [imgObj]);
 
-  const handleCreatePersonalPob = useCallback(
+  const handleCreatePobBatch = useCallback(
     async (event: any) => {
       event.preventDefault();
       setIsLoading(true);
@@ -162,31 +161,28 @@ const CreatePOB = () => {
 
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
-      <h1 className="text-4xl font-semibold text-center mb-4">Create POB</h1>
+      <h1 className="text-4xl font-semibold text-center mb-4">Create a batch of POBs</h1>
       <BackButton />
       <h5 className="text-md text-center">
-        Create a POB with a supply of 25. <br />
-        Need more? Try creating a{" "}
-        <Link href="/pob/create-batch" className="font-semibold text-orange-500">
-          POB Batch
+        Create a POB with your desired supply. <br />
+        Or try our 25 supply{" "}
+        <Link href="/pob/create" className="font-semibold text-orange-500">
+          POB
         </Link>
       </h5>
       <div
         id="personal-pob-container"
         className="w-full md:w-11/12 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
       >
-        <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
-          {userPobProfileAddress && parseInt(userPobProfileAddress) ? (
+        <div className="w-full flex flex-col md:flex-row md:flex-wrap lg pt-2 pb-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
+          {step === "form" && (
             <>
-              <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4">
+              <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4 mt-2">
                 <div className="m-2 px-4 lg:px-4 xl:px-24 2xl:px-32">
-                  <FilePreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
+                  <POBPreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
                 </div>
               </div>
-              <form
-                className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:pt-4 lg:pr-12 xl:pr-20"
-                onSubmit={handleCreatePersonalPob}
-              >
+              <div className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:pt-4 lg:pr-12 xl:pr-20">
                 {poepFormInputs}
                 <div className="w-full mt-12 md:mt-6 lg:mt-4">
                   <div className="flex justify-center">
@@ -196,21 +192,45 @@ const CreatePOB = () => {
                     <Loader />
                   ) : (
                     <PrimaryButton
-                      buttonText="Create POB"
+                      buttonText="Preview POB"
                       classModifier="text-lg w-3/5"
                       isDisabled={!previewImage || isLoading}
                       isLoading={isLoading}
+                      onClick={() => setStep("preview")}
                       showLoader={true}
                     />
                   )}
                 </div>
-              </form>
+              </div>
             </>
-          ) : (
-            <div className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col md:items-center lg:w-1/2">
-              <h4 className="text-xl">You need a POB Profile</h4>
-              <PrimaryButton buttonText="I want my Profile" classModifier="text-lg py-2 px-8 mt-4" path="/dashboard" />
-            </div>
+          )}
+          {step === "preview" && previewImage && (
+            <form
+              className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-2"
+              onSubmit={handleCreatePobBatch}
+            >
+              <div className="w-full flex justify-start">
+                <p className="w-1/2 flex items-center" onClick={() => setStep("form")}>
+                  Edit <PencilIcon className="h-4 w-4 ml-2" />
+                </p>
+              </div>
+              <h3 className="text-center text-2xl">{form.name}</h3>
+              <div className="m-2 px-6 lg:px-4 xl:px-24 2xl:px-32">
+                <POBImage imageURI={previewImage} />
+              </div>
+              <h5 className="text-center text-lg font-light">
+                {formatDateLocale(form.event_start_date, "yyyy-mm-dd")}
+              </h5>
+              <h4 className="text-center text-xl">{form.description}</h4>
+              <h4 className="text-center text-xl mt-4">Batch Supply: {form.pob_quantity} POBs</h4>
+              <PrimaryButton
+                buttonText="Create POB Batch"
+                classModifier="text-lg w-3/5"
+                isDisabled={!previewImage || isLoading}
+                isLoading={isLoading}
+                showLoader={true}
+              />
+            </form>
           )}
         </div>
       </div>
@@ -218,4 +238,4 @@ const CreatePOB = () => {
   );
 };
 
-export default CreatePOB;
+export default CreatePOBBatch;
