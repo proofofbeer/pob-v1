@@ -19,6 +19,8 @@ contract PersonalPOBFactory is Ownable {
     uint256 tokenId; // tokenId = 0 always for creator of POBCollectionContract
   }
 
+  event DeployPOBContract(address indexed from, address indexed pobContract, address indexed admin);
+
   string private _pobVersion;
   uint256 public pobTotalSupply;
   uint256 public pobContractPrice;
@@ -49,6 +51,7 @@ contract PersonalPOBFactory is Ownable {
   function createNewPersonalPob(
     string memory pobCollectionName_,
     string memory pobCollectionSymbol_,
+    uint256 pobCollectionMaxSupply_,
     address userAddress_,
     address profileAddress_,
     string memory globalTokenURI_,
@@ -65,22 +68,22 @@ contract PersonalPOBFactory is Ownable {
       globalTokenURI_,
       owner(),
       pobTotalSupply,
-      pobContractMaxSupply,
+      pobCollectionMaxSupply_,
       mintExpirationPeriod,
       _POBProfileFactoryAddress,
       qrMerkleRoot_
     );
     newPersonalPob.transferOwnership(_msgSender());
-    newPersonalPob.safeMint(_msgSender());
+    emit DeployPOBContract(address(this), address(newPersonalPob), _msgSender());
     PobCollectionContract memory newPobCollectionContract = PobCollectionContract({
       pobAddress: address(newPersonalPob),
       name: pobCollectionName_,
       symbol: pobCollectionSymbol_,
       globalTokenUri: globalTokenURI_,
-      maxSupply: pobContractMaxSupply,
+      maxSupply: pobCollectionMaxSupply_,
       mintExpirationDate: block.timestamp + mintExpirationPeriod,
       pobCollectionId: pobTotalSupply,
-      tokenId: 1
+      tokenId: 0
     });
     pobCollectionContractList.push(newPobCollectionContract);
     ++pobTotalSupply;

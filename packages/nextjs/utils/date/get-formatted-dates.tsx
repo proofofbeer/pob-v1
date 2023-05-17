@@ -11,26 +11,26 @@ export const getJsDateFromUnixTimestamp = (unixTimestamp: number) => {
 
   // Will display time in 10:30:23 format
   const formattedTime = hours + ":" + minutes.substr(-2) + ":" + seconds.substr(-2);
-
-  console.log(formattedTime);
+  return formattedTime;
 };
 
-export const formatDateLocale = (dateToFormat: string, format: string) => {
+export const formatDateLocale = (dateToFormat: string, format: string): string => {
   let jsDateFormat;
+  let formattedDate;
   if (format === "yyyy-mm-dd") {
     jsDateFormat = toDate(dateToFormat);
   } else jsDateFormat = "01-01-2000";
-  console.log(jsDateFormat);
-  const formattedDate = new Date(jsDateFormat);
+
+  const jsDate = new Date(jsDateFormat);
   switch (format) {
     case "yyyy-mm-dd":
-      console.log(formattedDate?.toLocaleDateString("en-CA"));
-      return formattedDate?.toDateString();
+      formattedDate = jsDate.toDateString();
   }
+
+  return formattedDate as string;
 };
 
 const toDate = (dateStr: string) => {
   const parts = dateStr.split("-");
-  console.log(parts);
   return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
 };

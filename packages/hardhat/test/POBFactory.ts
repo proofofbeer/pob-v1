@@ -1,7 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { POEPProfileFactory, POEPProfileFactory__factory, PersonalPOB, PersonalPOB__factory } from "../typechain-types";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 describe("PersonalPOBFactory", function () {
   // We define a fixture to reuse the same setup in every test.

@@ -13,6 +13,8 @@ import { persist } from "zustand/middleware";
 type TAppStore = {
   ethPrice: number;
   setEthPrice: (newEthPriceState: number) => void;
+  pobBatchDataArray: Record<string, any>[];
+  setPobBatchDataArray: (newUserContract: Record<string, any>) => void;
   userContracts: Record<string, any>[];
   setUserContracts: (newUserContract: Record<string, any>) => void;
   userImgObjs: any[];
@@ -34,6 +36,11 @@ export const useAppStore = create<TAppStore>()(
     set => ({
       ethPrice: 0,
       setEthPrice: (newValue: number): void => set(() => ({ ethPrice: newValue })),
+      pobBatchDataArray: [],
+      setPobBatchDataArray: (newPobBatchData: Record<string, any>): void =>
+        set(state => ({
+          pobBatchDataArray: [...state.pobBatchDataArray, { ...newPobBatchData }],
+        })),
       userContracts: [],
       setUserContracts: (newUserContract: Record<string, any>): void =>
         set(state => ({

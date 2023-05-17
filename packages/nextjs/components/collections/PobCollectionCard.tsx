@@ -6,6 +6,8 @@ import { AddressInput } from "../scaffold-eth";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { useDeployedContractRead } from "~~/hooks/scaffold-eth/useDeployedContractRead";
 import { useDeployedContractWrite } from "~~/hooks/scaffold-eth/useDeployedContractWrite";
+import { useAppStore } from "~~/services/store/store";
+import { generateUrlsForQrCodes } from "~~/utils/web3/wallet-generation";
 
 export type TPobCard = {
   globalTokenUri?: string; // URI of the base URI metadata
@@ -29,6 +31,9 @@ const PobCollectionCard = ({
   symbol,
 }: TPobCard) => {
   const personalPobName = "PersonalPOB";
+  const { pobBatchDataArray } = useAppStore(state => ({
+    pobBatchDataArray: state.pobBatchDataArray,
+  }));
   const [mintToAddress, setMintToAddress] = useState<string>("");
 
   const {
@@ -49,6 +54,18 @@ const PobCollectionCard = ({
     args: [],
     enabled: false,
   });
+
+  const getQrCodes = () => {
+    console.log("Getting the QR Codes");
+    const pobBatchData = pobBatchDataArray.filter(pobBatchData => pobBatchData.pobContractAddress === pobAddress);
+    console.log(pobBatchData);
+    if (pobBatchData.length > 0) {
+      const { qrWalletsArray } = pobBatchData[0];
+      console.log(qrWalletsArray);
+      const urlsArray = generateUrlsForQrCodes(pobAddress, qrWalletsArray);
+      console.log(urlsArray);
+    }
+  };
 
   useEffect(() => {
     if (pobAddress && !personalPobTotalSupply) {
@@ -116,26 +133,34 @@ const PobCollectionCard = ({
             )}
           </div>
           <div className="w-1/3 lg:w-1/5">
-            <label htmlFor="share-profile-pob-modal" className="btn btn-disabled normal-case w-full">
-              Share
-            </label>
-            <input disabled type="checkbox" id="share-profile-pob-modal" className="modal-toggle" />
-            <div className="modal">
-              <div className="modal-box relative">
-                <label htmlFor="share-profile-pob-modal" className="btn btn-sm btn-circle absolute right-2 top-2">
-                  ✕
+            {maxSupply === 25 ? (
+              <>
+                <label htmlFor="share-profile-pob-modal" className="btn btn-disabled normal-case w-full">
+                  Share
                 </label>
-                <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Share mint link:</h2>
-                <div className="mb-8 px-4">
-                  <AddressInput
-                    name="mintRecipientAddress"
-                    onChange={(value: any) => setMintToAddress(value)}
-                    placeholder="Enter address or ENS"
-                    value={mintToAddress}
-                  />
+                <input disabled type="checkbox" id="share-profile-pob-modal" className="modal-toggle" />
+                <div className="modal">
+                  <div className="modal-box relative">
+                    <label htmlFor="share-profile-pob-modal" className="btn btn-sm btn-circle absolute right-2 top-2">
+                      ✕
+                    </label>
+                    <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Share mint link:</h2>
+                    <div className="mb-8 px-4">
+                      <AddressInput
+                        name="mintRecipientAddress"
+                        onChange={(value: any) => setMintToAddress(value)}
+                        placeholder="Enter address or ENS"
+                        value={mintToAddress}
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </>
+            ) : (
+              <button onClick={getQrCodes} className="btn btn-primary normal-case w-full">
+                Get QR Codes
+              </button>
+            )}
           </div>
         </div>
         {Date.now() >= mintExpirationDateJS && <p>POB minting deadline has passed</p>}
