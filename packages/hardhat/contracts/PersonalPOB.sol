@@ -25,6 +25,7 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
   mapping(address => uint256) userAddressToTokenId;
   mapping(address => uint256) profileAddressToTokenId;
   bytes32 immutable qrMerkleRoot;
+  mapping(address => bool) public hasClaimed;
 
   constructor(
     string memory name_,
@@ -62,6 +63,8 @@ contract PersonalPOB is IPersonalPOB, ERC721, ERC721Enumerable, ERC721URIStorage
     );
     bytes32 leaf = keccak256(abi.encodePacked(qrPubKey));
     require(MerkleProof.verify(merkleProof, qrMerkleRoot, leaf), "Invalid proof(s)");
+    require(!hasClaimed[qrPubKey], "QR code already claimed");
+    hasClaimed[qrPubKey] = true;
     mintInternal(to);
   }
 

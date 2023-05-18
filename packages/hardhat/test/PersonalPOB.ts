@@ -123,6 +123,11 @@ describe("Personal POB Contract", () => {
         //  4.5: The user may now mint to their desired address using the computed
         //      signature & merkleProof.
         await pob.safeMintWithMerkleProof(addressToClaimTo, signature, merkleProof);
+
+        // Can't do it twice
+        await expect(pob.safeMintWithMerkleProof(addressToClaimTo, signature, merkleProof)).to.be.revertedWith(
+          "QR code already claimed",
+        );
       }
     });
   });
