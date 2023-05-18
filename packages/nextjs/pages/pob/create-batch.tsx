@@ -19,11 +19,13 @@ import { PersonalPOBFactoryContract } from "~~/contracts";
 import { useAccountBalance, useScaffoldContractRead, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
 import { useAppStore } from "~~/services/store/store";
 import { formatDateLocale } from "~~/utils/date/get-formatted-dates";
+import { getLocalEnvContractAddresses } from "~~/utils/env-getters";
 import { createRandomWallets } from "~~/utils/web3/wallet-generation";
 
 const CreatePOBBatch = () => {
+  const currentEnv = process.env.NEXT_PUBLIC_DEVELOPMENT_ENV;
   const deployedPersonalPOBFactory =
-    process.env.NEXT_PUBLIC_BATCH_POB_FACTORY_ADDRESS || "0x8bB205280b9B533Eb47D210d8C5D816EC13f57FC";
+    process.env.NEXT_PUBLIC_BATCH_POB_FACTORY_ADDRESS || "0x6Bee2523A2e054846c45C1Ec7Da1258dbF04e159";
   const contractName = "POEPProfileFactory";
   const fileFormKey = "pob_image";
   const [form, setForm] = useState<Record<string, any>>(() => getInitialPobFormState(createPobBatchInputsArray));
@@ -38,6 +40,20 @@ const CreatePOBBatch = () => {
 
   const { address: userAddress } = useAccount();
   const { balance, isLoading: isLoadingBalance } = useAccountBalance(userAddress);
+
+  const deployedPobFactoryAddress = useMemo(() => {
+    switch (currentEnv) {
+      case "local":
+        return getLocalEnvContractAddresses("PersonalPOB");
+        break;
+      case "production":
+        return deployedPersonalPOBFactory;
+        break;
+      default:
+        return deployedPersonalPOBFactory;
+        break;
+    }
+  }, [currentEnv, deployedPersonalPOBFactory]);
 
   const { data: userPobProfileAddress } = useScaffoldContractRead({
     contractName,
@@ -137,7 +153,7 @@ const CreatePOBBatch = () => {
 
       const signer = await fetchSigner();
       const personalPobFactoryContract = new ethers.Contract(
-        deployedPersonalPOBFactory,
+        deployedPobFactoryAddress,
         PersonalPOBFactoryContract.abi,
         signer as any,
       );
@@ -200,7 +216,7 @@ const CreatePOBBatch = () => {
         setIsLoading(false);
       }
     },
-    [balance, deployedPersonalPOBFactory, form, imgObj, userAddress, userPobProfileAddress],
+    [balance, deployedPobFactoryAddress, form, imgObj, userAddress, userPobProfileAddress],
   );
 
   return (
@@ -217,7 +233,7 @@ const CreatePOBBatch = () => {
       <div
         id="personal-pob-container"
         className={`w-full my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary ${
-          step === "form" ? "md:w-11/12" : "md:w-1/2"
+          step === "form" ? "md:w-11/12" : "md:w-1/2 lg:w-2/5"
         }`}
       >
         {userPobProfileAddress && parseInt(userPobProfileAddress) ? (
@@ -229,7 +245,7 @@ const CreatePOBBatch = () => {
             {step === "form" && (
               <>
                 <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4 mt-2">
-                  <div className="m-2 px-4 lg:px-4 xl:px-24 2xl:px-32">
+                  <div className="m-2 px-4 lg:px-4 xl:px-16">
                     <POBPreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
                   </div>
                 </div>
@@ -262,7 +278,10 @@ const CreatePOBBatch = () => {
               </>
             )}
             {step === "preview" && previewImage && (
-              <form className="text-center text-lg font-medium w-full pt-2 pb-4 px-4" onSubmit={handleCreatePobBatch}>
+              <form
+                className="text-center text-lg font-medium w-full pt-2 pb-4 px-4 lg:px-8"
+                onSubmit={handleCreatePobBatch}
+              >
                 <div className="w-full flex justify-start">
                   <p className="w-1/2 flex items-center" onClick={() => setStep("form")}>
                     Edit <PencilIcon className="h-4 w-4 ml-2" />
