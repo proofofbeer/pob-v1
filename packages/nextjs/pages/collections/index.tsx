@@ -10,7 +10,6 @@ import { useAppStore } from "~~/services/store/store";
 
 const MyPobs = () => {
   const [pobImages, setPobImages] = useState<string[]>([]);
-  const [qrCodes, setQrCodes] = useState<any[]>([]);
   const { address: userAddress } = useAccount();
   const router = useRouter();
 
@@ -78,7 +77,6 @@ const MyPobs = () => {
                 nftImageUri={pobImages[index]}
                 pobAddress={pobCollection.pobAddress}
                 pobCollectionId={parseInt(pobCollection.pobCollectionId)}
-                setQrCodes={setQrCodes}
                 symbol={pobCollection.symbol}
               />
             );
@@ -92,21 +90,6 @@ const MyPobs = () => {
           </button>
         </div>
       )}
-
-      <div
-        id="qr-codes"
-        className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-4 lg:grid-cols-3 lg:gap-8 w-full px-2 md:px-16 lg:px-8 xl:px-24 mt-4 mx-0"
-      >
-        {qrCodes.length > 0 &&
-          qrCodes.map((qrCode: any, index: number) => {
-            console.log(qrCode);
-            return (
-              <div key={index}>
-                <img src={qrCode} alt="qrcode" />
-              </div>
-            );
-          })}
-      </div>
     </div>
   );
 };

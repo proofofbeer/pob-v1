@@ -1,14 +1,13 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import PrimaryButton from "../common/buttons/PrimaryButton";
 import POBImage from "../image-handling/POBImage";
 import { AddressInput } from "../scaffold-eth";
-import qrcode from "qrcode";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { useDeployedContractRead } from "~~/hooks/scaffold-eth/useDeployedContractRead";
 import { useDeployedContractWrite } from "~~/hooks/scaffold-eth/useDeployedContractWrite";
 import { useAppStore } from "~~/services/store/store";
-import getQRImages from "~~/utils/qr-code";
+import { getQRImages, handleZipDownload } from "~~/utils/qr-code";
 import { generateUrlsForQrCodes } from "~~/utils/web3/wallet-generation";
 
 export type TPobCard = {
@@ -20,7 +19,6 @@ export type TPobCard = {
   nftImageUri: string; // Pob Collection Image gateway uri
   pobAddress: string; // Pob Collection contract address
   pobCollectionId: number; // Pob Collection "tokenId"-like identifier inside PersonalPOBFactory contract
-  setQrCodes: Dispatch<SetStateAction<any>>;
   symbol: string; // Symbol of the Pob Collection ("POB")
 };
 
@@ -31,7 +29,6 @@ const PobCollectionCard = ({
   nftImageUri,
   pobAddress,
   pobCollectionId,
-  setQrCodes,
   symbol,
 }: TPobCard) => {
   const personalPobName = "PersonalPOB";
@@ -39,6 +36,8 @@ const PobCollectionCard = ({
     pobBatchDataArray: state.pobBatchDataArray,
   }));
   const [mintToAddress, setMintToAddress] = useState<string>("");
+  const [qrCodes, setQrCodes] = useState<any[]>([]);
+  const [showPreviewQrCode, setShowPreviewQrCode] = useState<boolean>(false);
 
   const {
     writeAsync: writeMintPersonalPob,
@@ -112,7 +111,7 @@ const PobCollectionCard = ({
       </h5>
       <div className="text-center text-lg font-medium w-full">
         <div className="w-full flex justify-center gap-8 my-4">
-          <div className="w-1/3 lg:w-1/5">
+          <div className="w-1/3 lg:w-1/5 xl:w-1/3">
             {mintExpirationDateJS && (
               <>
                 <label
@@ -160,7 +159,7 @@ const PobCollectionCard = ({
               </>
             )}
           </div>
-          <div className="w-1/3 lg:w-1/5">
+          <div className="w-1/3 lg:w-1/5 xl:w-1/3">
             {maxSupply === 25 ? (
               <>
                 <label htmlFor="share-profile-pob-modal" className="btn btn-disabled normal-case w-full">
@@ -185,7 +184,7 @@ const PobCollectionCard = ({
                 </div>
               </>
             ) : (
-              <button onClick={getQrCodes} className="btn btn-primary normal-case w-full">
+              <button onClick={getQrCodes} className="btn btn-primary normal-case w-full" disabled={qrCodes.length > 0}>
                 Get QR Codes
               </button>
             )}
@@ -201,17 +200,39 @@ const PobCollectionCard = ({
               Total minted: {parseInt(personalPobTotalSupply._hex)} / {maxSupply}
             </p>
           )}
-          <Link
-            className="flex justify-center items-center hover:cursor-pointer hover:underline hover:underline-offset-2 w-full mb-2"
-            href={`https://opensea.io/assets?search[query]=${pobAddress}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            OpenSea
-            <ArrowTopRightOnSquareIcon className="w-4 ml-2" />
-          </Link>
+          <div className="w-full flex justify-center mb-2">
+            <Link
+              className="flex justify-center items-center hover:cursor-pointer hover:underline hover:underline-offset-2"
+              href={`https://opensea.io/assets?search[query]=${pobAddress}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              OpenSea
+              <ArrowTopRightOnSquareIcon className="w-4 ml-2" />
+            </Link>
+          </div>
         </div>
       </div>
+
+      {qrCodes.length > 0 && (
+        <div
+          id="qr-codes"
+          className="flex flex-col items-center justify-center w-full px-2 md:px-16 lg:px-8 xl:px-8 mt-6 mb-4 mx-0"
+        >
+          <button className="btn btn-primary rounded-xl mb-8" onClick={() => handleZipDownload(qrCodes)}>
+            Download QR Codes
+          </button>
+          <div className="collapse w-full">
+            <input className="min-h-0" type="checkbox" onChange={() => setShowPreviewQrCode(!showPreviewQrCode)} />
+            <div className="w-full collapse-title p-0 min-h-0 text-md text-center font-medium">
+              {showPreviewQrCode ? "Hide preview QR code" : "Show preview QR code"}
+            </div>
+            <div className="collapse-content">
+              <img className="m-0" src={qrCodes[0]} alt="qrcode" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

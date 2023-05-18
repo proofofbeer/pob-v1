@@ -57,7 +57,10 @@ const CreatePOBBatch = () => {
       toast.success("Successfully created your POB, redirecting to your collections", {
         position: "top-center",
       });
-      setTimeout(() => router.push("/collections"), 2500);
+      setTimeout(() => {
+        setIsLoading(false);
+        router.push("/collections");
+      }, 2500);
     },
   });
 
@@ -196,9 +199,8 @@ const CreatePOBBatch = () => {
           toast.error("An error occurred, please try again later 🫣", {
             position: "top-center",
           });
+          setIsLoading(false);
         }
-      } finally {
-        setIsLoading(false);
       }
     },
     [balance, deployedPersonalPOBFactory, form, imgObj, userAddress, userPobProfileAddress],
