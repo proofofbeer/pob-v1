@@ -17,7 +17,7 @@ export type TMintPobCard = {
   pobId?: number;
   symbol: string; // Symbol of the Pob Collection ("POB")
   totalSupply: number;
-  userAddress: string | undefined;
+  userAddress: string;
 };
 
 const MintPobCard = ({
@@ -33,12 +33,9 @@ const MintPobCard = ({
   totalSupply,
   userAddress,
 }: TMintPobCard) => {
-  const [mintToAddress, setMintToAddress] = useState<string>("");
-  console.log(totalSupply);
-  console.log(maxSupply);
-  console.log(totalSupply < maxSupply);
+  const [mintToAddress, setMintToAddress] = useState<string>(userAddress);
   return (
-    <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl p-8 w-full md:p-4">
+    <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl p-8 w-full md:p-4 lg:py-8">
       <div className="w-full flex justify-center p-4 md:px-24 lg:px-32">
         <POBImage imageURI={nftImageUri} />
       </div>
@@ -61,9 +58,9 @@ const MintPobCard = ({
         <label
           htmlFor={`mint-pob-modal-${pobAddress}`}
           className={`btn btn-md text-lg normal-case w-1/2 ${
-            userAddress && totalSupply < maxSupply
-              ? "btn-primary bg-orange-600 hover:bg-orange-500 border-orange-600 text-white"
-              : "btn-disabled"
+            isLoading || !userAddress || totalSupply === maxSupply
+              ? "btn-disabled"
+              : "btn-primary bg-orange-600 hover:bg-orange-500 border-orange-600 text-white"
           }`}
         >
           Mint
@@ -71,10 +68,13 @@ const MintPobCard = ({
         <input className="modal-toggle" id={`mint-pob-modal-${pobAddress}`} type="checkbox" />
         <div className="modal">
           <div className="modal-box relative">
-            <label htmlFor={`mint-pob-modal-${pobAddress}`} className="btn btn-sm btn-circle absolute right-2 top-2">
+            <label
+              htmlFor={`mint-pob-modal-${pobAddress}`}
+              className={`btn btn-sm btn-circle absolute right-2 top-2 ${isLoading && "btn-disabled"}`}
+            >
               ✕
             </label>
-            <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Mint NFT and transfer to:</h2>
+            <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Minting NFT to:</h2>
             <div className="mb-8 px-4">
               <AddressInput
                 name="mintRecipientAddress"
@@ -83,7 +83,16 @@ const MintPobCard = ({
                 value={mintToAddress}
               />
             </div>
-            <div className="w-full flex justify-center mt-8 mb-8">
+            {mintToAddress === userAddress ? (
+              <p className="text-center mt-8 mb-2">This POB will be minted to the connected account</p>
+            ) : (
+              <div className="flex justify-center mb-2">
+                <button className="no-underline btn-link text-center" onClick={() => setMintToAddress(userAddress)}>
+                  Enter my connected account
+                </button>
+              </div>
+            )}
+            <div className="w-full flex justify-center mb-8">
               <PrimaryButton
                 buttonText="Mint"
                 classModifier="w-3/5 md:w-3/5 lg:w-2/5 text-xl"

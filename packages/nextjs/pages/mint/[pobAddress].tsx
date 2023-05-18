@@ -64,6 +64,7 @@ const MintPob = () => {
     eventName: "Transfer",
     listener: (from: string, to: string, tokenId: string) => {
       console.log(from, to);
+      setIsLoading(false);
       toast.success(`Successfully minted POB #${tokenId}`, {
         position: "top-center",
       });
@@ -73,7 +74,11 @@ const MintPob = () => {
 
   const mint = useCallback(
     async (mintToAddress: string) => {
-      if (!walletsArray || walletsArray.length === 0) return;
+      setIsLoading(true);
+      if (!walletsArray || walletsArray.length === 0) {
+        setIsLoading(false);
+        return;
+      }
       if (balance && balance < 0.1) {
         toast.error("You don't have enough balance :(", {
           position: "top-center",
@@ -106,8 +111,29 @@ const MintPob = () => {
         //      signature & merkleProof.
         const tx = await pob.safeMintWithMerkleProof(mintToAddress, signature, merkleProof);
         await tx.wait();
-      } catch (error) {
+      } catch (error: any) {
         console.log(error);
+        if (error.error) {
+          console.log(error.error.reason);
+          if (error.error.reason) {
+            toast.error(error.error.reason || "Please try again later 🫣", {
+              position: "top-center",
+            });
+          } else if (error.error.data.message) {
+            toast.error(error.error.data.message || "Please try again later 🫣", {
+              position: "top-center",
+            });
+          } else {
+            toast.error("Please try again later 🫣", {
+              position: "top-center",
+            });
+          }
+        } else {
+          toast.error("An error occurred, please try again later 🫣", {
+            position: "top-center",
+          });
+        }
+        setIsLoading(false);
       }
     },
     [balance, key, keyPairIndex, pobAddress, walletsArray],
@@ -161,7 +187,7 @@ const MintPob = () => {
             pobCollectionId={parseInt(collectionId._hex)}
             symbol={pobMetadata.symbol}
             totalSupply={parseInt(totalSupply._hex)}
-            userAddress={userAddress}
+            userAddress={userAddress || ""}
           />
         </div>
       )}
