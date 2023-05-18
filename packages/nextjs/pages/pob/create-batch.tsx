@@ -196,8 +196,8 @@ const CreatePOBBatch = () => {
           toast.error("An error occurred, please try again later 🫣", {
             position: "top-center",
           });
-          setIsLoading(false);
         }
+        setIsLoading(false);
       }
     },
     [balance, deployedPersonalPOBFactory, form, imgObj, userAddress, userPobProfileAddress],
