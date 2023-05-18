@@ -59,7 +59,7 @@ const MyPobs = () => {
       </div>
       <div
         id="user-pobs-container"
-        className="grid gap-8 grid-cols-2 md:gap-4 lg:grid-cols-4 lg:gap-8 w-full px-2 md:px-16 lg:px-8 xl:px-24 mt-4 mx-0"
+        className="grid gap-8 grid-cols-2 md:grid-cols-3 md:gap-4 lg:grid-cols-4 lg:gap-8 w-full px-2 md:px-16 lg:px-8 xl:px-24 mt-4 mx-0"
       >
         {pobImages.length > 0 &&
           userMintedPobs?.map((mintedPob: any, index) => {

@@ -109,9 +109,9 @@ const PobCollectionCard = ({
       <h5 className="mb-0 text-md font-medium text-center px-1">
         {symbol} Collection #{pobCollectionId}:
       </h5>
-      <div className="text-center text-lg font-medium w-full">
-        <div className="w-full flex justify-center gap-8 my-4">
-          <div className="w-1/3 lg:w-1/5 xl:w-1/3">
+      <div className="text-center text-lg font-medium w-full lg:px-4">
+        <div className="w-full flex justify-center items-center gap-8 my-4">
+          <div className="w-1/3 lg:w-2/5">
             {mintExpirationDateJS && (
               <>
                 <label
@@ -159,7 +159,7 @@ const PobCollectionCard = ({
               </>
             )}
           </div>
-          <div className="w-1/3 lg:w-1/5 xl:w-1/3">
+          <div className="w-1/3 lg:w-2/5">
             {maxSupply === 25 ? (
               <>
                 <label htmlFor="share-profile-pob-modal" className="btn btn-disabled normal-case w-full">

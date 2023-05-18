@@ -3,6 +3,7 @@ import Loader from "../Loader";
 
 type TPrimaryButtonProps = {
   buttonText: string;
+  buttonTextLoading?: string;
   classModifier: string;
   isDisabled?: boolean;
   isLoading?: boolean;
@@ -13,6 +14,7 @@ type TPrimaryButtonProps = {
 
 const PrimaryButton = ({
   buttonText,
+  buttonTextLoading = "Loading...",
   classModifier = "w-full",
   isDisabled,
   isLoading,
@@ -28,7 +30,7 @@ const PrimaryButton = ({
         onClick={path ? () => router.push(path) : onClick}
         disabled={isDisabled}
       >
-        {buttonText}
+        {!isLoading ? buttonText : buttonTextLoading}
         {showLoader && isLoading && <Loader classModifier="ml-2" />}
       </button>
     </div>

@@ -215,10 +215,16 @@ const CreatePOBBatch = () => {
       </h5>
       <div
         id="personal-pob-container"
-        className="w-full md:w-11/12 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
+        className={`w-full my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary ${
+          step === "form" ? "md:w-11/12" : "md:w-1/2"
+        }`}
       >
         {userPobProfileAddress && parseInt(userPobProfileAddress) ? (
-          <div className="w-full flex flex-col md:flex-row md:flex-wrap lg pt-2 pb-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
+          <div
+            className={`w-full flex flex-col md:flex-row md:flex-wrap pt-2 pb-8 px-4 justify-center items-center md:items-start ${
+              step === "form" ? "lg:px-8 lg:py-12" : "lg:px-4 lg:py-4"
+            }`}
+          >
             {step === "form" && (
               <>
                 <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4 mt-2">
@@ -255,17 +261,14 @@ const CreatePOBBatch = () => {
               </>
             )}
             {step === "preview" && previewImage && (
-              <form
-                className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-2"
-                onSubmit={handleCreatePobBatch}
-              >
+              <form className="text-center text-lg font-medium w-full pt-2 pb-4 px-4" onSubmit={handleCreatePobBatch}>
                 <div className="w-full flex justify-start">
                   <p className="w-1/2 flex items-center" onClick={() => setStep("form")}>
                     Edit <PencilIcon className="h-4 w-4 ml-2" />
                   </p>
                 </div>
                 <h3 className="text-center text-2xl">{form.name}</h3>
-                <div className="m-2 px-6 lg:px-4 xl:px-24 2xl:px-32">
+                <div className="m-2 px-6 lg:px-24 xl:px-24 2xl:px-32">
                   <POBImage imageURI={previewImage} />
                 </div>
                 <h5 className="text-center text-lg font-light">
