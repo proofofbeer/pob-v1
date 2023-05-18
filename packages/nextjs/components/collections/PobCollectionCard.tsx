@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Link from "next/link";
 import PrimaryButton from "../common/buttons/PrimaryButton";
 import POBImage from "../image-handling/POBImage";
 import { AddressInput } from "../scaffold-eth";
+import qrcode from "qrcode";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { useDeployedContractRead } from "~~/hooks/scaffold-eth/useDeployedContractRead";
 import { useDeployedContractWrite } from "~~/hooks/scaffold-eth/useDeployedContractWrite";
 import { useAppStore } from "~~/services/store/store";
+import getQRImages from "~~/utils/qr-code";
 import { generateUrlsForQrCodes } from "~~/utils/web3/wallet-generation";
 
 export type TPobCard = {
@@ -18,6 +20,7 @@ export type TPobCard = {
   nftImageUri: string; // Pob Collection Image gateway uri
   pobAddress: string; // Pob Collection contract address
   pobCollectionId: number; // Pob Collection "tokenId"-like identifier inside PersonalPOBFactory contract
+  setQrCodes: Dispatch<SetStateAction<any>>;
   symbol: string; // Symbol of the Pob Collection ("POB")
 };
 
@@ -28,6 +31,7 @@ const PobCollectionCard = ({
   nftImageUri,
   pobAddress,
   pobCollectionId,
+  setQrCodes,
   symbol,
 }: TPobCard) => {
   const personalPobName = "PersonalPOB";
@@ -55,15 +59,39 @@ const PobCollectionCard = ({
     enabled: false,
   });
 
-  const getQrCodes = () => {
+  const getQrCodes = async () => {
     console.log("Getting the QR Codes");
     const pobBatchData = pobBatchDataArray.filter(pobBatchData => pobBatchData.pobContractAddress === pobAddress);
     console.log(pobBatchData);
     if (pobBatchData.length > 0) {
-      const { qrWalletsArray } = pobBatchData[0];
-      console.log(qrWalletsArray);
-      const urlsArray = generateUrlsForQrCodes(pobAddress, qrWalletsArray);
+      const { privKeysArray } = pobBatchData[0];
+      console.log(privKeysArray);
+      const urlsArray = generateUrlsForQrCodes(pobAddress, privKeysArray);
+
+      // for (const pobUrl in urlsArray) {
+      //   qrcode.toDataURL(
+      //     pobUrl,
+      //     {
+      //       width: 800,
+      //       margin: 2,
+      //       color: {
+      //         dark: "#335383FF",
+      //         light: "#EEEEEEFF",
+      //       },
+      //     },
+      //     (err, url) => {
+      //       if (err) console.log(err);
+
+      //       console.log(url);
+      //       qrCodes.push(url);
+      //     },
+      //   );
+      // }
+
+      const qrCodes = await getQRImages(urlsArray);
       console.log(urlsArray);
+      console.log(qrCodes);
+      setQrCodes(qrCodes);
     }
   };
 

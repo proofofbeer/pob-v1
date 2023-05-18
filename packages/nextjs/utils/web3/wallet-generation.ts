@@ -22,13 +22,13 @@ export const createRandomWallets = (pobQuantity: number) => {
   return { merkleTreeWithQrPubKeys, qrWalletsArray, qrPrivKeysArray };
 };
 
-export const generateUrlsForQrCodes = (pobContractAddress: string, qrWalletsArray: any[]) => {
+export const generateUrlsForQrCodes = (pobContractAddress: string, privKeysArray: any[]) => {
   const urlsArray: string[] = [];
 
   const baseUrl = getBaseUrl();
 
-  for (const qrWallet of qrWalletsArray) {
-    urlsArray.push(`${baseUrl}/mint/${pobContractAddress}?key=${qrWallet.privateKey}`);
+  for (const privKey of privKeysArray) {
+    urlsArray.push(`${baseUrl}/mint/${pobContractAddress}?key=${privKey}`);
   }
 
   return urlsArray;
