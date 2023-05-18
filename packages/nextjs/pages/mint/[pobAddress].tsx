@@ -9,12 +9,9 @@ import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
 import MintPobCard from "~~/components/pob/MintPobCard";
 import { PersonalPOBContract } from "~~/contracts";
-import { useAccountBalance, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
+import { useAccountBalance } from "~~/hooks/scaffold-eth";
 import { useDeployedContractRead } from "~~/hooks/scaffold-eth/useDeployedContractRead";
-import { useDeployedContractWrite } from "~~/hooks/scaffold-eth/useDeployedContractWrite";
 import { useDeployedEventSubscriber } from "~~/hooks/scaffold-eth/useDeployedEventSubscriber";
-
-// import MerkleTree from "merkletreejs";
 
 const MintPob = () => {
   const personalPobName = "PersonalPOB";
@@ -22,23 +19,12 @@ const MintPob = () => {
   const { index: keyPairIndex, key, pobAddress } = router.query;
 
   const { address: userAddress } = useAccount();
-  const { balance, isLoading: isLoadingBalance } = useAccountBalance(userAddress);
+  const { balance } = useAccountBalance(userAddress);
 
   const [imageUrl, setImageUrl] = useState<any>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [pobMetadata, setPobMetadata] = useState<any | undefined>(undefined);
   const [walletsArray, setWalletsArray] = useState<any[] | undefined>(undefined);
-
-  const {
-    writeAsync: writeMintPersonalPob,
-    isLoading: isLoadingMintPersonalPob,
-    isMining: isMiningMintPersonalPob,
-  } = useDeployedContractWrite({
-    contractAddress: pobAddress,
-    contractName: personalPobName,
-    functionName: "safeMintWithMerkleProof",
-    args: ["0x0"],
-  });
 
   const { data: pobGlobalTokenUri }: any = useDeployedContractRead({
     contractAddress: pobAddress,

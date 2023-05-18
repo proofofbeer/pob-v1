@@ -26,7 +26,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   // await deploy("POEPProfileFactory", {
   //   from: deployer,
   //   // Contract constructor arguments
-  //   args: ["POBProfile-v1.1", 120, etherPrice],
+  //   args: ["POBProfile-v1.2", 86400, etherPrice],
   //   log: true,
   //   // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
   //   // automatically mining the contract deployment transaction. There is no effect on live networks.
@@ -36,7 +36,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   await deploy("PersonalPOBFactory", {
     from: deployer,
     // Contract constructor arguments
-    args: ["PersonalPOB-v1.1", "0x5FbDB2315678afecb367f032d93F642f64180aa3", etherPrice, 25, 604800],
+    args: ["BatchPOB-v1.2", "0x8202398ED2885187b39220Aeb26e795486930681", etherPrice, 25, 157784630],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the contract deployment transaction. There is no effect on live networks.
@@ -61,4 +61,4 @@ export default deployYourContract;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags YourContract
-deployYourContract.tags = ["POEPProfileFactory", "PersonalPOB"];
+// deployYourContract.tags = ["POEPProfileFactory", "PersonalPOB"];

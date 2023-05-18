@@ -17,7 +17,8 @@ import { PersonalPOBFactoryContract } from "~~/contracts";
 import { useAccountBalance, useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 
 const CreatePOB = () => {
-  const deployedPersonalPOBFactory = process.env.NEXT_PUBLIC_PERSONAL_POB_FACTORY_ADDRESS || "0x0";
+  const deployedPersonalPOBFactory =
+    process.env.NEXT_PUBLIC_PERSONAL_POB_FACTORY_ADDRESS || "0x6F499A9ee6a7eBC809b2dF17b42E89a86F46d040";
   const contractName = "POEPProfileFactory";
   const fileFormKey = "pob_image";
   const [form, setForm] = useState<Record<string, any>>(() => getInitialPobFormState(createOneTimePobInputsArray));

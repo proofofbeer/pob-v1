@@ -22,7 +22,8 @@ import { formatDateLocale } from "~~/utils/date/get-formatted-dates";
 import { createRandomWallets } from "~~/utils/web3/wallet-generation";
 
 const CreatePOBBatch = () => {
-  const deployedPersonalPOBFactory = process.env.NEXT_PUBLIC_PERSONAL_POB_FACTORY_ADDRESS_LOCAL || "0x0";
+  const deployedPersonalPOBFactory =
+    process.env.NEXT_PUBLIC_BATCH_POB_FACTORY_ADDRESS || "0x8bB205280b9B533Eb47D210d8C5D816EC13f57FC";
   const contractName = "POEPProfileFactory";
   const fileFormKey = "pob_image";
   const [form, setForm] = useState<Record<string, any>>(() => getInitialPobFormState(createPobBatchInputsArray));
