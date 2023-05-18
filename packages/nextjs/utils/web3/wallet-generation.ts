@@ -27,8 +27,8 @@ export const generateUrlsForQrCodes = (pobContractAddress: string, privKeysArray
 
   const baseUrl = getBaseUrl();
 
-  for (const privKey of privKeysArray) {
-    urlsArray.push(`${baseUrl}/mint/${pobContractAddress}?key=${privKey}`);
+  for (let i = 0; i < privKeysArray.length; i++) {
+    urlsArray.push(`${baseUrl}/mint/${pobContractAddress}?key=${privKeysArray[i]}&index=${i}`);
   }
 
   return urlsArray;

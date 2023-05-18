@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import router from "next/router";
 import { fetchSigner } from "@wagmi/core";
@@ -63,11 +63,6 @@ const CreatePOBBatch = () => {
       }, 2500);
     },
   });
-
-  useEffect(() => {
-    const newWallet = ethers.Wallet.createRandom();
-    console.log(newWallet);
-  }, []);
 
   const poepFormInputs = useMemo(
     () =>
@@ -148,11 +143,19 @@ const CreatePOBBatch = () => {
 
       try {
         const formData = new FormData();
+
+        const { merkleTreeWithQrPubKeys, qrWalletsArray, qrPrivKeysArray } = createRandomWallets(
+          parseInt(form.pob_quantity),
+        );
+
+        setNewPobWalletsArray(qrWalletsArray);
+        setNewPrivKeysArray(qrPrivKeysArray);
         formData.append("files", new Blob([imgObj]));
         formData.append("external_url", `https://proofofbeer.vercel.app/profile/${userPobProfileAddress}`);
         formData.append("profileAddress", userPobProfileAddress);
         formData.append("event_start_date", formatDateLocale(form.event_start_date, "yyyy-mm-dd"));
         formData.append("event_end_date", formatDateLocale(form.event_end_date, "yyyy-mm-dd"));
+        formData.append("whitelist", JSON.stringify(qrWalletsArray));
         if (Object.keys(form).length > 0) {
           for (const key in form) {
             if (form[key]) {
@@ -165,13 +168,6 @@ const CreatePOBBatch = () => {
             "Content-Type": "multipart/form-data",
           },
         });
-
-        const { merkleTreeWithQrPubKeys, qrWalletsArray, qrPrivKeysArray } = createRandomWallets(
-          parseInt(form.pob_quantity),
-        );
-
-        setNewPobWalletsArray(qrWalletsArray);
-        setNewPrivKeysArray(qrPrivKeysArray);
 
         console.log(userAddress);
         console.log(userPobProfileAddress);
@@ -221,73 +217,80 @@ const CreatePOBBatch = () => {
         id="personal-pob-container"
         className="w-full md:w-11/12 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
       >
-        <div className="w-full flex flex-col md:flex-row md:flex-wrap lg pt-2 pb-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
-          {step === "form" && (
-            <>
-              <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4 mt-2">
-                <div className="m-2 px-4 lg:px-4 xl:px-24 2xl:px-32">
-                  <POBPreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
-                </div>
-              </div>
-              <div className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:pt-4 lg:pr-12 xl:pr-20">
-                {poepFormInputs}
-                <div className="w-full mt-12 md:mt-6 lg:mt-4">
-                  <div className="flex justify-center">
-                    <p className="font-medium border-orange-700 border-2 rounded-xl w-3/5 py-2">Cost: 1 MATIC</p>
+        {userPobProfileAddress && parseInt(userPobProfileAddress) ? (
+          <div className="w-full flex flex-col md:flex-row md:flex-wrap lg pt-2 pb-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
+            {step === "form" && (
+              <>
+                <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4 mt-2">
+                  <div className="m-2 px-4 lg:px-4 xl:px-24 2xl:px-32">
+                    <POBPreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
                   </div>
-                  {isLoadingBalance ? (
-                    <Loader />
-                  ) : (
-                    <PrimaryButton
-                      buttonText="Preview POB"
-                      classModifier="text-lg w-3/5"
-                      isDisabled={
-                        !previewImage ||
-                        isLoading ||
-                        !form.event_start_date ||
-                        !form.event_end_date ||
-                        !form.pob_quantity
-                      }
-                      isLoading={isLoading}
-                      onClick={() => setStep("preview")}
-                      showLoader={true}
-                    />
-                  )}
                 </div>
-              </div>
-            </>
-          )}
-          {step === "preview" && previewImage && (
-            <form
-              className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-2"
-              onSubmit={handleCreatePobBatch}
-            >
-              <div className="w-full flex justify-start">
-                <p className="w-1/2 flex items-center" onClick={() => setStep("form")}>
-                  Edit <PencilIcon className="h-4 w-4 ml-2" />
-                </p>
-              </div>
-              <h3 className="text-center text-2xl">{form.name}</h3>
-              <div className="m-2 px-6 lg:px-4 xl:px-24 2xl:px-32">
-                <POBImage imageURI={previewImage} />
-              </div>
-              <h5 className="text-center text-lg font-light">
-                {formatDateLocale(form.event_start_date, "yyyy-mm-dd")}
-              </h5>
-              <h4 className="text-center text-xl">{form.description}</h4>
-              <h4 className="text-center text-xl mt-4">Batch Supply: {form.pob_quantity} POBs</h4>
-              <PrimaryButton
-                buttonText="Create POB Batch"
-                classModifier="text-lg w-3/5"
-                isDisabled={
-                  !previewImage || isLoading || !form.event_start_date || !form.event_end_date || !form.pob_quantity
-                }
-                isLoading={isLoading}
-                showLoader={true}
-              />
-            </form>
-          )}
-        </div>
+                <div className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:pt-4 lg:pr-12 xl:pr-20">
+                  {poepFormInputs}
+                  <div className="w-full mt-12 md:mt-6 lg:mt-4">
+                    <div className="flex justify-center">
+                      <p className="font-medium border-orange-700 border-2 rounded-xl w-3/5 py-2">Cost: 1 MATIC</p>
+                    </div>
+                    {isLoadingBalance ? (
+                      <Loader />
+                    ) : (
+                      <PrimaryButton
+                        buttonText="Preview POB"
+                        classModifier="text-lg w-3/5"
+                        isDisabled={
+                          !previewImage ||
+                          isLoading ||
+                          !form.event_start_date ||
+                          !form.event_end_date ||
+                          !form.pob_quantity
+                        }
+                        isLoading={isLoading}
+                        onClick={() => setStep("preview")}
+                        showLoader={true}
+                      />
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+            {step === "preview" && previewImage && (
+              <form
+                className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-2"
+                onSubmit={handleCreatePobBatch}
+              >
+                <div className="w-full flex justify-start">
+                  <p className="w-1/2 flex items-center" onClick={() => setStep("form")}>
+                    Edit <PencilIcon className="h-4 w-4 ml-2" />
+                  </p>
+                </div>
+                <h3 className="text-center text-2xl">{form.name}</h3>
+                <div className="m-2 px-6 lg:px-4 xl:px-24 2xl:px-32">
+                  <POBImage imageURI={previewImage} />
+                </div>
+                <h5 className="text-center text-lg font-light">
+                  {formatDateLocale(form.event_start_date, "yyyy-mm-dd")}
+                </h5>
+                <h4 className="text-center text-xl">{form.description}</h4>
+                <h4 className="text-center text-xl mt-4">Batch Supply: {form.pob_quantity} POBs</h4>
+                <PrimaryButton
+                  buttonText="Create POB Batch"
+                  classModifier="text-lg w-3/5"
+                  isDisabled={
+                    !previewImage || isLoading || !form.event_start_date || !form.event_end_date || !form.pob_quantity
+                  }
+                  isLoading={isLoading}
+                  showLoader={true}
+                />
+              </form>
+            )}
+          </div>
+        ) : (
+          <div className="text-center text-lg font-medium w-full px-2 py-8 md:w-2/3 md:flex md:flex-col md:items-center lg:w-1/2">
+            <h4 className="text-xl">You need a POB Profile</h4>
+            <PrimaryButton buttonText="I want my Profile" classModifier="text-lg py-2 px-8 mt-4" path="/dashboard" />
+          </div>
+        )}
       </div>
     </div>
   );

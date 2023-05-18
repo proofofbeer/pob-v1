@@ -7,7 +7,7 @@ export type TPobCard = {
   nftImageUri: string; // Pob Collection Image gateway uri
   pobAddress: string; // Pob Collection contract address
   pobCollectionId: number; // Pob Collection "tokenId"-like identifier inside PersonalPOBFactory contract
-  pobId: number;
+  pobId?: number;
   symbol: string; // Symbol of the Pob Collection ("POB")
 };
 
@@ -17,7 +17,7 @@ const PobCard = ({ name, nftImageUri, pobAddress, pobCollectionId, pobId, symbol
       <POBImage imageURI={nftImageUri} />
     </div>
     <h4 className="mb-4 text-xl font-medium text-center px-1">
-      {name} #{pobId}
+      {name} {pobId && `#${pobId}`}
     </h4>
     <h5 className="mb-2 text-md font-medium text-center px-1 hidden md:visible">
       <Link

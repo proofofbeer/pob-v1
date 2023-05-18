@@ -27,6 +27,7 @@ const getPersonalPOBMetadata = (metadata: any, imgCid: string) => {
     description: metadata.description,
     image: `ipfs://${imgCid}/image-0`,
     external_url: `${baseUrl}/profile/${metadata.profileAddress}`,
+    whitelist: `${metadata.whitelist}`,
     attributes: {
       start_date: metadata.event_start_date,
       end_date: metadata.event_end_date,
