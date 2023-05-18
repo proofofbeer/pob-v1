@@ -149,19 +149,21 @@ const MintPob = () => {
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
       <h1 className="text-4xl font-semibold text-center mb-8">Mint a POB</h1>
       {pobAddress && pobMetadata && collectionId && maxSupply && totalSupply && (
-        <MintPobCard
-          description={pobMetadata.description}
-          isLoading={isLoading}
-          maxSupply={parseInt(maxSupply._hex)}
-          mint={mint}
-          name={pobMetadata.name}
-          nftImageUri={imageUrl}
-          pobAddress={pobAddress as string}
-          pobCollectionId={parseInt(collectionId._hex)}
-          symbol={pobMetadata.symbol}
-          totalSupply={parseInt(totalSupply._hex)}
-          userAddress={userAddress}
-        />
+        <div className="w-full md:w-3/5 lg:w-1/2 xl:w-2/5">
+          <MintPobCard
+            description={pobMetadata.description}
+            isLoading={isLoading}
+            maxSupply={parseInt(maxSupply._hex)}
+            mint={mint}
+            name={pobMetadata.name}
+            nftImageUri={imageUrl}
+            pobAddress={pobAddress as string}
+            pobCollectionId={parseInt(collectionId._hex)}
+            symbol={pobMetadata.symbol}
+            totalSupply={parseInt(totalSupply._hex)}
+            userAddress={userAddress}
+          />
+        </div>
       )}
     </div>
   );

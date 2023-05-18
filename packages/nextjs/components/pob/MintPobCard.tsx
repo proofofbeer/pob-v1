@@ -39,7 +39,7 @@ const MintPobCard = ({
   console.log(totalSupply < maxSupply);
   return (
     <div className="bg-base-100 border-base-300 border shadow-md shadow-secondary rounded-xl p-8 w-full md:p-4">
-      <div className="w-full flex justify-center p-4">
+      <div className="w-full flex justify-center p-4 md:px-24 lg:px-32">
         <POBImage imageURI={nftImageUri} />
       </div>
       <h4 className="mb-2 text-xl font-medium text-center px-1">{name}</h4>
@@ -57,7 +57,7 @@ const MintPobCard = ({
           </Link>
         </div>
       </div>
-      <div className="w-full flex justify-center">
+      <div className="w-full flex justify-center md:mb-8">
         <label
           htmlFor={`mint-pob-modal-${pobAddress}`}
           className={`btn btn-md text-lg normal-case w-1/2 ${

@@ -1,7 +1,7 @@
 export const getBaseUrl = (): string => {
   const currentDevEnv = process.env.NEXT_PUBLIC_DEVELOPMENT_ENV;
   let baseUrl: string;
-  const defaultUrl = "http://localhost:3000";
+  const defaultUrl = "http://proofofbeer.vercel.app";
 
   switch (currentDevEnv) {
     case "local":
