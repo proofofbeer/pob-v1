@@ -79,7 +79,7 @@ const MintPob = () => {
         setIsLoading(false);
         return;
       }
-      if (balance && balance < 0.1) {
+      if (balance && balance > 0) {
         toast.error("You don't have enough balance :(", {
           position: "top-center",
         });
