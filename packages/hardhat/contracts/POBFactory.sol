@@ -7,8 +7,6 @@ import "./interfaces/IPOBFactory.sol";
 import "./POB.sol";
 
 contract POBFactory is IPOBFactory, Ownable {
-  event DeployPOBContract(address indexed from, address indexed pobContract, address indexed admin);
-
   string private _pobVersion;
   uint256 public deployedPobContracts;
   uint256 public pobTokenPrice;
@@ -43,7 +41,7 @@ contract POBFactory is IPOBFactory, Ownable {
       qrMerkleRoot_
     );
     newPob.transferOwnership(_msgSender());
-    deployedPobContracts++;
+    ++deployedPobContracts;
     emit DeployPOBContract(address(this), address(newPob), _msgSender());
     PobCollectionContract memory newPobCollectionContract = PobCollectionContract({
       pobAddress: address(newPob),
@@ -55,7 +53,6 @@ contract POBFactory is IPOBFactory, Ownable {
       tokenId: 0
     });
     pobCollectionContractList.push(newPobCollectionContract);
-    ++deployedPobContracts;
     userAddressToPobCollectionContract[_msgSender()].push(newPobCollectionContract);
   }
 

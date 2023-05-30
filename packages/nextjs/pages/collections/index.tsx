@@ -10,6 +10,7 @@ import { useAppStore } from "~~/services/store/store";
 
 const MyPobs = () => {
   const [pobImages, setPobImages] = useState<string[]>([]);
+  const [pobWhitelists, setPobWhitelists] = useState<any[]>([]);
   const { address: userAddress } = useAccount();
   const router = useRouter();
 
@@ -18,30 +19,35 @@ const MyPobs = () => {
   }));
 
   const { data: userPobCollections } = useScaffoldContractRead({
-    contractName: "PersonalPOBFactory",
+    contractName: "POBFactory",
     functionName: "getUserPobCollections",
     args: [userAddress],
   });
 
   const getGatewayImageUrl = useCallback(async (nftUrl: string) => {
+    console.log(nftUrl);
     const nftCid = nftUrl.substring(7);
     console.log(nftCid);
     const res = await axios.get(`https://apefomo-ipfs-gateway.mypinata.cloud/ipfs/${nftCid}`);
     console.log(`https://apefomo-ipfs-gateway.mypinata.cloud/ipfs/${nftCid}`);
     console.log(res);
-    const { image: imageUri } = res.data;
+    const { image: imageUri, whitelist: pobWhitelist } = res.data;
     const imageCid = imageUri.substring(7);
 
-    return `https://apefomo-ipfs-gateway.mypinata.cloud/ipfs/${imageCid}`;
+    return { imageUrl: `https://apefomo-ipfs-gateway.mypinata.cloud/ipfs/${imageCid}`, pobWhitelist };
   }, []);
 
   const getPobCollectionsImageURI = useCallback(
     async (userPobCollections: any) => {
       const imageUris = [];
+      const whitelists: any[] = [];
       for (let i = 0; i < userPobCollections.length; i++) {
-        imageUris.push(await getGatewayImageUrl(userPobCollections[i][3]));
+        const { imageUrl, pobWhitelist } = await getGatewayImageUrl(userPobCollections[i][3]);
+        imageUris.push(imageUrl);
+        whitelists.push(pobWhitelist);
       }
       setPobImages(imageUris);
+      setPobWhitelists(whitelists);
     },
     [getGatewayImageUrl],
   );
@@ -71,13 +77,16 @@ const MyPobs = () => {
                 key={pobCollection.pobAddress}
                 globalTokenUri={pobCollection.globalTokenURI}
                 maxSupply={parseInt(pobCollection.maxSupply._hex)}
-                mintExpirationDateJS={parseInt(pobCollection.mintExpirationDate._hex) * 1000}
+                mintExpirationDateJS={
+                  pobCollection.mintExpirationDate ? parseInt(pobCollection.mintExpirationDate._hex) * 1000 : undefined
+                }
                 name={pobCollection.name}
                 networkName="Polygon"
                 nftImageUri={pobImages[index]}
                 pobAddress={pobCollection.pobAddress}
                 pobCollectionId={parseInt(pobCollection.pobCollectionId)}
                 symbol={pobCollection.symbol}
+                whitelist={pobWhitelists[index]}
               />
             );
           })}

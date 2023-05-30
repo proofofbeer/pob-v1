@@ -1,42 +1,87 @@
 import React, { useCallback, useMemo, useState } from "react";
-import Link from "next/link";
 import router from "next/router";
 import { fetchSigner } from "@wagmi/core";
 import axios from "axios";
 import { ethers } from "ethers";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
+import { PencilIcon } from "@heroicons/react/24/outline";
 import Loader from "~~/components/common/Loader";
 import BackButton from "~~/components/common/buttons/BackButton";
 import PrimaryButton from "~~/components/common/buttons/PrimaryButton";
-import FilePreview from "~~/components/image-handling/FilePreview";
+import POBImage from "~~/components/image-handling/POBImage";
+import POBPreview from "~~/components/image-handling/POBPreview";
 import { InputBase } from "~~/components/inputs/InputBase";
 import ToggleInput from "~~/components/inputs/ToggleInput";
-import { createOneTimePobInputsArray, getInitialPobFormState } from "~~/components/pob/pob-form-input";
-import { PersonalPOBFactoryContract } from "~~/contracts";
-import { useAccountBalance, useScaffoldContractRead } from "~~/hooks/scaffold-eth";
+import { createPobInputsArray, getInitialPobFormState } from "~~/components/pob/pob-form-input";
+import { POBFactoryContract } from "~~/contracts";
+import { useAccountBalance, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
+import { useAppStore } from "~~/services/store/store";
+import { formatDateLocale } from "~~/utils/date/get-formatted-dates";
+import { createRandomWallets } from "~~/utils/web3/wallet-generation";
 
 const CreatePOB = () => {
-  const deployedPersonalPOBFactory =
-    process.env.NEXT_PUBLIC_PERSONAL_POB_FACTORY_ADDRESS || "0x6F499A9ee6a7eBC809b2dF17b42E89a86F46d040";
-  const contractName = "POEPProfileFactory";
+  const deployedPobFactory = process.env.NEXT_PUBLIC_POB_FACTORY_ADDRESS_LOCAL || "";
+  const pobTokenBasePrice = 0.1;
+  const pobTokenUniqueGenPrice = 0.15;
   const fileFormKey = "pob_image";
-  const [form, setForm] = useState<Record<string, any>>(() => getInitialPobFormState(createOneTimePobInputsArray));
+  const [form, setForm] = useState<Record<string, any>>(() => getInitialPobFormState(createPobInputsArray));
   const [imgObj, setImgObj] = useState<any>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [step, setStep] = useState<string>("form");
+  const [newPobWalletsArray, setNewPobWalletsArray] = useState<any[] | undefined>();
+  const [newPrivKeysArray, setNewPrivKeysArray] = useState<any[] | undefined>();
+  const { setPobBatchDataArray } = useAppStore(state => ({
+    setPobBatchDataArray: state.setPobBatchDataArray,
+  }));
+
+  // const [pobName, setPobName] = useState("");
+  // const [tokenUri, setTokenUri] = useState("");
+  // const [pobQuantity, setPobQuantity] = useState(ethers.BigNumber.from(10));
+  // const [merkleRoot, setMerkleRoot] = useState<`0x${string}`>(ethers.utils.hexZeroPad("0x00", 32) as `0x${string}`);
+
+  // const [createNewPobArgs, setCreateNewPobArgs] = useState<any>([pobName, "POB", tokenUri, pobQuantity, merkleRoot]);
+
+  const [msgValue, setMsgValue] = useState(10 * pobTokenBasePrice);
 
   const { address: userAddress } = useAccount();
   const { balance, isLoading: isLoadingBalance } = useAccountBalance(userAddress);
 
-  const { data: userPobProfileAddress } = useScaffoldContractRead({
-    contractName,
-    functionName: "userAddressToProfile",
-    args: [userAddress],
+  // const { data: deployedPobContracts } = useScaffoldContractRead({
+  //   contractName,
+  //   functionName: "deployedPobContracts",
+  // });
+
+  // const { writeAsync: writeCreateNewPob, isMining: isMiningCreateNewPob } = useScaffoldContractWrite({
+  //   contractName,
+  //   functionName: "createNewPob",
+  //   args: [pobName, "POB", tokenUri, pobQuantity, merkleRoot],
+  //   value: msgValue.toString(),
+  // });
+
+  useScaffoldEventSubscriber({
+    contractName: "POBFactory",
+    eventName: "DeployPOBContract",
+    listener: (from, pobContractAddress, admin) => {
+      console.log(from, pobContractAddress, admin);
+      setPobBatchDataArray({
+        pobContractAddress: pobContractAddress,
+        qrWalletsArray: newPobWalletsArray,
+        privKeysArray: newPrivKeysArray,
+      });
+      toast.success("Successfully created your POB, redirecting to your collections", {
+        position: "top-center",
+      });
+      setTimeout(() => {
+        setIsLoading(false);
+        router.push("/collections");
+      }, 2500);
+    },
   });
 
   const poepFormInputs = useMemo(
     () =>
-      createOneTimePobInputsArray.map((input: any, inputIndex: number) => {
+      createPobInputsArray.map((input: any, inputIndex: number) => {
         const today = new Date();
         if (input.showWithToggleName?.length > 1 && form[input.showWithToggleName[0]] !== input.showWithToggleName[1]) {
           return;
@@ -50,17 +95,13 @@ const CreatePOB = () => {
               <InputBase
                 name={input.name}
                 type={input.type}
-                value={
-                  input.name !== "event_start_date" && input.name !== "date"
-                    ? form[input.name] || ""
-                    : today.toLocaleDateString("en-CA")
-                }
+                value={input.name !== "event_start_date" ? form[input.name] || "" : today.toLocaleDateString("en-CA")}
                 onChange={(value: any) => {
                   setForm(form => ({ ...form, [input.name]: value }));
                 }}
                 placeholder={input.placeholder}
                 error={input.isError || false}
-                disabled={input.isDisabled || input.name === "event_start_date" || input.name === "date" || false}
+                disabled={input.isDisabled || false}
                 isRequired={true}
               />
             ) : (
@@ -71,6 +112,8 @@ const CreatePOB = () => {
                   onChange={(value: any) => {
                     setForm(form => ({ ...form, [input.name]: value }));
                   }}
+                  textA={input.textA}
+                  textB={input.textB}
                   valueA={input.valueA}
                   valueB={input.valueB}
                 />
@@ -89,32 +132,50 @@ const CreatePOB = () => {
     return null;
   }, [imgObj]);
 
-  const handleCreatePersonalPob = useCallback(
+  const handleCreatePob = useCallback(
     async (event: any) => {
+      const pobContractPrice = form.pob_quantity * pobTokenBasePrice;
       event.preventDefault();
       setIsLoading(true);
-      if (!userPobProfileAddress || parseInt(userPobProfileAddress) == 0) return;
-      const signer = await fetchSigner();
-      const personalPobFactoryContract = new ethers.Contract(
-        deployedPersonalPOBFactory,
-        PersonalPOBFactoryContract.abi,
-        signer as any,
-      );
 
-      if (balance && balance < 1.1) {
-        toast.error("You don't have enough balance :(", {
+      if (!userAddress || balance === null || undefined) {
+        console.log(balance);
+        toast.error("You need a POB Profile to create a POB", {
           position: "top-center",
         });
         setIsLoading(false);
         return;
       }
+      if (balance === 0 || balance <= pobContractPrice) {
+        toast.error("You don't have enough balance (you might need extra for gas)", {
+          position: "top-center",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const signer = await fetchSigner();
+      const pobFactoryContract = new ethers.Contract(deployedPobFactory, POBFactoryContract.abi, signer as any);
+
       try {
+        let merkleRoot: string = ethers.utils.hexZeroPad("0x00", 32);
         const formData = new FormData();
-        const today = new Date();
+
+        if (form.minting_features === "isUniqueCodeGeneration") {
+          console.log("Generating wallets");
+          const { merkleTreeWithQrPubKeys, qrWalletsArray, qrPrivKeysArray } = createRandomWallets(
+            parseInt(form.pob_quantity),
+          );
+          merkleRoot = merkleTreeWithQrPubKeys.getHexRoot();
+          setNewPobWalletsArray(qrWalletsArray);
+          setNewPrivKeysArray(qrPrivKeysArray);
+          formData.append("whitelist", JSON.stringify(qrWalletsArray));
+        } else {
+          formData.append("whitelist", JSON.stringify([]));
+        }
+
         formData.append("files", new Blob([imgObj]));
-        formData.append("external_url", `https://proofofbeer.vercel.app/profile/${userPobProfileAddress}`);
-        formData.append("profileAddress", userPobProfileAddress);
-        formData.append("date", today.toLocaleDateString("en-CA"));
+        formData.append("user_address", userAddress);
         if (Object.keys(form).length > 0) {
           for (const key in form) {
             if (form[key]) {
@@ -122,27 +183,22 @@ const CreatePOB = () => {
             }
           }
         }
-        const res = await axios.post("/api/upload-personal-pob", formData, {
+        const res = await axios.post("/api/upload-pob", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
 
-        const tx = await personalPobFactoryContract.createNewPersonalPob(
+        const tx = await pobFactoryContract.createNewPob(
           form.name,
           "POB",
-          userAddress,
-          userPobProfileAddress,
           res.data.nftUrl,
-          { value: ethers.utils.parseEther("1.0") },
+          form.pob_quantity,
+          merkleRoot,
+          { value: ethers.utils.parseEther(msgValue.toString()) },
         );
 
-        console.log(tx);
-
-        toast.success("Successfully created your POB!!!", {
-          position: "top-center",
-        });
-        router.push("/collections");
+        await tx.wait();
       } catch (error: any) {
         console.log(error);
         if (error.error) {
@@ -154,64 +210,98 @@ const CreatePOB = () => {
             position: "top-center",
           });
         }
-      } finally {
         setIsLoading(false);
       }
     },
-    [balance, deployedPersonalPOBFactory, form, imgObj, userAddress, userPobProfileAddress],
+    [balance, deployedPobFactory, form, imgObj, msgValue, userAddress],
   );
+
+  const showPreview = useCallback(() => {
+    const today = new Date();
+    if (!form.event_start_date) {
+      form.event_start_date = today.toLocaleDateString("en-CA");
+    }
+    form.minting_features !== "isUniqueCodeGeneration"
+      ? setMsgValue(form.pob_quantity * pobTokenBasePrice)
+      : setMsgValue(form.pob_quantity * pobTokenUniqueGenPrice);
+    setStep("preview");
+  }, [form]);
 
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
       <h1 className="text-4xl font-semibold text-center mb-4">Create POB</h1>
       <BackButton />
-      <h5 className="text-md text-center">
-        Create a POB with a supply of 25. <br />
-        Need more? Try creating a{" "}
-        <Link href="/pob/create-batch" className="font-semibold text-orange-500">
-          POB Batch
-        </Link>
-      </h5>
       <div
         id="personal-pob-container"
-        className="w-full md:w-11/12 my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary"
+        className={`w-full my-4 rounded-lg flex flex-col items-center bg-base-100 border-base-300 border shadow-md shadow-secondary ${
+          step === "form" ? "md:w-11/12" : "md:w-1/2 lg:w-2/5"
+        }`}
       >
-        <div className="w-full flex flex-col md:flex-row md:flex-wrap lg py-8 px-4 lg:px-8 lg:py-12 justify-center items-center md:items-start">
-          {userPobProfileAddress && parseInt(userPobProfileAddress) ? (
+        <div
+          className={`w-full flex flex-col md:flex-row md:flex-wrap pt-2 pb-8 px-4 justify-center items-center md:items-start ${
+            step === "form" ? "lg:px-8 lg:py-12" : "lg:px-4 lg:py-4"
+          }`}
+        >
+          {step === "form" && (
             <>
-              <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4">
-                <div className="m-2 px-4 lg:px-4 xl:px-24 2xl:px-32">
-                  <FilePreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
+              <div className="text-center text-lg font-medium w-full md:w-2/3 lg:w-1/2 p-4 mt-2">
+                <div className="m-2 px-4 lg:px-4 xl:px-16">
+                  <POBPreview fileFormKey={fileFormKey} previewImage={previewImage} setImgObj={setImgObj} />
                 </div>
               </div>
-              <form
-                className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:pt-4 lg:pr-12 xl:pr-20"
-                onSubmit={handleCreatePersonalPob}
-              >
+              <div className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col lg:w-1/2 lg:pt-4 lg:pr-12 xl:pr-20">
                 {poepFormInputs}
                 <div className="w-full mt-12 md:mt-6 lg:mt-4">
                   <div className="flex justify-center">
-                    <p className="font-medium border-orange-700 border-2 rounded-xl w-3/5 py-2">Cost: 1 MATIC</p>
+                    <p className="font-medium border-orange-700 border-2 rounded-xl w-3/5 py-2">
+                      Cost:{" "}
+                      {form.minting_features !== "isUniqueCodeGeneration"
+                        ? `${(form.pob_quantity * pobTokenBasePrice).toFixed(2)} MATIC`
+                        : `${(form.pob_quantity * pobTokenUniqueGenPrice).toFixed(2)} MATIC`}
+                    </p>
                   </div>
                   {isLoadingBalance ? (
                     <Loader />
                   ) : (
                     <PrimaryButton
-                      buttonText="Create POB"
+                      buttonText="Preview POB"
                       classModifier="text-lg w-3/5"
-                      isDisabled={!previewImage || isLoading}
+                      isDisabled={!previewImage || isLoading || !form.event_end_date || !form.pob_quantity}
                       isLoading={isLoading}
+                      onClick={showPreview}
                       showLoader={true}
                     />
                   )}
                 </div>
-              </form>
+              </div>
             </>
-          ) : (
-            <div className="text-center text-lg font-medium w-full px-2 md:w-2/3 md:flex md:flex-col md:items-center lg:w-1/2">
-              <h4 className="text-xl">You need a POB Profile</h4>
-              <PrimaryButton buttonText="I want my Profile" classModifier="text-lg py-2 px-8 mt-4" path="/dashboard" />
-            </div>
+          )}
+          {step === "preview" && previewImage && (
+            <form className="text-center text-lg font-medium w-full pt-2 pb-4 px-4 lg:px-8" onSubmit={handleCreatePob}>
+              <div className="w-full flex justify-start">
+                <p className="w-1/2 flex items-center hover:cursor-pointer" onClick={() => setStep("form")}>
+                  Edit <PencilIcon className="h-4 w-4 ml-2" />
+                </p>
+              </div>
+              <h3 className="text-center text-2xl">{form.name}</h3>
+              <div className="m-2 px-6 lg:px-24 xl:px-24 2xl:px-32">
+                <POBImage imageURI={previewImage} />
+              </div>
+              <h5 className="text-center text-lg font-light">
+                {formatDateLocale(form.event_start_date, "yyyy-mm-dd")}
+              </h5>
+              <h4 className="text-center text-xl">{form.description}</h4>
+              <h4 className="text-center text-xl mt-4">Batch Supply: {form.pob_quantity} POBs</h4>
+              <PrimaryButton
+                buttonText="Create POB"
+                classModifier="text-lg w-3/5"
+                isDisabled={
+                  !previewImage || isLoading || !form.event_start_date || !form.event_end_date || !form.pob_quantity
+                }
+                isLoading={isLoading}
+                showLoader={true}
+              />
+            </form>
           )}
         </div>
       </div>

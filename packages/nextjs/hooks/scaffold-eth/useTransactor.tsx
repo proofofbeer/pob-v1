@@ -85,6 +85,7 @@ export const useTransactor = (_signer?: Signer): TTransactionFunc => {
         }
       }
     } catch (error: any) {
+      console.log(error);
       if (notificationId) {
         notification.remove(notificationId);
       }

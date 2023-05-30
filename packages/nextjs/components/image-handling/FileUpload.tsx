@@ -20,7 +20,6 @@ type TFileUploadProps = {
 
 const FileUpload = ({ fileFormKeyState, setImgObj }: TFileUploadProps) => {
   const [file, setFile] = useState<TFileType[]>([]);
-  const setCurrentImgName = useAppStore(state => state.setCurrentImgName);
 
   const handleFile = (selectedFile: any[]) => {
     console.log(selectedFile);
@@ -31,14 +30,13 @@ const FileUpload = ({ fileFormKeyState, setImgObj }: TFileUploadProps) => {
       reader.onload = () => {
         console.log("Saving in imgObj:", reader.result);
         setImgObj(reader.result);
-        setCurrentImgName("image");
         setFile(selectedFile);
       };
       reader.readAsArrayBuffer(selectedFile[0]);
     }
   };
 
-  const onDrop = useCallback(handleFile, [setCurrentImgName, setImgObj]);
+  const onDrop = useCallback(handleFile, [setImgObj]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 

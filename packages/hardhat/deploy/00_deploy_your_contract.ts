@@ -1,5 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
+import { parseEther } from "ethers/lib/utils";
 
 /**
  * Deploys a contract named "YourContract" using the deployer account and
@@ -21,27 +22,27 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  const etherPrice = 1;
+  const etherPrice = "0.1";
 
-  // await deploy("POEPProfileFactory", {
-  //   from: deployer,
-  //   // Contract constructor arguments
-  //   args: ["POBProfile-v1.2", 120, etherPrice],
-  //   log: true,
-  //   // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
-  //   // automatically mining the contract deployment transaction. There is no effect on live networks.
-  //   autoMine: true,
-  // });
-
-  await deploy("PersonalPOBFactory", {
+  await deploy("POBFactory", {
     from: deployer,
     // Contract constructor arguments
-    args: ["BatchPOB-v1.2", "0x5FbDB2315678afecb367f032d93F642f64180aa3", etherPrice, 25, 157784630],
+    args: ["POBv2.0", deployer, parseEther(etherPrice)],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the contract deployment transaction. There is no effect on live networks.
     autoMine: true,
   });
+
+  // await deploy("PersonalPOBFactory", {
+  //   from: deployer,
+  //   // Contract constructor arguments
+  //   args: ["BatchPOB-v1.2", "0x5FbDB2315678afecb367f032d93F642f64180aa3", etherPrice, 25, 157784630],
+  //   log: true,
+  //   // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
+  //   // automatically mining the contract deployment transaction. There is no effect on live networks.
+  //   autoMine: true,
+  // });
 
   // await deploy("POEPProfileFactory", {
   //   from: deployer,
@@ -82,4 +83,4 @@ export default deployYourContract;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags YourContract
-// deployYourContract.tags = ["POEPProfileFactory", "PersonalPOB"];
+deployYourContract.tags = ["POBFactory"];

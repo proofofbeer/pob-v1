@@ -63,6 +63,7 @@ export const useScaffoldContractWrite = <
         setIsMining(true);
         await writeTx(wagmiContractWrite.writeAsync());
       } catch (e: any) {
+        console.log(e);
         const message = getParsedEthersError(e);
         notification.error(message);
       } finally {

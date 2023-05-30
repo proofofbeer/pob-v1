@@ -12,16 +12,16 @@ export type ScaffoldConfig = {
 };
 
 const developmentEnv = process.env.NEXT_PUBLIC_DEVELOPMENT_ENV;
-const defaultNetwork =
-  developmentEnv === "production"
-    ? chains.polygon
-    : developmentEnv === "testnet"
-    ? chains.polygonMumbai
-    : chains.hardhat;
+// const defaultNetwork =
+//   developmentEnv === "production"
+//     ? chains.polygon
+//     : developmentEnv === "testnet"
+//     ? chains.polygonMumbai
+//     : chains.hardhat;
 
 const scaffoldConfig = {
   // The network where your DApp lives in
-  targetNetwork: defaultNetwork,
+  targetNetwork: chains.hardhat,
 
   // The interval at which your front-end polls the RPC servers for new data
   // it has no effect on the local network
