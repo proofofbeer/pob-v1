@@ -5,6 +5,8 @@ type InputBaseProps<T> = CommonInputProps<T> & {
   error?: boolean;
   disabled?: boolean;
   isRequired?: boolean;
+  max?: number;
+  min?: number;
 };
 
 export const InputBase = <T extends { toString: () => string } = string>({
@@ -16,6 +18,8 @@ export const InputBase = <T extends { toString: () => string } = string>({
   error,
   disabled,
   isRequired = false,
+  max,
+  min,
 }: InputBaseProps<T>) => {
   let modifier = "";
   if (error) {
@@ -39,6 +43,8 @@ export const InputBase = <T extends { toString: () => string } = string>({
         name={name}
         value={value?.toString()}
         onChange={handleChange}
+        max={max}
+        min={min}
         disabled={disabled}
         autoComplete="off"
         required={isRequired}

@@ -11,10 +11,11 @@ import MintPobCard from "~~/components/pob/MintPobCard";
 import { PersonalPOBContract } from "~~/contracts";
 import { useAccountBalance } from "~~/hooks/scaffold-eth";
 import { useDeployedContractRead } from "~~/hooks/scaffold-eth/useDeployedContractRead";
+import { useDeployedContractWrite } from "~~/hooks/scaffold-eth/useDeployedContractWrite";
 import { useDeployedEventSubscriber } from "~~/hooks/scaffold-eth/useDeployedEventSubscriber";
 
 const MintPob = () => {
-  const personalPobName = "PersonalPOB";
+  const personalPobName = "POB";
   const router = useRouter();
   const { index: keyPairIndex, key, pobAddress } = router.query;
 
@@ -23,6 +24,7 @@ const MintPob = () => {
 
   const [imageUrl, setImageUrl] = useState<any>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [mintToAddress, setMintToAddress] = useState<string>(userAddress || "");
   const [pobMetadata, setPobMetadata] = useState<any | undefined>(undefined);
   const [walletsArray, setWalletsArray] = useState<any[] | undefined>(undefined);
 
@@ -60,10 +62,10 @@ const MintPob = () => {
 
   useDeployedEventSubscriber({
     contractAddress: pobAddress,
-    contractName: "PersonalPOB",
+    contractName: "POB",
     eventName: "Transfer",
     listener: (from: string, to: string, tokenId: string) => {
-      console.log(from, to);
+      setMintToAddress("");
       setIsLoading(false);
       toast.success(`Successfully minted POB #${tokenId}`, {
         position: "top-center",
@@ -72,72 +74,84 @@ const MintPob = () => {
     },
   });
 
-  const mint = useCallback(
-    async (mintToAddress: string) => {
-      setIsLoading(true);
-      if (!walletsArray || walletsArray.length === 0) {
-        setIsLoading(false);
-        return;
-      }
-      if (balance && balance === 0) {
-        toast.error("You don't have enough balance :(", {
-          position: "top-center",
-        });
-        setIsLoading(false);
-        return;
-      }
-      try {
-        const signer = await fetchSigner();
-        const pob = new ethers.Contract(pobAddress as string, PersonalPOBContract.abi, signer as any);
+  const {
+    writeAsync: writeSafeMint,
+    isLoading: isLoadingSafeMint,
+    isMining: isMiningSafeMint,
+  } = useDeployedContractWrite({
+    contractAddress: pobAddress,
+    contractName: "POB",
+    functionName: "safeMint",
+    args: [mintToAddress],
+  });
 
-        const qrPubKeys = walletsArray.map(wallet => wallet.address);
+  const safeMint = useCallback(async () => {
+    await writeSafeMint();
+  }, [writeSafeMint]);
 
-        const merkleTree = new MerkleTree(qrPubKeys, keccak256, {
-          sort: true,
-          hashLeaves: true,
-        });
+  const safeMintWithMerkleProof = useCallback(async () => {
+    setIsLoading(true);
+    if (!walletsArray || walletsArray.length === 0) {
+      setIsLoading(false);
+      return;
+    }
+    if (balance && balance === 0) {
+      toast.error("You don't have enough balance :(", {
+        position: "top-center",
+      });
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const signer = await fetchSigner();
+      const pob = new ethers.Contract(pobAddress as string, PersonalPOBContract.abi, signer as any);
 
-        const burnerWallet = new ethers.Wallet(key as BytesLike);
+      const qrPubKeys = walletsArray.map(wallet => wallet.address);
 
-        const rawSig = await burnerWallet.signMessage(arrayify(mintToAddress));
-        const { v, r, s } = splitSignature(rawSig);
-        const signature = solidityPack(["bytes32", "bytes32", "uint8"], [r, s, v]);
+      const merkleTree = new MerkleTree(qrPubKeys, keccak256, {
+        sort: true,
+        hashLeaves: true,
+      });
 
-        //  4.4: The app also supplies a Merkle proof for the corresponding
-        //      QR public key.
-        const merkleProof = merkleTree.getHexProof(keccak256(walletsArray[parseInt(keyPairIndex as string)].address));
+      const burnerWallet = new ethers.Wallet(key as BytesLike);
 
-        //  4.5: The user may now mint to their desired address using the computed
-        //      signature & merkleProof.
-        const tx = await pob.safeMintWithMerkleProof(mintToAddress, signature, merkleProof);
-        await tx.wait();
-      } catch (error: any) {
-        console.log(error);
-        if (error.error) {
-          console.log(error.error.reason);
-          if (error.error.reason) {
-            toast.error(error.error.reason || "Please try again later 🫣", {
-              position: "top-center",
-            });
-          } else if (error.error.data.message) {
-            toast.error(error.error.data.message || "Please try again later 🫣", {
-              position: "top-center",
-            });
-          } else {
-            toast.error("Please try again later 🫣", {
-              position: "top-center",
-            });
-          }
+      const rawSig = await burnerWallet.signMessage(arrayify(mintToAddress));
+      const { v, r, s } = splitSignature(rawSig);
+      const signature = solidityPack(["bytes32", "bytes32", "uint8"], [r, s, v]);
+
+      //  4.4: The app also supplies a Merkle proof for the corresponding
+      //      QR public key.
+      const merkleProof = merkleTree.getHexProof(keccak256(walletsArray[parseInt(keyPairIndex as string)].address));
+
+      //  4.5: The user may now mint to their desired address using the computed
+      //      signature & merkleProof.
+      const tx = await pob.safeMintWithMerkleProof(mintToAddress, signature, merkleProof);
+      await tx.wait();
+    } catch (error: any) {
+      console.log(error);
+      if (error.error) {
+        console.log(error.error.reason);
+        if (error.error.reason) {
+          toast.error(error.error.reason || "Please try again later 🫣", {
+            position: "top-center",
+          });
+        } else if (error.error.data.message) {
+          toast.error(error.error.data.message || "Please try again later 🫣", {
+            position: "top-center",
+          });
         } else {
-          toast.error("An error occurred, please try again later 🫣", {
+          toast.error("Please try again later 🫣", {
             position: "top-center",
           });
         }
-        setIsLoading(false);
+      } else {
+        toast.error("An error occurred, please try again later 🫣", {
+          position: "top-center",
+        });
       }
-    },
-    [balance, key, keyPairIndex, pobAddress, walletsArray],
-  );
+      setIsLoading(false);
+    }
+  }, [balance, key, keyPairIndex, mintToAddress, pobAddress, walletsArray]);
 
   const getGatewayMetadataUrl = useCallback(async (nftUrl: string) => {
     const nftCid = nftUrl.substring(7);
@@ -166,10 +180,13 @@ const MintPob = () => {
     if (pobGlobalTokenUri && !pobMetadata) {
       getPobMetadata(pobGlobalTokenUri);
     }
+    if (userAddress && mintToAddress === "") {
+      setMintToAddress(userAddress);
+    }
     if (pobMetadata && !walletsArray) {
       setWalletsArray(JSON.parse(pobMetadata.whitelist));
     }
-  }, [getPobMetadata, keyPairIndex, pobGlobalTokenUri, pobMetadata, walletsArray]);
+  }, [collectionId, getPobMetadata, maxSupply, pobAddress, pobGlobalTokenUri, pobMetadata, totalSupply, walletsArray]);
 
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
@@ -178,13 +195,15 @@ const MintPob = () => {
         <div className="w-full md:w-3/5 lg:w-1/2 xl:w-2/5">
           <MintPobCard
             description={pobMetadata.description}
-            isLoading={isLoading}
+            isLoading={isLoading || isLoadingSafeMint || isMiningSafeMint}
             maxSupply={parseInt(maxSupply._hex)}
-            mint={mint}
+            mint={key === "null" ? safeMint : safeMintWithMerkleProof}
+            mintToAddress={mintToAddress}
             name={pobMetadata.name}
             nftImageUri={imageUrl}
             pobAddress={pobAddress as string}
             pobCollectionId={parseInt(collectionId._hex)}
+            setMintToAddress={setMintToAddress}
             symbol={pobMetadata.symbol}
             totalSupply={parseInt(totalSupply._hex)}
             userAddress={userAddress || ""}

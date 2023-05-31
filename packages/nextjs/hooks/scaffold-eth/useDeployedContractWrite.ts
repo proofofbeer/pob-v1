@@ -3,8 +3,13 @@ import { Abi } from "abitype";
 import { utils } from "ethers";
 import { useContractWrite, useNetwork } from "wagmi";
 import { getParsedEthersError } from "~~/components/scaffold-eth";
-import { ERC721Contract, POEPFactoryContract, POEPProfileContract, PersonalPOBContract } from "~~/contracts";
-// import POEPProfileContract from "~~/contracts/POEPProfile.json";
+import {
+  ERC721Contract,
+  POBContract,
+  POEPFactoryContract,
+  POEPProfileContract,
+  PersonalPOBContract,
+} from "~~/contracts";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
 
@@ -29,6 +34,9 @@ export const useDeployedContractWrite = ({
       break;
     case "POEPProfile":
       selectedContractAbi = POEPProfileContract.abi as Abi;
+      break;
+    case "POB":
+      selectedContractAbi = POBContract.abi as Abi;
       break;
     case "PersonalPOB":
       selectedContractAbi = PersonalPOBContract.abi as Abi;

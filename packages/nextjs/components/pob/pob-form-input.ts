@@ -1,6 +1,8 @@
 export type TInputsArrayElement = {
   defaultValue?: string | number | undefined;
   label: string;
+  max?: number;
+  min?: number;
   name: string;
   showWithToggleName?: string[];
   textA?: string;
@@ -47,7 +49,7 @@ export const createPobBatchInputsArray: TInputsArrayElement[] = [
 export const createPobInputsArray: TInputsArrayElement[] = [
   { label: "Event Name", name: "name", type: "string" },
   { label: "Event Description", name: "description", type: "string" },
-  { label: "POB Quantity", defaultValue: 10, name: "pob_quantity", type: "number" },
+  { label: "POB Quantity", defaultValue: 10, min: 1, name: "pob_quantity", type: "number" },
   { label: "Event start date", name: "event_start_date", type: "date" },
   { label: "Event end date", name: "event_end_date", type: "date" },
   {

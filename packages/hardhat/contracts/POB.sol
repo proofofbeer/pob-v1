@@ -29,12 +29,14 @@ contract POB is IPOB, ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     string memory globalTokenURI_,
     uint256 maxSupply_,
     uint256 collectionId_,
-    bytes32 qrMerkleRoot_
+    bytes32 qrMerkleRoot_,
+    address pobFactoryAddress_
   ) ERC721(name_, symbol_) {
     globalTokenURI = globalTokenURI_;
     collectionId = collectionId_;
     maxSupply = maxSupply_;
     qrMerkleRoot = qrMerkleRoot_;
+    _pobFactoryAddress = pobFactoryAddress_;
   }
 
   function safeMint(address to_) external {

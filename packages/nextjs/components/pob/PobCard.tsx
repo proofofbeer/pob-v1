@@ -17,7 +17,7 @@ const PobCard = ({ name, nftImageUri, pobAddress, pobCollectionId, pobId, symbol
       <POBImage imageURI={nftImageUri} />
     </div>
     <h4 className="mb-4 text-xl font-medium text-center px-1">
-      {name} {pobId && `#${pobId}`}
+      {name} {pobId !== 0 && `#${pobId}`}
     </h4>
     <h5 className="mb-2 text-md font-medium text-center px-1 hidden md:visible">
       <Link

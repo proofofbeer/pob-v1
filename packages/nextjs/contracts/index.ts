@@ -4,3 +4,4 @@ export * from "./POEPProfileContract";
 export * from "./PersonalPOBFactoryContract";
 export * from "./PersonalPOBContract";
 export * from "./POBFactoryContract";
+export * from "./POBContract";

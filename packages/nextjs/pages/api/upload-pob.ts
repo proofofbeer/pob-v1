@@ -39,13 +39,9 @@ uploadApi.post(async (req, res) => {
   const files = req.files;
   const nftStorage = new NFTStorage({ token });
 
-  console.log(token);
-
   const imageCid = await nftStorage.storeDirectory([
     ...files.map((file: any, index: number) => new File([file.buffer], `image-${index}`)),
   ]);
-
-  console.log(imageCid);
 
   const imageStatus = await nftStorage.status(imageCid);
 
@@ -55,8 +51,6 @@ uploadApi.post(async (req, res) => {
   const status = await nftStorage.status(cid);
 
   const nftUrl = `ipfs://${cid}/nft-0`;
-
-  console.log(nftUrl);
 
   res.json({ cid, imageCid, imageStatus, nftUrl, status });
 });

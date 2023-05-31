@@ -35,29 +35,10 @@ const CreatePOB = () => {
     setPobBatchDataArray: state.setPobBatchDataArray,
   }));
 
-  // const [pobName, setPobName] = useState("");
-  // const [tokenUri, setTokenUri] = useState("");
-  // const [pobQuantity, setPobQuantity] = useState(ethers.BigNumber.from(10));
-  // const [merkleRoot, setMerkleRoot] = useState<`0x${string}`>(ethers.utils.hexZeroPad("0x00", 32) as `0x${string}`);
-
-  // const [createNewPobArgs, setCreateNewPobArgs] = useState<any>([pobName, "POB", tokenUri, pobQuantity, merkleRoot]);
-
   const [msgValue, setMsgValue] = useState(10 * pobTokenBasePrice);
 
   const { address: userAddress } = useAccount();
   const { balance, isLoading: isLoadingBalance } = useAccountBalance(userAddress);
-
-  // const { data: deployedPobContracts } = useScaffoldContractRead({
-  //   contractName,
-  //   functionName: "deployedPobContracts",
-  // });
-
-  // const { writeAsync: writeCreateNewPob, isMining: isMiningCreateNewPob } = useScaffoldContractWrite({
-  //   contractName,
-  //   functionName: "createNewPob",
-  //   args: [pobName, "POB", tokenUri, pobQuantity, merkleRoot],
-  //   value: msgValue.toString(),
-  // });
 
   useScaffoldEventSubscriber({
     contractName: "POBFactory",
@@ -99,6 +80,8 @@ const CreatePOB = () => {
                 onChange={(value: any) => {
                   setForm(form => ({ ...form, [input.name]: value }));
                 }}
+                max={input.max || null}
+                min={input.min || null}
                 placeholder={input.placeholder}
                 error={input.isError || false}
                 disabled={input.isDisabled || false}
@@ -134,20 +117,18 @@ const CreatePOB = () => {
 
   const handleCreatePob = useCallback(
     async (event: any) => {
-      const pobContractPrice = form.pob_quantity * pobTokenBasePrice;
       event.preventDefault();
       setIsLoading(true);
 
       if (!userAddress || balance === null || undefined) {
-        console.log(balance);
-        toast.error("You need a POB Profile to create a POB", {
+        toast.error("Connect with your wallet and check your balance.", {
           position: "top-center",
         });
         setIsLoading(false);
         return;
       }
-      if (balance === 0 || balance <= pobContractPrice) {
-        toast.error("You don't have enough balance (you might need extra for gas)", {
+      if (balance === 0 || balance <= msgValue) {
+        toast.error("You don't have enough balance (you might need extra for gas).", {
           position: "top-center",
         });
         setIsLoading(false);
@@ -163,7 +144,7 @@ const CreatePOB = () => {
 
         if (form.minting_features === "isUniqueCodeGeneration") {
           console.log("Generating wallets");
-          const { merkleTreeWithQrPubKeys, qrWalletsArray, qrPrivKeysArray } = createRandomWallets(
+          const { merkleTreeWithQrPubKeys, qrWalletsArray, qrPrivKeysArray } = await createRandomWallets(
             parseInt(form.pob_quantity),
           );
           merkleRoot = merkleTreeWithQrPubKeys.getHexRoot();
@@ -216,16 +197,27 @@ const CreatePOB = () => {
     [balance, deployedPobFactory, form, imgObj, msgValue, userAddress],
   );
 
+  const calculatePrice = useCallback(() => {
+    let price = 1;
+    if (form.minting_features === "isGenericCodeGeneration") {
+      price = form.pob_quantity * pobTokenBasePrice;
+      if (price < 1) price = 1;
+    }
+    if (form.minting_features === "isUniqueCodeGeneration") {
+      price = form.pob_quantity * pobTokenUniqueGenPrice;
+      if (price < 1.5) price = 1.5;
+    }
+    return price;
+  }, [form.minting_features, form.pob_quantity]);
+
   const showPreview = useCallback(() => {
     const today = new Date();
     if (!form.event_start_date) {
       form.event_start_date = today.toLocaleDateString("en-CA");
     }
-    form.minting_features !== "isUniqueCodeGeneration"
-      ? setMsgValue(form.pob_quantity * pobTokenBasePrice)
-      : setMsgValue(form.pob_quantity * pobTokenUniqueGenPrice);
+    setMsgValue(calculatePrice());
     setStep("preview");
-  }, [form]);
+  }, [calculatePrice, form]);
 
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">
@@ -254,10 +246,7 @@ const CreatePOB = () => {
                 <div className="w-full mt-12 md:mt-6 lg:mt-4">
                   <div className="flex justify-center">
                     <p className="font-medium border-orange-700 border-2 rounded-xl w-3/5 py-2">
-                      Cost:{" "}
-                      {form.minting_features !== "isUniqueCodeGeneration"
-                        ? `${(form.pob_quantity * pobTokenBasePrice).toFixed(2)} MATIC`
-                        : `${(form.pob_quantity * pobTokenUniqueGenPrice).toFixed(2)} MATIC`}
+                      Cost: {`${calculatePrice().toFixed(2)} MATIC`}
                     </p>
                   </div>
                   {isLoadingBalance ? (
@@ -291,7 +280,12 @@ const CreatePOB = () => {
                 {formatDateLocale(form.event_start_date, "yyyy-mm-dd")}
               </h5>
               <h4 className="text-center text-xl">{form.description}</h4>
-              <h4 className="text-center text-xl mt-4">Batch Supply: {form.pob_quantity} POBs</h4>
+              <h4 className="text-center text-xl mt-4">Max Supply: {form.pob_quantity} POBs</h4>
+              <div className="flex justify-center mt-4">
+                <p className="font-medium border-orange-700 border-2 rounded-xl w-3/5 py-2">
+                  Cost: {`${calculatePrice().toFixed(2)} MATIC`}
+                </p>
+              </div>
               <PrimaryButton
                 buttonText="Create POB"
                 classModifier="text-lg w-3/5"

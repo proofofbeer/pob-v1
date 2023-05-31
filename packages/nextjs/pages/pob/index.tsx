@@ -8,12 +8,16 @@ import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 
 const MyPobs = () => {
   const [showCollectedPobs, setShowCollectedPobs] = useState<boolean>(true);
-  const [pobImages, setPobImages] = useState<string[]>([]);
+  const [collectedPobImages, setCollectedPobImages] = useState<string[]>([]);
+  const [createdPobImages, setCreatedPobImages] = useState<string[]>([]);
+
+  const [collectedPobs, setCollectedPobs] = useState<any[] | null>(null);
+  const [createdPobs, setCreatedPobs] = useState<any[] | null>(null);
   const { address: userAddress } = useAccount();
 
   const { data: userMintedPobs } = useScaffoldContractRead({
-    contractName: "POEPProfileFactory",
-    functionName: "getUserMintedPobs",
+    contractName: "POBFactory",
+    functionName: "getUserPobCollections",
     args: [userAddress],
   });
 
@@ -28,11 +32,28 @@ const MyPobs = () => {
 
   const getPobCollectionsImageURI = useCallback(
     async (userMintedPobs: any) => {
-      const imageUris = [];
+      const collectedPobsArr = [];
+      const createdPobsArr = [];
+      const collectedPobImgArr = [];
+      const createdPobImgArr = [];
+      let tokenId: number;
       for (let i = 0; i < userMintedPobs.length; i++) {
-        imageUris.push(await getGatewayImageUrl(userMintedPobs[i][3]));
+        tokenId = parseInt(userMintedPobs[i][6]._hex);
+        const imgUrl = await getGatewayImageUrl(userMintedPobs[i][3]);
+        if (tokenId === 0) {
+          createdPobsArr.push(userMintedPobs[i]);
+          createdPobImgArr.push(imgUrl);
+        } else {
+          collectedPobsArr.push(userMintedPobs[i]);
+          collectedPobImgArr.push(imgUrl);
+        }
       }
-      setPobImages(imageUris);
+
+      setCollectedPobs(collectedPobsArr);
+      setCreatedPobs(createdPobsArr);
+
+      setCollectedPobImages(collectedPobImgArr);
+      setCreatedPobImages(createdPobImgArr);
     },
     [getGatewayImageUrl],
   );
@@ -53,15 +74,38 @@ const MyPobs = () => {
           onChange={() => {
             setShowCollectedPobs(!showCollectedPobs);
           }}
-          valueA="Collected"
-          valueB="Created"
+          textA="Collected"
+          textB="Created"
         />
       </div>
       <div
         id="user-pobs-container"
         className="grid gap-8 grid-cols-2 md:grid-cols-3 md:gap-4 lg:grid-cols-4 lg:gap-8 w-full px-2 md:px-16 lg:px-8 xl:px-24 mt-4 mx-0"
       >
-        {pobImages.length > 0 &&
+        {showCollectedPobs
+          ? collectedPobs?.map((mintedPob: any, index) => (
+              <PobCard
+                key={`${mintedPob.pobAddress}-${parseInt(mintedPob.tokenId)}`}
+                name={mintedPob.name}
+                nftImageUri={collectedPobImages[index]}
+                pobAddress={mintedPob.pobAddress}
+                pobCollectionId={parseInt(mintedPob.pobCollectionId)}
+                pobId={parseInt(mintedPob.tokenId)}
+                symbol={mintedPob.symbol}
+              />
+            ))
+          : createdPobs?.map((mintedPob: any, index) => (
+              <PobCard
+                key={`${mintedPob.pobAddress}-${parseInt(mintedPob.tokenId)}`}
+                name={mintedPob.name}
+                nftImageUri={createdPobImages[index]}
+                pobAddress={mintedPob.pobAddress}
+                pobCollectionId={parseInt(mintedPob.pobCollectionId)}
+                pobId={parseInt(mintedPob.tokenId)}
+                symbol={mintedPob.symbol}
+              />
+            ))}
+        {/* {pobImages.length > 0 &&
           userMintedPobs?.map((mintedPob: any, index) => {
             if (showCollectedPobs) {
               if (parseInt(mintedPob.tokenId) === 0) {
@@ -96,7 +140,7 @@ const MyPobs = () => {
                 );
               }
             }
-          })}
+          })} */}
       </div>
     </div>
   );

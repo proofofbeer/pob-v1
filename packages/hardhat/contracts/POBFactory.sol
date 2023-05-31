@@ -36,9 +36,10 @@ contract POBFactory is IPOBFactory, Ownable {
       pobCollectionName_,
       pobCollectionSymbol_,
       globalTokenURI_,
-      deployedPobContracts + 1,
       pobCollectionMaxSupply_,
-      qrMerkleRoot_
+      deployedPobContracts + 1,
+      qrMerkleRoot_,
+      address(this)
     );
     newPob.transferOwnership(_msgSender());
     ++deployedPobContracts;
