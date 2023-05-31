@@ -186,7 +186,18 @@ const MintPob = () => {
     if (pobMetadata && !walletsArray) {
       setWalletsArray(JSON.parse(pobMetadata.whitelist));
     }
-  }, [collectionId, getPobMetadata, maxSupply, pobAddress, pobGlobalTokenUri, pobMetadata, totalSupply, walletsArray]);
+  }, [
+    collectionId,
+    getPobMetadata,
+    maxSupply,
+    mintToAddress,
+    pobAddress,
+    pobGlobalTokenUri,
+    pobMetadata,
+    totalSupply,
+    userAddress,
+    walletsArray,
+  ]);
 
   return (
     <div className="flex flex-col py-8 px-4 lg:px-8 lg:py-12 justify-center items-center min-h-full">

@@ -48,11 +48,6 @@ export const Header = () => {
           🍻<span className="ml-1">My Collections</span>
         </NavLink>
       </li>
-      <li>
-        <NavLink href="/dashboard">
-          👤 <span className="ml-1">Profile</span>
-        </NavLink>
-      </li>
     </>
   );
 

@@ -170,6 +170,7 @@ const PobCollectionCard = ({
                   </label>
                   <h2 className="mt-12 mb-8 text-2xl font-medium text-center">Scan to mint POB:</h2>
                   <div className="my-8 w-full flex justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img className="m-0 rounded-xl" src={qrCodes[0]} alt="qrcode" />
                   </div>
                   <h3 className="my-2 text-xl font-medium text-center">Share a URL:</h3>
@@ -233,6 +234,7 @@ const PobCollectionCard = ({
               {showPreviewQrCode ? "Hide preview QR code" : "Show preview QR code"}
             </div>
             <div className="collapse-content px-12">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className="mt-4 rounded-xl" src={qrCodes[0]} alt="qrcode" />
             </div>
           </div>
