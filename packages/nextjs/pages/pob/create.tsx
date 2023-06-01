@@ -18,12 +18,14 @@ import { POBFactoryContract } from "~~/contracts";
 import { useAccountBalance, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
 import { useAppStore } from "~~/services/store/store";
 import { formatDateLocale } from "~~/utils/date/get-formatted-dates";
+import { getContractAddressByEnv } from "~~/utils/env-getters";
 import { createRandomWallets } from "~~/utils/web3/wallet-generation";
 
 const CreatePOB = () => {
-  const deployedPobFactory = process.env.NEXT_PUBLIC_POB_FACTORY_ADDRESS_LOCAL || "";
-  const pobTokenBasePrice = 0.1;
-  const pobTokenUniqueGenPrice = 0.15;
+  const deployedPobFactory = getContractAddressByEnv();
+  const env = process.env.NEXT_PUBLIC_DEVELOPMENT_ENV || "local";
+  const pobTokenBasePrice = env === "testnet" ? 0.0001 : 0.1;
+  const pobTokenUniqueGenPrice = env === "testnet" ? 0.00015 : 0.15;
   const fileFormKey = "pob_image";
   const [form, setForm] = useState<Record<string, any>>(() => getInitialPobFormState(createPobInputsArray));
   const [imgObj, setImgObj] = useState<any>(undefined);
@@ -176,7 +178,7 @@ const CreatePOB = () => {
           res.data.nftUrl,
           form.pob_quantity,
           merkleRoot,
-          { value: ethers.utils.parseEther(msgValue.toString()) },
+          { value: ethers.utils.parseEther(msgValue.toFixed(4)) },
         );
 
         await tx.wait();
@@ -198,17 +200,14 @@ const CreatePOB = () => {
   );
 
   const calculatePrice = useCallback(() => {
-    let price = 1;
-    if (form.minting_features === "isGenericCodeGeneration") {
-      price = form.pob_quantity * pobTokenBasePrice;
-      if (price < 1) price = 1;
-    }
-    if (form.minting_features === "isUniqueCodeGeneration") {
-      price = form.pob_quantity * pobTokenUniqueGenPrice;
-      if (price < 1.5) price = 1.5;
-    }
+    const singleTokenPrice =
+      form.minting_features === "isUniqueCodeGeneration" ? pobTokenUniqueGenPrice : pobTokenBasePrice;
+    const basePrice = 10 * singleTokenPrice;
+    let price = form.pob_quantity * singleTokenPrice;
+
+    if (price < basePrice) price = basePrice;
     return price;
-  }, [form.minting_features, form.pob_quantity]);
+  }, [form.minting_features, form.pob_quantity, pobTokenBasePrice, pobTokenUniqueGenPrice]);
 
   const showPreview = useCallback(() => {
     const today = new Date();
@@ -246,7 +245,10 @@ const CreatePOB = () => {
                 <div className="w-full mt-12 md:mt-6 lg:mt-4">
                   <div className="flex justify-center">
                     <p className="font-medium border-orange-700 border-2 rounded-xl w-3/5 py-2">
-                      Cost: {`${calculatePrice().toFixed(2)} MATIC`}
+                      Cost:{" "}
+                      {env !== "testnet"
+                        ? `${calculatePrice().toFixed(2)} MATIC`
+                        : `${calculatePrice().toFixed(4)} MATIC`}
                     </p>
                   </div>
                   {isLoadingBalance ? (
@@ -283,7 +285,8 @@ const CreatePOB = () => {
               <h4 className="text-center text-xl mt-4">Max Supply: {form.pob_quantity} POBs</h4>
               <div className="flex justify-center mt-4">
                 <p className="font-medium border-orange-700 border-2 rounded-xl w-3/5 py-2">
-                  Cost: {`${calculatePrice().toFixed(2)} MATIC`}
+                  Cost:{" "}
+                  {env !== "testnet" ? `${calculatePrice().toFixed(2)} MATIC` : `${calculatePrice().toFixed(4)} MATIC`}
                 </p>
               </div>
               <PrimaryButton

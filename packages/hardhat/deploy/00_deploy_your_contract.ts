@@ -22,7 +22,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  const etherPrice = "0.1";
+  const etherPrice = "0.0001";
 
   await deploy("POBFactory", {
     from: deployer,

@@ -105,42 +105,6 @@ const MyPobs = () => {
                 symbol={mintedPob.symbol}
               />
             ))}
-        {/* {pobImages.length > 0 &&
-          userMintedPobs?.map((mintedPob: any, index) => {
-            if (showCollectedPobs) {
-              if (parseInt(mintedPob.tokenId) === 0) {
-                return;
-              } else {
-                return (
-                  <PobCard
-                    key={mintedPob.pobAddress}
-                    name={mintedPob.name}
-                    nftImageUri={pobImages[index]}
-                    pobAddress={mintedPob.pobAddress}
-                    pobCollectionId={parseInt(mintedPob.pobCollectionId)}
-                    pobId={parseInt(mintedPob.tokenId)}
-                    symbol={mintedPob.symbol}
-                  />
-                );
-              }
-            } else {
-              if (parseInt(mintedPob.tokenId) !== 0) {
-                return;
-              } else {
-                return (
-                  <PobCard
-                    key={mintedPob.pobAddress}
-                    name={mintedPob.name}
-                    nftImageUri={pobImages[index]}
-                    pobAddress={mintedPob.pobAddress}
-                    pobCollectionId={parseInt(mintedPob.pobCollectionId)}
-                    pobId={parseInt(mintedPob.tokenId)}
-                    symbol={mintedPob.symbol}
-                  />
-                );
-              }
-            }
-          })} */}
       </div>
     </div>
   );

@@ -87,7 +87,7 @@ const PobCollectionCard = ({
       refetchPobTotalSupply();
     }
 
-    if (qrCodes.length === 0 && whitelist.length === 0) {
+    if (qrCodes && qrCodes.length === 0 && whitelist && whitelist.length === 0) {
       getQrCodes();
     }
   }, [pobTotalSupply, pobAddress, refetchPobTotalSupply, whitelist, qrCodes, getQrCodes]);
@@ -191,7 +191,7 @@ const PobCollectionCard = ({
               <button
                 onClick={async () => await getQrCodes()}
                 className="btn btn-primary normal-case w-full"
-                disabled={qrCodes.length > 0}
+                disabled={qrCodes && qrCodes.length > 0}
               >
                 Get QR Codes
               </button>
@@ -220,7 +220,7 @@ const PobCollectionCard = ({
         </div>
       </div>
 
-      {whitelist && whitelist.length !== 0 && qrCodes.length > 0 && (
+      {whitelist && whitelist.length !== 0 && qrCodes && qrCodes.length > 0 && (
         <div
           id="qr-codes"
           className="flex flex-col items-center justify-center w-full px-2 md:px-16 lg:px-8 xl:px-8 mt-6 mb-4 mx-0"
