@@ -27,7 +27,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   await deploy("POBFactory", {
     from: deployer,
     // Contract constructor arguments
-    args: ["POBv2.0", deployer, parseEther(etherPrice)],
+    args: ["POBv0.3", deployer, parseEther(etherPrice)],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the contract deployment transaction. There is no effect on live networks.
