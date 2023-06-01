@@ -1,7 +1,6 @@
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { CloudArrowUpIcon, PencilIcon } from "@heroicons/react/24/outline";
-import { useAppStore } from "~~/services/store/store";
 
 type TFileType = {
   path: string;
