@@ -25,7 +25,7 @@ const Home: NextPage = () => {
         <p className="text-center text-4xl text-orange-600 font-bold">Beer Memories</p>
       </div>
       <div className="w-full flex justify-center">
-        <PrimaryButton buttonText="Start creating POBs!" classModifier="text-xl" path="/dashboard" />
+        <PrimaryButton buttonText="Start creating POBs!" classModifier="text-xl" path="/pob/create" />
       </div>
       <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
         <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">

@@ -37,10 +37,10 @@ const FileUpload = ({ fileFormKeyState, setImgObj }: TFileUploadProps) => {
 
   const onDrop = useCallback(handleFile, [setImgObj]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({ onDrop, noClick: true });
 
   return (
-    <div className="flex flex-col items-center justify-center w-full" {...getRootProps()}>
+    <div className="flex flex-col items-center justify-center w-full" {...getRootProps()} onClick={open}>
       {file.length < 1 ? (
         <div className="w-full aspect-square flex flex-col items-center justify-center border-2 border-base-300 border-dashed bg-base-200 rounded-lg text-accent cursor-pointer hover:bg-gray-100 dark:hover:border-accent dark:hover:bg-base-300 dark:hover:bg-opacity-30">
           <label className="flex flex-col items-center justify-center cursor-pointer">
